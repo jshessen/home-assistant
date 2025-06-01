@@ -1,0 +1,60 @@
+version: "3.7"
+# MAIN DOCKER-COMPOSE
+
+##############################
+# NETWORKS
+#
+networks:
+  default:
+    name: homeautomation
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.16.1.0/27
+#
+##############################
+
+##############################
+# SECRETS (Non-Swarm)
+#
+#secrets:
+  #plex_claim:
+    #file: ./secrets/plex_claim
+#
+##############################
+
+##############################
+# SERVICES
+#
+services:
+  ####################
+  # Home Assistant
+  #
+  ##########
+  # Home Assistant - Home Automation Platform
+  #
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:${HASS_TAG:-latest}
+    container_name: homeassistant
+    restart: always
+    networks:
+      - default
+    security_opt:
+      - no-new-privileges:true    
+    ports:
+      - ${HASS_PORT:-8123}:8123/tcp
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DATA_DIR}/homeassistant/config:/config
+    #devices:
+    #  - /dev/dri:/dev/dri # Hardware transcoding
+    environment:
+      #DEBUG: "true"
+      TZ: ${TZ}
+  ##########
+  #
+  #################### 
+#
+##############################
