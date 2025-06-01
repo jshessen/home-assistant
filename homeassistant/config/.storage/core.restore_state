@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "minor_version": 1,
+  "key": "core.restore_state",
+  "data": [
+    {
+      "state": {"entity_id":"conversation.home_assistant","state":"unknown","attributes":{"friendly_name":"Home Assistant","supported_features":1},"last_changed":"2025-06-01T22:37:24.588590+00:00","last_reported":"2025-06-01T22:37:24.588590+00:00","last_updated":"2025-06-01T22:37:24.588590+00:00","context":{"id":"01JWPT8ZQCEK6ANVV575SGFZVZ","parent_id":null,"user_id":null}},
+      "extra_data": null,
+      "last_seen": "2025-06-01T22:37:27.148962+00:00"
+    },
+    {
+      "state": {"entity_id":"person.jeff","state":"home","attributes":{"editable":true,"id":"jeff","device_trackers":["device_tracker.sparky"],"latitude":38.5699536,"longitude":-90.5010461,"gps_accuracy":100,"source":"person.jeff","user_id":"a010220da35b44c780e769fd2d9dc70d","friendly_name":"Jeff"},"last_changed":"2025-06-01T22:37:25.697588+00:00","last_reported":"2025-06-01T22:37:25.697588+00:00","last_updated":"2025-06-01T22:37:25.697588+00:00","context":{"id":"01JWPT90T1CT4XTBSWE508EGED","parent_id":null,"user_id":null}},
+      "extra_data": null,
+      "last_seen": "2025-06-01T22:37:27.148962+00:00"
+    },
+    {
+      "state": {"entity_id":"device_tracker.sparky","state":"home","attributes":{"source_type":"gps","latitude":38.5699536,"longitude":-90.5010461,"gps_accuracy":100,"altitude":142.0,"course":0,"speed":0,"vertical_accuracy":100,"friendly_name":"Sparky"},"last_changed":"2025-06-01T22:37:26.149402+00:00","last_reported":"2025-06-01T22:37:26.149402+00:00","last_updated":"2025-06-01T22:37:26.149402+00:00","context":{"id":"01JWPT918580F87WMT3KYAT3A0","parent_id":null,"user_id":null}},
+      "extra_data": null,
+      "last_seen": "2025-06-01T22:37:27.148962+00:00"
+    },
+    {
+      "state": {"entity_id":"sensor.sparky_battery_level","state":"71","attributes":{"state_class":"measurement","unit_of_measurement":"%","device_class":"battery","icon":"mdi:battery-70","friendly_name":"Sparky Battery level"},"last_changed":"2025-06-01T22:37:26.150197+00:00","last_reported":"2025-06-01T22:37:26.150197+00:00","last_updated":"2025-06-01T22:37:26.150197+00:00","context":{"id":"01JWPT9186WMHAZ37YRZA9S9PX","parent_id":null,"user_id":null}},
+      "extra_data": {
+        "native_value": 71,
+        "native_unit_of_measurement": "%"
+      },
+      "last_seen": "2025-06-01T22:37:27.148962+00:00"
+    },
+    {
+      "state": {"entity_id":"sensor.sparky_battery_state","state":"discharging","attributes":{"options":["charging","discharging","full","not_charging"],"device_class":"enum","icon":"mdi:battery-minus","friendly_name":"Sparky Battery state"},"last_changed":"2025-06-01T22:37:26.150689+00:00","last_reported":"2025-06-01T22:37:26.150689+00:00","last_updated":"2025-06-01T22:37:26.150689+00:00","context":{"id":"01JWPT91864BRWPENYKRGHYRA3","parent_id":null,"user_id":null}},
+      "extra_data": {
+        "native_value": "discharging",
+        "native_unit_of_measurement": null
+      },
+      "last_seen": "2025-06-01T22:37:27.148962+00:00"
+    },
+    {
+      "state": {"entity_id":"sensor.sparky_charger_type","state":"none","attributes":{"options":["ac","usb","wireless","dock","none"],"device_class":"enum","icon":"mdi:battery","friendly_name":"Sparky Charger type"},"last_changed":"2025-06-01T22:37:26.151152+00:00","last_reported":"2025-06-01T22:37:26.151152+00:00","last_updated":"2025-06-01T22:37:26.151152+00:00","context":{"id":"01JWPT9187K3ZZP4HR3QB5Q9XG","parent_id":null,"user_id":null}},
+      "extra_data": {
+        "native_value": "none",
+        "native_unit_of_measurement": null
+      },
+      "last_seen": "2025-06-01T22:37:27.148962+00:00"
+    },
+    {
+      "state": {"entity_id":"tts.google_translate_en_com","state":"unknown","attributes":{"friendly_name":"Google Translate en com"},"last_changed":"2025-06-01T22:37:26.170123+00:00","last_reported":"2025-06-01T22:37:26.170123+00:00","last_updated":"2025-06-01T22:37:26.170123+00:00","context":{"id":"01JWPT918TVH1DBJXQMGQHG81F","parent_id":null,"user_id":null}},
+      "extra_data": null,
+      "last_seen": "2025-06-01T22:37:27.148962+00:00"
+    }
+  ]
+}
