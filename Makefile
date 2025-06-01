@@ -6,18 +6,15 @@ export
 COMPOSE_HASS := -f docker-compose.yml
 HASS_SERVICE := homeassistant
 
-COMPOSE_TDARR_NODE := -f docker-compose.tdarr_node.yml
-TDARR_NODE := tdarr-node
-
-COMPOSE_ALL_FILES := ${COMPOSE_HASS} ${COMPOSE_TDARR_NODE}
-ALL_SERVICES := ${HASS_SERVICE} ${TDARR_NODE}
+COMPOSE_ALL_FILES := ${COMPOSE_HASS}
+ALL_SERVICES := ${HASS_SERVICE}
 
 .PHONY: setup plex all up down orphan stop restart rm images update
 
 setup:    ## Build .env from config.d/*.env files
 ifdef CLEAN
-	@set -a && . ${CONFIG_DIR}/plex.env &&	set +a && \
-  for f in `find ${CONFIG_DIR} -type f -name "*.env" -print 2>/dev/null` ; do set -a && . "$$f" && set +; done && \
+	@set -a && . ./config.d/hass.env &&	set +a && \
+  for f in `find ./config.d -type f -name "*.env" -print 2>/dev/null` ; do set -a && . "$$f" && set +; done && \
   env|sort > .env
 else
 	@env -i PATH="$$PATH" CLEAN=1 sh -c "make setup"
