@@ -45,9 +45,7 @@ services:
       - ${HASS_PORT:-8123}:8123/tcp
     volumes:
       - /etc/localtime:/etc/localtime:ro
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - ${DATA_DIR}/homeassistant/config:/config
+      - ./homeassistant/config:/config
     #devices:
     #  - /dev/dri:/dev/dri # Hardware transcoding
     environment:
