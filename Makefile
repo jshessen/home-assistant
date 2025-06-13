@@ -3,54 +3,64 @@
 -include .env
 export
 # --------------------------
-COMPOSE_HASS := -f docker-compose.yml
-HASS_SERVICE := homeassistant
+COMPOSE_ZWAVE := -f docker-compose.zwave.yml
+ZWAVE_SERVICE := zwave-js-ui
 
-COMPOSE_ALL_FILES := ${COMPOSE_HASS}
-ALL_SERVICES := ${HASS_SERVICE}
+COMPOSE_MQTT := -f docker-compose.mqtt.yml
+MQTT_SERVICE := mqtt
+
+COMPOSE_ZIGBEE := -f docker-compose.zigbee.yml
+ZIGBEE_SERVICE := zigbee2mqtt
+
+COMPOSE_HACS := -f docker-compose.yml ${COMPOSE_ZWAVE}
+HACS_SERVICE := home-assistant ${ZWAVE_SERVICE}
+
+
+COMPOSE_ALL_FILES := ${COMPOSE_HACS} ${COMPOSE_MQTT} ${COMPOSE_ZIGBEE}
+ALL_SERVICES := ${HACS_SERVICE} ${MQTT_SERVICE} ${ZIGBEE_SERVICE}
 
 .PHONY: setup plex all up down orphan stop restart rm images update
 
 setup:    ## Build .env from config.d/*.env files
 ifdef CLEAN
-	@set -a && . ./config.d/hass.env &&	set +a && \
+	@set -a && . ./config.d/system.env &&	set +a && \
   for f in `find ./config.d -type f -name "*.env" -print 2>/dev/null` ; do set -a && . "$$f" && set +; done && \
   env|sort > .env
 else
 	@env -i PATH="$$PATH" CLEAN=1 sh -c "make setup"
 endif
 
-plex:   ## 'Start' Home Assistant - 'docker-compose ... up -d'
-	docker-compose ${COMPOSE_HASS} up -d --build ${HASS_SERVICE}
+hacs:   ## 'Start' Home Assistant - 'docker compose ... up -d'
+	docker compose ${COMPOSE_HACS} up -d --build ${HACS_SERVICE}
 
-all:        ## 'Start' Home Assistant, and all applicable components - 'docker-compose ... up -d'
-	docker-compose ${COMPOSE_ALL_FILES} up -d --build ${ALL_SERVICES}
+all:        ## 'Start' Home Assistant, and all applicable components - 'docker compose ... up -d'
+	docker compose ${COMPOSE_ALL_FILES} up -d --build ${ALL_SERVICES}
 
 
 
-up:   ## 'Up' Home Assistant, and all applicable components - 'docker-compose ... up -d'
+up:   ## 'Up' Home Assistant, and all applicable components - 'docker compose ... up -d'
 	@make all
 
-down:   ## 'Down' Home Assistant, and all applicable components - 'docker-compose ... down'
-	docker-compose ${COMPOSE_ALL_FILES} down
+down:   ## 'Down' Home Assistant, and all applicable components - 'docker compose ... down'
+	docker compose ${COMPOSE_ALL_FILES} down
 
-orphan: ## "Remove 'orphan' containers - 'docker-compose ... --remove-orphans'
-	@docker-compose ${COMPOSE_ALL_FILES} down --remove-orphans
+orphan: ## "Remove 'orphan' containers - 'docker compose ... --remove-orphans'
+	@docker compose ${COMPOSE_ALL_FILES} down --remove-orphans
 
-stop:			## 'Stop' Home Assistant, and all applicable components - 'docker-compose ... stop'
-	@docker-compose ${COMPOSE_ALL_FILES} stop ${ALL_SERVICES}
+stop:			## 'Stop' Home Assistant, and all applicable components - 'docker compose ... stop'
+	@docker compose ${COMPOSE_ALL_FILES} stop ${ALL_SERVICES}
 	
-restart:			## 'Restart' Home Assistant, and all applicable components - 'docker-compose ... up -d'
-	@docker-compose ${COMPOSE_ALL_FILES} restart ${ALL_SERVICES}
+restart:			## 'Restart' Home Assistant, and all applicable components - 'docker compose ... up -d'
+	@docker compose ${COMPOSE_ALL_FILES} restart ${ALL_SERVICES}
 
-rm:			## 'Remove' Home Assistant, and all applicable components - 'docker-compose ... rm =f'
-	@docker-compose ${COMPOSE_ALL_FILES} rm -f ${ALL_SERVICES}
+rm:			## 'Remove' Home Assistant, and all applicable components - 'docker compose ... rm =f'
+	@docker compose ${COMPOSE_ALL_FILES} rm -f ${ALL_SERVICES}
 
-images:			## 'Show' Home Assistant, and all applicable components - 'docker-compose ... images'
-	@docker-compose ${COMPOSE_ALL_FILES} images ${ALL_SERVICES}
+images:			## 'Show' Home Assistant, and all applicable components - 'docker compose ... images'
+	@docker compose ${COMPOSE_ALL_FILES} images ${ALL_SERVICES}
 
-update:			## 'Update' Home Assistant, and all applicable components - 'docker-compose ... pull/up'
-	@docker-compose ${COMPOSE_ALL_FILES} pull
+update:			## 'Update' Home Assistant, and all applicable components - 'docker compose ... pull/up'
+	@docker compose ${COMPOSE_ALL_FILES} pull
 	@make all
 
 # --------------------------

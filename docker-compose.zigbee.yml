@@ -1,0 +1,71 @@
+##############################
+# NETWORKS
+#
+networks:
+  home-automation:
+    external: true
+#
+##############################
+
+##############################
+# VOLUMES
+#
+volumes:
+  zigbee2mqtt-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ./zigbee2mqtt/data
+      o: bind
+#
+##############################
+
+##############################
+# SECRETS (Non-Swarm)
+#
+secrets:
+  zigbee2mqtt_secret:
+    file: ./secrets/zigbee2mqtt
+#
+##############################
+
+##############################
+# SERVICES
+#
+services:
+  ##########
+  # Zigbee2MQTT
+  #
+  zigbee2mqtt:
+    image: koenkk/zigbee2mqtt:${ZIGBEE2MQTT_TAG:-latest}
+    container_name: zigbee2mqtt
+    restart: always
+    healthcheck:
+          test: 'wget --no-verbose --spider --no-check-certificate --header "Accept: text/plain" http://0.0.0.0:8080/health || exit 1'
+          interval: 1m
+          timeout: 10s
+          start_period: 30s
+          retries: 3
+    networks:
+      - home-automation
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - ${ZIGBEE2MQTT_PORT:-8080}:8080/tcp  # Web UI
+    devices:
+      # Do not use /dev/ttyUSB* serial devices directly, use the by-id symlinks instead.
+      - '/dev/serial/by-id/usb-Itead_Sonoff_Zigbee_3.0_USB_Dongle_Plus_V2_16efa362464eef11b56b50b3174bec31-if00-port0:/dev/ttyUSB0:rw' # Zigbee Dongle
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - zigbee2mqtt-data:/app/data
+      - /run/udev:/run/udev:ro
+    secrets:
+      - zigbee2mqtt_secret
+    environment:
+      TZ: ${TZ}
+      ZIGBEE2MQTT_SECRET_FILE: "/run/secrets/zigbee2mqtt_secret"
+  ##########
+  #
+  #################### 
+#
+##############################

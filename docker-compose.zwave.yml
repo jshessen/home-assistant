@@ -1,0 +1,74 @@
+##############################
+# NETWORKS
+#
+networks:
+  home-automation:
+    external: true
+#
+##############################
+
+##############################
+# VOLUMES
+#
+volumes:
+  zwave-config:
+    driver: local
+    driver_opts:
+      type: none
+      device: ./zwave
+      o: bind
+#
+##############################
+
+##############################
+# SECRETS (Non-Swarm)
+#
+secrets:
+  zwave_secrets:
+    file: ./secrets/zwave-js-ui
+#
+##############################
+
+##############################
+# SERVICES
+#
+services:
+  ##########
+  # Z-Wave JS UI - Z-Wave Control Panel and MQTT Gateway.
+  #
+  zwave-js-ui:
+    image: ghcr.io/zwave-js/zwave-js-ui:${ZWAVE_JS_UI_TAG:-latest}
+    container_name: zwave-js-ui
+    restart: always
+    healthcheck:
+          test: 'wget --no-verbose --spider --no-check-certificate --header "Accept: text/plain" http://localhost:8091/health || exit 1'
+          interval: 1m
+          timeout: 10s
+          start_period: 30s
+          retries: 3
+    tty: true
+    stop_signal: SIGINT
+    networks:
+      - home-automation
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - ${ZWAVE_JS_UI_PORT:-8091}:8091/tcp    # Web UI:wq
+      - ${ZWAVE_JS_UI_PORT_WS:-3000}:3000/tcp # WebSocket
+    devices:
+      # Do not use /dev/ttyUSB* serial devices directly, use the by-id symlinks instead.
+      - '/dev/serial/by-id/usb-Zooz_800_Z-Wave_Stick_533D004242-if00:/dev/zwave:rw' # Z-Wave Stick
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - zwave-config:/usr/src/app/store
+    secrets:
+      - zwave_secrets
+    environment:
+      #DEBUG: "true"
+      TZ: ${TZ}
+      SESSION_SECRET_FILE: /run/secrets/zwave-secrets
+  ##########
+  #
+  #################### 
+#
+##############################
