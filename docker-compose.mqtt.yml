@@ -1,0 +1,89 @@
+##############################
+# NETWORKS
+#
+networks:
+  home-automation:
+    external: true
+#
+##############################
+
+##############################
+# VOLUMES
+#
+volumes:
+  mqtt-config:
+    driver: local
+    driver_opts:
+      type: none
+      device: ./mosquitto/config
+      o: bind
+  mqtt-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ./mosquitto/data
+      o: bind
+  mqtt-logs:
+    driver: local
+    driver_opts:
+      type: none
+      device: ./mosquitto/logs
+      o: bind
+#
+##############################
+
+##############################
+# SECRETS (Non-Swarm)
+#
+secrets:
+  mqtt_admin:
+    file: ./secrets/mqtt_admin
+  mqtt_admin_password:
+    file: ./secrets/mqtt_admin_password
+#
+##############################
+
+##############################
+# SERVICES
+#
+services:
+  ##########
+  # Mosquitto MQTT Broker
+  #
+  mqtt:
+    image: eclipse-mosquitto:${MQTT_TAG:-latest}
+    container_name: mqtt
+    restart: always
+    healthcheck:
+      test: mosquitto_sub -u $$MQTTADMIN -P $$MQTTADMINPW -t '$$SYS/#' -C 1 -i healthcheck -W 3
+      interval: 20s
+      timeout: 10s
+      retries: 3  
+    tty: true
+    stop_signal: SIGINT
+    networks:
+      - home-automation
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - ${MQTT_PORT:-1883}:1883/tcp    # MQTT
+      #- ${MQTT_PORT_WS:-9001}:9001/tcp  # WebSocket
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - mqtt-config:/mosquitto/config
+      - mqtt-data:/mosquitto/data
+      - mqtt-logs:/mosquitto/logs
+    secrets:
+      - mqtt_admin
+      - mqtt_admin_password
+    environment:
+      TZ: ${TZ}
+      #MQTTADMIN_FILE: "/run/secrets/mqtt_admin"
+      #MQTTADMINPASS_FILE: "/run/secrets/mqtt_admin_password"
+      MQTTADMIN: ${MQTTADMIN}
+      MQTTADMINPW: ${MQTTADMINPW}
+  ##########
+  #
+  #################### 
+#
+##############################

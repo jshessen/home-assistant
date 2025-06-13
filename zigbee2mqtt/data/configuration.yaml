@@ -1,0 +1,46 @@
+version: 4
+mqtt:
+  base_topic: zigbee2mqtt
+  server: mqtt://mqtt:1883
+  user: hacs
+  password: hERCVg2sLAhEiowyQneU
+serial:
+  port: /dev/ttyUSB0
+  adapter: ember
+  baudrate: 115200
+  rtscts: false
+advanced:
+  log_level: info
+  channel: 11
+  network_key:
+    - 97
+    - 123
+    - 126
+    - 22
+    - 48
+    - 47
+    - 46
+    - 120
+    - 51
+    - 190
+    - 93
+    - 64
+    - 219
+    - 57
+    - 227
+    - 184
+  pan_id: 56613
+  ext_pan_id:
+    - 248
+    - 79
+    - 145
+    - 135
+    - 111
+    - 63
+    - 219
+    - 228
+frontend:
+  enabled: true
+  port: 8080
+homeassistant:
+  enabled: true
