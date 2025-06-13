@@ -1,12 +1,11 @@
-version: "3.7"
-# MAIN DOCKER-COMPOSE
+# MAIN DOCKER COMPOSE
 
 ##############################
 # NETWORKS
 #
 networks:
   default:
-    name: homeautomation
+    name: home-automation
     driver: bridge
     ipam:
       config:
@@ -15,11 +14,24 @@ networks:
 ##############################
 
 ##############################
+# VOLUMES
+#
+volumes:
+  home-assistant-config:
+    driver: local
+    driver_opts:
+      type: none
+      device: ./home-assistant/config
+      o: bind
+#
+##############################
+
+##############################
 # SECRETS (Non-Swarm)
 #
-#secrets:
-  #plex_claim:
-    #file: ./secrets/plex_claim
+secrets:
+  zwave_secrets:
+    file: ./secrets/hacs
 #
 ##############################
 
@@ -27,27 +39,24 @@ networks:
 # SERVICES
 #
 services:
-  ####################
-  # Home Assistant
-  #
   ##########
-  # Home Assistant - Home Automation Platform
+  # Home Assistant - 
   #
-  homeassistant:
-    image: ghcr.io/home-assistant/home-assistant:${HASS_TAG:-latest}
-    container_name: homeassistant
+  home-assistant:
+    image: ghcr.io/home-assistant/home-assistant:${HACS_TAG:-latest}
+    container_name: home-assistant
     restart: always
-    networks:
-      - default
+    network_mode: host
+    #networks:
+    #  - default
     security_opt:
       - no-new-privileges:true    
     ports:
-      - ${HASS_PORT:-8123}:8123/tcp
+      - ${HACS_PORT:-8123}:8123/tcp
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ./homeassistant/config:/config
-    #devices:
-    #  - /dev/dri:/dev/dri # Hardware transcoding
+      - /run/dbus:/run/dbus:ro
+      - home-assistant-config:/config
     environment:
       #DEBUG: "true"
       TZ: ${TZ}
