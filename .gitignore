@@ -1,13 +1,51 @@
 # Ignore the default container config directories
 config.d/**
-!config.d/plex.env
+!config.d/system.env
+!config.d/hacs.env
+!config.d/zwave.env
+!config.d/mqtt.env
+!config.d/zigbee.env
+
+# Ignore core home assistant config files
+home-assistant/config/**
+home-assistant/config/blueprints/**
+!home-assistant/config/configuration.yaml
+!home-assistant/config/blueprints/automations/jshessen/**
+
+# Ignore environment specific zwave-js data files
+zwave/*.json*
+zwave/plugins/**
+zwave/sessions/**
 
 # Ignore "secrets"
 secrets/**
 
+# Ignore "password" files
+*password*
+*passwd*
+*credentials*
+*auth*
+*token*
+*key*
+
+# Ignore Database files
+*.db
+*.db-*
+*-db
+*state.json
+
 # Ignore Logs
-logs
+log/
+logs/
 *.log
+
+# Ignore "backup" files
+*.bak
+*backup*
+
+# Ignore "lock" files
+*.lock
+*.pid
 
 # The file containing environment variables 
 .env
