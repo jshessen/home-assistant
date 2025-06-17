@@ -8,9 +8,11 @@ config.d/**
 
 # Ignore core home assistant config files
 home-assistant/config/**
-home-assistant/config/blueprints/**
 !home-assistant/config/configuration.yaml
-!home-assistant/config/blueprints/automations/jshessen/**
+!home-assistant/config/blueprints/
+!home-assistant/config/blueprints/automation/
+!home-assistant/config/blueprints/automation/jshessen/
+!home-assistant/config/blueprints/automation/jshessen/**
 
 # Ignore environment specific zwave-js data files
 zwave/*.json*
