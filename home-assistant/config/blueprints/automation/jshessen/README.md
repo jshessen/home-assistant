@@ -207,5 +207,4 @@ This blueprint is provided as-is for the Home Assistant community. Feel free to 
 
 For support and questions:
 - Home Assistant Community Forums
-- GitHub Issues (if hosted on GitHub)
-- iBlinds Official Support for device-specific questions
+- [GitHub Issues](https://github.com/jshessen/home-assistant/issues)
