@@ -5,6 +5,7 @@
 A comprehensive Home Assistant blueprint for managing iBlinds Z-Wave devices with enhanced automatic device detection. This blueprint provides full automation control for v2 devices while offering detection and configuration guidance for v3 devices.
 
 [![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fjshessen%2Fhome-assistant%2Fblob%2Fmain%2Fhome-assistant%2Fconfig%2Fblueprints%2Fautomation%2Fjshessen%2Fiblinds_device_handler.yaml)
+[GitHub Link](https://github.com/jshessen/home-assistant/blob/main/home-assistant/config/blueprints/automation/jshessen/iblinds_device_handler.yaml)
 
 ## Features
 
