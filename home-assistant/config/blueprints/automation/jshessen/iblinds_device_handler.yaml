@@ -2,6 +2,10 @@
 # iBlinds Device Detection & Management
 # Home Assistant Automation Blueprint
 # ----------------------------------------------------------
+# Version: 1.0.0
+# Author: Community Contribution
+# Blueprint Exchange Ready
+# ----------------------------------------------------------
 # - Full v2 automation: open/close/position
 # - v3 detection: user guidance for Z-Wave JS configuration
 # - Robust device analysis and notification logic
@@ -9,21 +13,44 @@
 
 blueprint:
   name: iBlinds Device Detection & Management
-  description: "
-    Comprehensive blueprint for managing iBlinds Z-Wave devices with enhanced automatic device detection.\n
-    \n
-    - **v2 devices**: Full management with positioning controls, calibration, and automation actions.\n
-    - **v3 devices**: Detection and identification only – users are guided to use native Z-Wave JS configuration.\n
-    \n"
+  description: |
+    **Comprehensive iBlinds Z-Wave Management**
+    
+    Automatically detects and manages iBlinds devices with version-specific handling:
+    
+    • **iBlinds v2**: Full automation control with positioning, calibration, and direction reversal
+    • **iBlinds v3**: Smart detection with Z-Wave JS configuration guidance
+    • **Multi-Device**: Supports managing multiple iBlinds devices simultaneously
+    • **Smart Notifications**: Configurable alerts for device detection and actions
+    
+    **Key Features:**
+    - Automatic version detection (v2/v3)
+    - Direction reversal for different mounting orientations  
+    - Custom positioning with event-driven control
+    - Comprehensive device analysis and reporting
+    - Direct Z-Wave JS configuration links for v3 devices
+    
+    **Perfect for:**
+    - Mixed v2/v3 environments
+    - Multiple room setups
+    - Users wanting optimal v3 performance via native Z-Wave parameters
+    
+    [Documentation & Support](https://community.home-assistant.io/search?q=iblinds)
 
   domain: automation
+  author: Community Contribution
+  homeassistant:
+    min_version: 2023.3.0
 
   input:
     iblinds_entities:
       name: iBlinds Devices
-      description: >
-        Select one or more cover/blind entities (both v2 and v3 for detection - only v2 will be controlled).
-        This allows the blueprint to manage multiple iBlinds devices in a single automation.
+      description: |
+        Select your iBlinds cover/blind entities. Both v2 and v3 devices are supported:
+        - **v2 devices**: Will be fully managed by this automation
+        - **v3 devices**: Will be detected and you'll receive configuration guidance
+        
+        Multiple devices can be managed in a single automation.
       selector:
         entity:
           multiple: true
@@ -32,152 +59,144 @@ blueprint:
             - device_class: blind
       default: []
 
-    # v3 Specific Section (Collapsed by default)
+    # v3 Specific Section
     v3_config_section:
-      name: "iBlinds v3 Configuration Guidance"
+      name: "🔧 iBlinds v3 Configuration (Read-Only Detection)"
       collapsed: true
-      description: >
-        <strong>This blueprint detects iBlinds v3 devices but does not manage them directly.</strong>
-        <br>
-        Instead, it provides guidance on configuring them via Z-Wave native parameters for optimal performance.
-        <br>
-        <details>
-          <summary><strong>Key Differences: iBlinds v2 vs v3 Management</strong></summary>
-          
-          <ul>
-            <li><b>iBlinds v2:</b>
-              <ul>
-                <li>Full automation control via Home Assistant.</li>
-                <li>Position and tilt are controlled via the <code>current_position</code> attribute.</li>
-              </ul>
-            </li>
-            <li><b>iBlinds v3:</b>
-              <ul>
-                <li>Should be configured using native Z-Wave JS configuration parameters for optimal performance.</li>
-                <li>This blueprint identifies v3 devices and provides guidance.</li>
-                <li><b>Recommendation:</b>
-                  <ul>
-                    <li>Use the 10 native configuration parameters available in Z-Wave JS.</li>
-                    <li>Configure via: <i>Settings → Devices & Services → Z-Wave JS → Your iBlinds v3 Device → Configure</i></li>
-                  </ul>
-                </li>
-              </ul>
-            </li>
-          </ul>
-          
-          <b>References:</b><br>
-            <a href="https://community.home-assistant.io/search?q=iblinds">Home Assistant Community: iBlinds Discussions</a><br>
-            <a href="https://devices.zwave-js.io/?jumpTo=0x0287:0x0003:0x000d:0.0">Z-Wave JS Device DB - iBlinds v2</a><br>
-            <a href="https://devices.zwave-js.io/?jumpTo=0x0287:0x0004:0x0071:0.0">Z-Wave JS Device DB - iBlinds v3</a><br>
-            <a href="https://support.myiblinds.com/knowledge-base/configuration-parameters-settings-v3/">iBlinds v3 Configuration Parameters</a>
-        </details>
-        <p><details>
-          <summary><strong>Why Not Automate v3 Devices Here?</strong></summary>
-          <ul>
-            <li>iBlinds v3 devices support 10 native Z-Wave configuration parameters that provide more precise control than Home Assistant automations.</li>
-            <li>Using native parameters avoids potential conflicts and ensures the device operates as intended by the manufacturer.</li>
-          </ul>
-          <strong>Reference:<br>
-            <a href="https://devices.zwave-js.io/?jumpTo=0x0287:0x0004:0x0071:0.0">Z-Wave JS Device DB - iBlinds v3</a></strong>
-        </details></p>
-        <p><details>
-          <summary><strong>Available v3 Configuration Parameters (via Z-Wave JS UI):</strong></summary>
-          <ol>
-            <li><strong>Close Interval</strong> (1-32): Auto calibration tightness - lower = tighter, higher = looser</li>
-            <li><strong>Reverse Direction</strong> (0/1): Reverse open/close direction (0=Close Down, 1=Close Up)</li>
-            <li><strong>Default ON Position</strong> (1-99): What position device opens to by default</li>
-            <li><strong>Device Reset Disable</strong> (0/1): Disable/enable reset button</li>
-            <li><strong>Speed</strong> (0-100): How fast iBlinds closes (in seconds)</li>
-            <li><strong>Remote Calibration</strong> (0/1): Trigger recalibration on next command</li>
-            <li><strong>Min Tilt</strong> (0-25): Minimum tilt level limit</li>
-            <li><strong>Max Tilt</strong> (75-99): Maximum tilt level limit</li>
-            <li><strong>Remap 99</strong> (0/1): Remap ON command behavior</li>
-            <li><strong>Override Response to ON Command</strong> (0/1): Use Default ON Value instead of 99 for ON commands</li>
-          </ol>
-        </details></p>
+      description: |
+        **iBlinds v3 devices are detected but not directly controlled by this blueprint.**
+        
+        For optimal performance, v3 devices should be configured using their 10 native Z-Wave configuration parameters.
+        
+        **Why use native Z-Wave parameters for v3?**
+        - More precise control than Home Assistant automations
+        - Manufacturer-intended operation
+        - Avoids potential conflicts
+        - Better reliability and performance
+        
+        **How to configure v3 devices:**
+        1. Go to: Settings → Devices & Services → Z-Wave JS
+        2. Find your iBlinds v3 device
+        3. Click "Configure" to access all 10 native parameters
+        
+        **Available v3 Parameters:**
+        - Close Interval (calibration tightness)
+        - Reverse Direction
+        - Default ON Position  
+        - Speed Control
+        - Tilt Limits (Min/Max)
+        - Remote Calibration
+        - And more...
+        
+        [📖 Full v3 Parameter Guide](https://support.myiblinds.com/knowledge-base/configuration-parameters-settings-v3/)
     
-    # v2 Specific Section
+    # v2 Management Section  
     v2_config_section:
-      name: "iBlinds v2 Operation Settings"
+      name: "⚙️ iBlinds v2 Operation Settings"
       collapsed: false
-      description: >
-        <strong>This section applies only to iBlinds v2 devices.</strong>
-        <br>
-        Configure default positions and direction reversal for v2 devices here.
-        <br>
+      description: |
+        **Configure how your iBlinds v2 devices operate through Home Assistant.**
+        
+        These settings only affect v2 devices detected by the blueprint.
       input:
         default_on_value:
-          name: Default ON Value
-          description: >
-            Position percentage (0-100) that iBlinds v2 devices will open to by default when turned ON.
-            This value is used for open actions unless overridden by a specific position event.
+          name: Default Open Position
+          description: |
+            Position percentage (0-100) that v2 devices will open to when the "open" command is used.
+            
+            **Examples:**
+            - 50% = Half open
+            - 75% = Mostly open  
+            - 25% = Slightly open
           selector:
             number:
               min: 0
               max: 100
-              step: 1
+              step: 5
               unit_of_measurement: "%"
           default: 50
         
         reverse_direction:
           name: Reverse Direction
-          description: >
-            Reverse the direction of v2 blinds. When enabled, 0% becomes 100% and vice versa.
-            Useful if your blinds are physically installed in the opposite orientation.
+          description: |
+            **Enable if your blinds move in the wrong direction.**
+            
+            When enabled:
+            - 0% becomes 100% and vice versa
+            - Useful for different mounting orientations  
+            - Automatically handled in all position commands
           selector:
             boolean:
           default: false
 
     # Notification Section
     notification_section:
-      name: "Notification Settings"
+      name: "🔔 Notification & Reporting"
       collapsed: true
-      description: >
-        Configure notifications for device detection and actions.
-        Notifications can help keep you informed about the status of your iBlinds devices.
+      description: |
+        Configure notifications to stay informed about your iBlinds devices.
+        Notifications help track device detection, actions, and provide v3 configuration reminders.
       input:
         notify_v3_detection:
-          name: Notify on v3 Device Detection
-          description: >
-            When enabled, sends a notification whenever v3 devices are detected, reminding you to use 
-            Z-Wave JS native configuration instead of Home Assistant automations for optimal performance.
-            <br><br>
-            <strong>Access via:<br>
-              Settings → Devices & Services → Z-Wave JS → Your iBlinds v3 Device → Configure
-            </strong>
+          name: Notify When v3 Devices Found
+          description: |
+            **Recommended: Keep enabled**
+            
+            Sends a helpful notification when v3 devices are detected, including:
+            - Direct links to Z-Wave JS configuration  
+            - Reminder about optimal v3 setup
+            - List of detected v3 devices
           selector:
             boolean:
           default: true
+          
         device_detection_report:
-          name: Device Detection Report
-          description: Choose whether to provide additional verbose reporting of detected devices
+          name: Detailed Device Analysis Report
+          description: |
+            Generate comprehensive reports showing:
+            - All detected devices and their versions
+            - Device capabilities and current states
+            - Manufacturer and model information
+            - Configuration recommendations
+            
+            **Note:** Can be verbose - useful for setup and troubleshooting
           selector:
             boolean:
           default: false
+          
         notification_service_predefined:
           name: Notification Method
-          description: Choose a common notification method (persistent notification, logbook, etc.)
-          default: ""
+          description: Choose how you want to receive notifications
+          default: "persistent_notification.create"
           selector:
             select:
               options:
-                - label: "None"
-                  value: ""
-                - label: "Persistent Notification"
+                - label: "Persistent Notification (Recommended)"
                   value: "persistent_notification.create"
-                - label: "Logbook"
+                - label: "Logbook Entry"
                   value: "logbook.log"
                 - label: "System Log"
                   value: "system_log.write"
+                - label: "None (Disable Notifications)"
+                  value: ""
+                  
         notification_service_custom:
-          name: Custom Notification Service (optional)
-          description: Type a custom notify service (e.g., notify.mobile_app_pixel_7)
+          name: Custom Notification Service (Optional)
+          description: |
+            **Advanced:** Use a custom notify service instead of the predefined options.
+            
+            **Examples:**
+            - `notify.mobile_app_your_phone`
+            - `notify.telegram`  
+            - `notify.discord`
+            
+            Leave empty to use the predefined method above.
           default: ""
           selector:
             text:
 
 variables:
-  # --- Entity selection and normalization ---
+  # Input processing
   iblinds_entities: !input iblinds_entities
   default_on_value: !input default_on_value
   reverse_direction: !input reverse_direction
@@ -186,76 +205,71 @@ variables:
   notification_service_predefined: !input notification_service_predefined
   notification_service_custom: !input notification_service_custom
 
-  # Always treat selected_entities as a list for consistency
+  # Normalize entity list (handle single entity or list)
   selected_entities: >
     {% if iblinds_entities is string %}
       {{ [iblinds_entities] }}
     {% else %}
-      {{ iblinds_entities }}
+      {{ iblinds_entities | default([]) }}
     {% endif %}
 
-  # --- Position calculation helpers ---
-  # Used for close actions (0 or 100 depending on reverse_direction)
+  # Position calculations for v2 devices
   calculated_off_position: >
     {{ 0 if reverse_direction else 100 }}
   
-  # Used for open actions (default_on_value or its reverse)
   calculated_default_position: >
     {{ (100 - default_on_value) if reverse_direction else default_on_value }}
   
-  # Used for set_cover_position actions (event-driven, applies reverse_direction logic)
   calculated_relative_position: >
     {% set pos = (trigger.event.data.service_data.position if trigger.event.data.service_data is defined and trigger.event.data.service_data.position is defined else default_on_value) %}
     {{ (100 - pos) if reverse_direction else pos }}
 
-  # --- Notification service resolution ---
-  # Picks custom service if set, otherwise uses predefined, otherwise disables notifications
+  # Notification service resolution
   notification_service: >
     {% if notification_service_custom is defined and notification_service_custom | trim != "" %}
       {{ notification_service_custom }}
-    {% elif notification_service_predefined is defined %}
+    {% elif notification_service_predefined is defined and notification_service_predefined != "" %}
       {{ notification_service_predefined }}
     {% else %}
       ""
     {% endif %}
 
-  # --- Target entity resolution from event data ---
-  # Used to determine which entities to act on for each event
+  # Target entities from event data
   target_entities: >
     {% if trigger.event.data.service_data is defined and trigger.event.data.service_data.entity_id is defined %}
       {% set entities = trigger.event.data.service_data.entity_id %}
       {% if entities is string %}
         {{ [entities] }}
       {% else %}
-        {{ entities }}
+        {{ entities | default([]) }}
       {% endif %}
-    {% else %}
-      {{ [] }}
     {% endif %}
 
-  # --- Device analysis macro ---
-  # Categorizes all selected entities into v2, v3, and other for robust handling
+  # Advanced device analysis with comprehensive detection logic
   device_analysis: >
-    {%- macro collect_devices(entities, index=0, v2=[], v3=[], other=[]) -%}
+    {%- macro analyze_devices(entities, index=0, v2=[], v3=[], other=[]) -%}
       {%- if index >= entities | length %}
-        {%- set result = {
+        {{- {
           'v2_devices': v2 | map(attribute='entity_id') | list,
           'v3_devices': v3 | map(attribute='entity_id') | list,
           'other_devices': other | map(attribute='entity_id') | list,
           'analysis_results': v2 + v3 + other,
-          'v3_device_details': v3
-        } %}
-        {{ result | tojson }}
+          'v3_device_details': v3,
+          'total_devices': entities | length,
+          'v2_count': v2 | length,
+          'v3_count': v3 | length,
+          'other_count': other | length
+        } | tojson -}}
       {%- else %}
         {%- set entity_id = entities[index] %}
         {%- set entity_state = states(entity_id) %}
-        {%- if entity_state is not none %}
+        {%- if entity_state not in ['unknown'] and entity_state is not none %}
           {%- set dev_id = device_id(entity_id) %}
-          {%- set manufacturer = device_attr(dev_id, 'manufacturer') if dev_id else 'unknown' %}
-          {%- set model = device_attr(dev_id, 'model') if dev_id else 'unknown' %}
-          {%- set sw_version = device_attr(dev_id, 'sw_version') if dev_id else 'unknown' %}
+          {%- set manufacturer = device_attr(dev_id, 'manufacturer') | default('unknown') | lower %}
+          {%- set model = device_attr(dev_id, 'model') | default('unknown') | lower %}
+          {%- set sw_version = device_attr(dev_id, 'sw_version') | default('unknown') %}
           {%- set current_position = state_attr(entity_id, 'current_position') %}
-          {%- set friendly_name = state_attr(entity_id, 'friendly_name') %}
+          {%- set friendly_name = state_attr(entity_id, 'friendly_name') | default(entity_id) %}
           {%- set has_tilt = state_attr(entity_id, 'current_tilt_position') is not none %}
           {%- set supported_features = state_attr(entity_id, 'supported_features') | default(0) %}
           
@@ -273,33 +287,34 @@ variables:
             'detected_version': 'unknown'
           } %}
           
-          {%- if model is string and ('v3' in model | lower or '3.0' in model | lower) %}
+          {# Primary detection: Model-based #}
+          {%- if 'v3' in model or '3.0' in model or 'gen3' in model %}
             {%- set device_info = dict(device_info, **{'detected_version': 'v3'}) %}
-            {{ collect_devices(entities, index + 1, v2, v3 + [device_info], other) }}
-          {%- elif model is string and ('v2' in model | lower or 'ib2.0' in model | lower or '2.0' in model | lower) %}
+            {{- analyze_devices(entities, index + 1, v2, v3 + [device_info], other) -}}
+          {%- elif 'v2' in model or '2.0' in model or 'gen2' in model or 'ib2.0' in model %}
             {%- set device_info = dict(device_info, **{'detected_version': 'v2'}) %}
-            {{ collect_devices(entities, index + 1, v2 + [device_info], v3, other) }}
-          {%- elif manufacturer is string and ('hab' in manufacturer | lower or 'iblind' in manufacturer | lower) %}
-            {# iBlinds device but unknown model - use tilt capability as primary indicator for v3 #}
+            {{- analyze_devices(entities, index + 1, v2 + [device_info], v3, other) -}}
+          {# Manufacturer-based detection with capability fallback #}
+          {%- elif 'hab' in manufacturer or 'iblind' in manufacturer or 'myiblinds' in manufacturer %}
             {%- if has_tilt %}
-              {%- set device_info = dict(device_info, **{'detected_version': 'v3 (fallback-tilt)'}) %}
-              {{ collect_devices(entities, index + 1, v2, v3 + [device_info], other) }}
+              {%- set device_info = dict(device_info, **{'detected_version': 'v3-tilt'}) %}
+              {{- analyze_devices(entities, index + 1, v2, v3 + [device_info], other) -}}
             {%- elif current_position is not none %}
-              {%- set device_info = dict(device_info, **{'detected_version': 'v2 (fallback-position)'}) %}
-              {{ collect_devices(entities, index + 1, v2 + [device_info], v3, other) }}
+              {%- set device_info = dict(device_info, **{'detected_version': 'v2-position'}) %}
+              {{- analyze_devices(entities, index + 1, v2 + [device_info], v3, other) -}}
             {%- else %}
               {%- set device_info = dict(device_info, **{'detected_version': 'unknown-iblinds'}) %}
-              {{ collect_devices(entities, index + 1, v2, v3, other + [device_info]) }}
+              {{- analyze_devices(entities, index + 1, v2, v3, other + [device_info]) -}}
             {%- endif %}
           {%- else %}
             {%- set device_info = dict(device_info, **{'detected_version': 'non-iblinds'}) %}
-            {{ collect_devices(entities, index + 1, v2, v3, other + [device_info]) }}
+            {{- analyze_devices(entities, index + 1, v2, v3, other + [device_info]) -}}
           {%- endif %}
         {%- else %}
           {%- set device_info = {
             'entity_id': entity_id,
             'friendly_name': entity_id,
-            'state': 'missing',
+            'state': entity_state | default('unavailable'),
             'current_position': none,
             'device_id': none,
             'manufacturer': 'unknown',
@@ -307,17 +322,17 @@ variables:
             'sw_version': 'unknown',
             'has_tilt': false,
             'supported_features': 0,
-            'detected_version': 'missing'
+            'detected_version': 'unavailable'
           } %}
-          {{ collect_devices(entities, index + 1, v2, v3, other + [device_info]) }}
+          {{- analyze_devices(entities, index + 1, v2, v3, other + [device_info]) -}}
         {%- endif %}
       {%- endif %}
     {%- endmacro %}
     
-    {% set results_json = collect_devices(selected_entities) %}
+    {% set results_json = analyze_devices(selected_entities) %}
     {{ results_json | from_json }}
 
-# --- Triggers: Listen for all relevant cover and automation events ---
+# Event triggers for cover services
 trigger:
   - platform: event
     event_type: call_service
@@ -342,15 +357,17 @@ trigger:
   - platform: event
     event_type: automation_reloaded
 
-# --- Conditions: Only proceed if we have selected entities or a reload event ---
+# Only proceed with valid entities or reload events
 condition:
   - condition: template
-    value_template: "{{ selected_entities | length > 0 or trigger.event.data.service == automation_reloaded }}"
+    value_template: >
+      {{ selected_entities | length > 0 or 
+         (trigger.event is defined and trigger.event.event_type == 'automation_reloaded') }}
 
-# --- Actions: Main automation logic for iBlinds v2/v3 devices ---
+# Main automation logic
 action:
   - choose:
-      # --- Handle close_cover service for v2 devices ---
+      # Handle close_cover for v2 devices
       - conditions:
           - condition: template
             value_template: >
@@ -359,7 +376,6 @@ action:
                  device_analysis.v2_devices | length > 0 and
                  target_entities | length > 0 }}
         sequence:
-          # If reverse direction, stop cover before setting position
           - if:
               - condition: template
                 value_template: "{{ reverse_direction }}"
@@ -368,7 +384,6 @@ action:
                 target:
                   entity_id: >
                     {{ target_entities | select('in', device_analysis.v2_devices) | list }}
-          # Always set to calculated off position (0 or 100)
           - service: cover.set_cover_position
             target:
               entity_id: >
@@ -376,7 +391,7 @@ action:
             data:
               position: "{{ calculated_off_position }}"
 
-      # --- Handle open_cover service for v2 devices ---
+      # Handle open_cover for v2 devices  
       - conditions:
           - condition: template
             value_template: >
@@ -385,7 +400,6 @@ action:
                  device_analysis.v2_devices | length > 0 and
                  target_entities | length > 0 }}
         sequence:
-          # If reverse direction, stop cover before setting position
           - if:
               - condition: template
                 value_template: "{{ reverse_direction }}"
@@ -394,7 +408,6 @@ action:
                 target:
                   entity_id: >
                     {{ target_entities | select('in', device_analysis.v2_devices) | list }}
-          # Always set to calculated default position (user or reversed)
           - service: cover.set_cover_position
             target:
               entity_id: >
@@ -402,7 +415,7 @@ action:
             data:
               position: "{{ calculated_default_position }}"
 
-      # --- Handle set_cover_position for v2 devices (event-driven custom position) ---
+      # Handle set_cover_position for v2 devices
       - conditions:
           - condition: template
             value_template: >
@@ -412,7 +425,6 @@ action:
                  device_analysis.v2_devices | length > 0 and
                  target_entities | length > 0 }}
         sequence:
-          # If reverse direction, stop cover before setting position
           - if:
               - condition: template
                 value_template: "{{ reverse_direction }}"
@@ -421,113 +433,105 @@ action:
                 target:
                   entity_id: >
                     {{ target_entities | select('in', device_analysis.v2_devices) | list }}
-          # Set to calculated relative position (event-driven, applies reverse logic)
           - service: cover.set_cover_position
             target:
               entity_id: >
                 {{ target_entities | select('in', device_analysis.v2_devices) | list }}
             data:
               position: "{{ calculated_relative_position }}"
+
+  # Parallel notification and reporting actions
   - parallel:
-  # --- Device Information Report (runs when device_detection_report is true) ---
-    - if:
-        - condition: template
-          value_template: >
-            {{ (notification_service | default('') | trim) != '' and
-                device_detection_report }}
-      then:
-        - service: "{{ notification_service }}"
-          data:
-            title: "iBlinds Device Detection Report"
-            message: >
-              **Device Detection Summary:**
-              
-              **iBlinds v2 Devices - ({{ device_analysis.v2_devices | length }}):**
-              {% for result in device_analysis.analysis_results %}
-                {% if result.detected_version in ['v2', 'v2 (fallback-position)'] %}
-              - ✅ {{ result.friendly_name }} ({{ result.entity_id }})
-                - Manufacturer: {{ result.manufacturer }}
-                - Model: {{ result.model }}
-                - Firmware: {{ result.sw_version }}
-                - State: {{ result.state }}
-                - Current Position: {{ result.current_position }}%
-                - Detection: {{ result.detected_version }}
+      # Detailed device detection report
+      - if:
+          - condition: template
+            value_template: >
+              {{ notification_service | trim != '' and device_detection_report }}
+        then:
+          - service: "{{ notification_service }}"
+            data:
+              title: "🔍 iBlinds Device Analysis Report"
+              message: >
+                **Device Detection Summary ({{ device_analysis.total_devices }} total):**
+                
+                **✅ iBlinds v2 Devices ({{ device_analysis.v2_count }}):**
+                {% for result in device_analysis.analysis_results %}
+                  {% if result.detected_version.startswith('v2') %}
+                - **{{ result.friendly_name }}** ({{ result.entity_id }})
+                  - Model: {{ result.model }}
+                  - Position: {{ result.current_position }}%
+                  - Status: Ready for automation control
+                  {% endif %}
+                {% endfor %}
+                
+                **⚠️ iBlinds v3 Devices ({{ device_analysis.v3_count }}):**
+                {% for result in device_analysis.analysis_results %}
+                  {% if result.detected_version.startswith('v3') %}
+                - **{{ result.friendly_name }}** ({{ result.entity_id }})
+                  - Model: {{ result.model }}
+                  - Tilt Control: {{ result.has_tilt }}
+                  - **Recommendation:** Configure via Z-Wave JS native parameters
+                  {% endif %}
+                {% endfor %}
+                
+                **ℹ️ Other Devices ({{ device_analysis.other_count }}):**
+                {% for result in device_analysis.analysis_results %}
+                  {% if not result.detected_version.startswith('v2') and not result.detected_version.startswith('v3') %}
+                - **{{ result.friendly_name }}** ({{ result.entity_id }})
+                  - Type: {{ result.detected_version }}
+                  - Manufacturer: {{ result.manufacturer }}
+                  {% endif %}
+                {% endfor %}
+
+      # v3 device detection notification
+      - if:
+          - condition: template
+            value_template: >
+              {{ notification_service | trim != '' and 
+                 notify_v3_detection and 
+                 device_analysis.v3_count > 0 }}
+        then:
+          - service: "{{ notification_service }}"
+            data:
+              title: "🎛️ iBlinds v3 Devices Detected"
+              message: >
+                **⚠️ Found iBlinds v3 Devices ({{ device_analysis.v3_count }}):**<br>
+                {% set zwave_config_entry_id = state_attr('zwave_js.config_entries', 'entry_id') %}
+                {% for entity in device_analysis.v3_devices %}
+                  {%- set dev_id = device_id(entity) %}
+                  {% set name = state_attr(entity, 'friendly_name') or entity %}
+                  {% if dev_id %}
+                  - [ {{ name }} ](/config/zwave_js/node_config/{{ dev_id }}?config_entry={{ zwave_config_entry_id }})
+                  {% endif %}
+                {% endfor %}
+                
+                **📋 Next Steps:**<br>
+                  1. Find each v3 device listed above (click links if available)
+                  2. Configure the 10 available parameters for optimal performance
+                
+                **🔗 Helpful Links:**
+                  - [v3 Configuration Guide](https://support.myiblinds.com/knowledge-base/configuration-parameters-settings-v3/)
+                
+                **💡 Why use native Z-Wave parameters?**<br>
+                Native parameters provide more precise control, better performance, and manufacturer-intended operation compared to Home Assistant automations.
+
+      # Action completion notification
+      - if:
+          - condition: template
+            value_template: >
+              {{ notification_service | trim != '' and 
+                 not device_detection_report and
+                 trigger.event.data.service_data is defined and
+                 target_entities | length > 0 }}
+        then:
+          - service: "{{ notification_service }}"
+            data:
+              title: "✅ iBlinds Action Complete"
+              message: >
+                **Action:** {{ trigger.event.data.service | replace('_', ' ') | title }}
+                
+                **Controlled Devices:** {{ (target_entities | select('in', device_analysis.v2_devices) | list) | length }} v2 device(s)
+                
+                {% if device_analysis.v3_count > 0 %}
+                **Note:** {{ device_analysis.v3_count }} v3 device(s) detected but not controlled (configure via Z-Wave JS for best results)
                 {% endif %}
-              {% endfor %}
-              
-              **iBlinds v3 Devices - ({{ device_analysis.v3_devices | length }}):**
-              {% for result in device_analysis.analysis_results %}
-                {% if result.detected_version in ['v3', 'v3 (fallback-tilt)'] %}
-              - ⚠️ {{ result.friendly_name }} ({{ result.entity_id }})
-                - Manufacturer: {{ result.manufacturer }}
-                - Model: {{ result.model }}
-                - Firmware: {{ result.sw_version }}
-                - State: {{ result.state }}
-                - Has Tilt Control: {{ result.has_tilt }}
-                - **Action Required:** Configure via Z-Wave JS native parameters
-                - Detection: {{ result.detected_version }}
-                {% endif %}
-              {% endfor %}
-              
-              **Other/Non-iBlinds Devices ({{ device_analysis.other_devices | length }}):**
-              {% for result in device_analysis.analysis_results %}
-                {% if result.detected_version in ['non-iblinds', 'missing', 'unknown-iblinds'] %}
-              - ℹ️ {{ result.friendly_name }} ({{ result.entity_id }})
-                - Manufacturer: {{ result.manufacturer }}
-                - Model: {{ result.model }}
-                - State: {{ result.state }}
-                - Detection: {{ result.detected_version }}
-                {% endif %}
-              {% endfor %}
-
-    # --- Notify on v3 Device Detection (separate from device report) ---
-    - if:
-        - condition: template
-          value_template: >
-            {{ (notification_service | default('') | trim) != '' and
-                notify_v3_detection }}
-      then:
-        - service: "{{ notification_service }}"
-          data:
-            title: "iBlinds v3 Devices Detected"
-            message: >
-              <b>Found {{ device_analysis.v3_devices | length }} iBlinds v3 device(s).</b><br><br>
-
-              The automation was created by the blueprint:<br>
-              <b>{{ state_attr(this.entity_id, 'friendly_name') }}</b><br>
-
-              To remove this device from the automation, view/edit your automations:
-              <a href="/config/automation/dashboard">Automation Dashboard</a><br><br>
-
-              For optimal performance, configure these devices using native Z-Wave JS parameters via the Z-Wave JS integration.<br>
-
-              <b>Device Configuration Links:</b><br>
-              {%- set zwave_config_entry_id = state_attr('zwave_js.config_entries', 'entry_id') %}
-              {%- for entity in device_analysis.v3_devices %}
-                {%- set dev_id = device_id(entity) %}
-                {%- set name = state_attr(entity, 'friendly_name') or entity %}
-                {%- if dev_id %}
-                  - <a href="/config/zwave_js/node_config/{{ dev_id }}?config_entry={{ zwave_config_entry_id }}">{{ name }}</a><br>
-                {%- endif %}
-              {%- endfor %}
-
-
-
-    # --- Final notification for completed actions (only if notification service is set and not device report) ---
-    - if:
-        - condition: template
-          value_template: >
-            {{ notification_service != '' and 
-                notification_service | length > 0 and 
-                not device_detection_report and
-                trigger.event.data.service_data is defined and
-                target_entities | length > 0 }}
-      then:
-        - service: "{{ notification_service }}"
-          data:
-            title: "iBlinds Management Complete"
-            message: >
-              Action completed on {{ (target_entities | select('in', device_analysis.v2_devices) | list) | length }} v2 device(s).
-              {% if device_analysis.v3_devices | length > 0 %}
-              {{ device_analysis.v3_devices | length }} v3 device(s) detected - configure via Z-Wave JS for optimal performance.
-              {% endif %}
