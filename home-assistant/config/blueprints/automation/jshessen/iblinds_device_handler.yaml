@@ -215,7 +215,7 @@ variables:
 
   # Position calculations for v2 devices
   calculated_off_position: >
-    {{ 0 if reverse_direction else 100 }}
+    {{ 100 if reverse_direction else 0 }}
   
   calculated_default_position: >
     {{ (100 - default_on_value) if reverse_direction else default_on_value }}
