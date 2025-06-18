@@ -376,14 +376,6 @@ action:
                  device_analysis.v2_devices | length > 0 and
                  target_entities | length > 0 }}
         sequence:
-          - if:
-              - condition: template
-                value_template: "{{ reverse_direction }}"
-            then:
-              - service: cover.stop_cover
-                target:
-                  entity_id: >
-                    {{ target_entities | select('in', device_analysis.v2_devices) | list }}
           - service: cover.set_cover_position
             target:
               entity_id: >
@@ -400,14 +392,6 @@ action:
                  device_analysis.v2_devices | length > 0 and
                  target_entities | length > 0 }}
         sequence:
-          - if:
-              - condition: template
-                value_template: "{{ reverse_direction }}"
-            then:
-              - service: cover.stop_cover
-                target:
-                  entity_id: >
-                    {{ target_entities | select('in', device_analysis.v2_devices) | list }}
           - service: cover.set_cover_position
             target:
               entity_id: >
@@ -419,20 +403,9 @@ action:
       - conditions:
           - condition: template
             value_template: >
-              {{ trigger.event.data.service_data is defined and
-                 trigger.event.data.service == 'set_cover_position' and
-                 trigger.event.data.service_data.position is defined and
-                 device_analysis.v2_devices | length > 0 and
+              {{ device_analysis.v2_devices | length > 0 and
                  target_entities | length > 0 }}
-        sequence:
-          - if:
-              - condition: template
-                value_template: "{{ reverse_direction }}"
-            then:
-              - service: cover.stop_cover
-                target:
-                  entity_id: >
-                    {{ target_entities | select('in', device_analysis.v2_devices) | list }}
+        sequence:               
           - service: cover.set_cover_position
             target:
               entity_id: >
