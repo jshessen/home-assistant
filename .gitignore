@@ -16,6 +16,9 @@ home-assistant_v2.db
 # ─── Home Assistant runtime artifacts ────────────────────────────────────────
 # Never commit HA runtime state — these are regenerated at startup
 home-assistant/config/.storage/
+home-assistant/config/.HA_VERSION
+home-assistant/config/.ha_run.lock
+home-assistant/config/.gitignore
 home-assistant/config/home-assistant.log
 home-assistant/config/home-assistant.log.*
 home-assistant/config/home-assistant_v2.db
@@ -25,6 +28,15 @@ home-assistant/config/backups/
 home-assistant/config/tts/
 home-assistant/config/.cloud/
 home-assistant/config/OZW_Log.txt
+
+# ─── Home Assistant: data/ directory ─────────────────────────────────────────
+# Runtime-generated files — only README.md is ours
+home-assistant/config/data/**
+!home-assistant/config/data/README.md
+
+# ─── Home Assistant: www/ frontend resources ─────────────────────────────────
+# HACS-installed frontend cards and resources, not authored here
+home-assistant/config/www/
 
 # ─── External repos (not owned by this project) ──────────────────────────────
 # These have their own .git — never let git sweep them up
@@ -52,7 +64,11 @@ zwave/logs/
 postgres/data/
 mosquitto/data/
 mosquitto/logs/
+mosquitto/config/password.txt
 zigbee2mqtt/data/log/
+zigbee2mqtt/data/configuration_backup*.yaml
+zigbee2mqtt/data/coordinator_backup.json
+zigbee2mqtt/data/state.json
 
 # ─── Python artifacts ────────────────────────────────────────────────────────
 __pycache__/
@@ -80,6 +96,23 @@ config.d/mqtt.env
 # custom_components/ is installed by HACS — not authored in this repo
 # Source for any custom component lives in its own repo (e.g. keymaster-github/)
 home-assistant/config/custom_components/
+
+# ─── Home Assistant: community blueprints ────────────────────────────────────
+# Blueprints installed from the community — re-importable, not ours to own
+# Only blueprints/automation/jshessen/ is custom-authored and tracked
+home-assistant/config/blueprints/automation/adchevrier/
+home-assistant/config/blueprints/automation/aderusha/
+home-assistant/config/blueprints/automation/alexdelprete/
+home-assistant/config/blueprints/automation/Blackshome/
+home-assistant/config/blueprints/automation/blich/
+home-assistant/config/blueprints/automation/ha-blueprints/
+home-assistant/config/blueprints/automation/homeassistant/
+home-assistant/config/blueprints/automation/hvorragend/
+home-assistant/config/blueprints/automation/jerelabs/
+home-assistant/config/blueprints/script/
+home-assistant/config/blueprints/template/
+# Backup files in jshessen blueprints dir
+home-assistant/config/blueprints/automation/jshessen/*.OLD_BACKUP*
 
 # ─── Home Assistant: runtime cache ───────────────────────────────────────────
 # .cache/ holds downloaded brand icons and similar runtime artifacts
