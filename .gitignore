@@ -18,7 +18,6 @@ home-assistant_v2.db
 home-assistant/config/.storage/
 home-assistant/config/.HA_VERSION
 home-assistant/config/.ha_run.lock
-home-assistant/config/.gitignore
 home-assistant/config/home-assistant.log
 home-assistant/config/home-assistant.log.*
 home-assistant/config/home-assistant_v2.db
