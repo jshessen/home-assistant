@@ -1,4 +1,4 @@
-version: 4
+version: 5
 mqtt:
   base_topic: zigbee2mqtt
   server: mqtt://mqtt:1883
@@ -10,7 +10,7 @@ serial:
   baudrate: 115200
   rtscts: false
 advanced:
-  log_level: info
+  log_level: debug
   channel: 11
   network_key:
     - 97
@@ -44,3 +44,6 @@ frontend:
   port: 8080
 homeassistant:
   enabled: true
+devices:
+  '0x286d97000114e308':
+    friendly_name: Egress Window Sensor
