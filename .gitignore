@@ -1,56 +1,102 @@
-# Ignore the default container config directories
-config.d/**
-!config.d/system.env
-!config.d/hacs.env
-!config.d/zwave.env
-!config.d/mqtt.env
-!config.d/zigbee.env
-
-# Ignore core home assistant config files
-home-assistant/config/**
-!home-assistant/config/configuration.yaml
-!home-assistant/config/blueprints/
-!home-assistant/config/blueprints/automation/
-!home-assistant/config/blueprints/automation/jshessen/
-!home-assistant/config/blueprints/automation/jshessen/**
-
-# Ignore environment specific zwave-js data files
-zwave/*.json*
-zwave/plugins/**
-zwave/sessions/**
-
-# Ignore "secrets"
-secrets/**
-
-# Ignore "password" files
-*password*
-*passwd*
-*credentials*
-*auth*
-*token*
-*key*
-
-# Ignore Database files
-*.db
-*.db-*
-*-db
-*state.json
-
-# Ignore Logs
-log/
-logs/
-*.log
-
-# Ignore "backup" files
-*.bak
-*backup*
-
-# Ignore "lock" files
-*.lock
+# Home Assistant secrets
+secrets.yaml
+known_devices.yaml
+home-assistant.log
+home-assistant_v2.db
+*.db-journal
 *.pid
+# Squad: ignore runtime state (logs, inbox, sessions)
+.squad/orchestration-log/
+.squad/log/
+.squad/decisions/inbox/
+.squad/sessions/
+# Squad: SubSquad activation file (local to this machine)
+.squad-workstream
 
-# The file containing environment variables 
-.env
+# ─── Home Assistant runtime artifacts ────────────────────────────────────────
+# Never commit HA runtime state — these are regenerated at startup
+home-assistant/config/.storage/
+home-assistant/config/home-assistant.log
+home-assistant/config/home-assistant.log.*
+home-assistant/config/home-assistant_v2.db
+home-assistant/config/home-assistant_v2.db.backup
+home-assistant/config/deps/
+home-assistant/config/backups/
+home-assistant/config/tts/
+home-assistant/config/.cloud/
+home-assistant/config/OZW_Log.txt
 
-# Keep .gitkeep enabled directories (empty)
-!.gitkeep
+# ─── External repos (not owned by this project) ──────────────────────────────
+# These have their own .git — never let git sweep them up
+keymaster-github/
+pyonwater-github/
+
+# ─── Docker secrets ──────────────────────────────────────────────────────────
+# Secret files are bind-mounted by Docker; never store in git
+secrets/
+
+# ─── Log files ───────────────────────────────────────────────────────────────
+*.log
+*.log.*
+*.log.fault
+*.log.grep.txt
+zwave/logs/
+
+# ─── Database files ──────────────────────────────────────────────────────────
+*.db
+*.db-shm
+*.db-wal
+*.db.backup
+
+# ─── Docker runtime state ────────────────────────────────────────────────────
+postgres/data/
+mosquitto/data/
+mosquitto/logs/
+zigbee2mqtt/data/log/
+
+# ─── Python artifacts ────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+.mypy_cache/
+
+# ─── VS Code user-local state ────────────────────────────────────────────────
+# Keep .code-workspace (shared config); ignore user-local settings
+.vscode/
+
+# ─── NOTE: .squad/ is intentional team state — do NOT add it here ─────────────
+
+# ─── config.d: files with credentials ────────────────────────────────────────
+# mqtt.env contains MQTTADMINPW plaintext — use secrets/ dir for credentials
+# Password also at secrets/mqtt_admin_password (already gitignored via secrets/)
+config.d/mqtt.env
+
+# ─── Home Assistant: HACS-managed components ─────────────────────────────────
+# custom_components/ is installed by HACS — not authored in this repo
+# Source for any custom component lives in its own repo (e.g. keymaster-github/)
+home-assistant/config/custom_components/
+
+# ─── Home Assistant: runtime cache ───────────────────────────────────────────
+# .cache/ holds downloaded brand icons and similar runtime artifacts
+home-assistant/config/.cache/
+
+# ─── Z-Wave JS UI: runtime state ─────────────────────────────────────────────
+# .config-db/  — device configuration database, downloaded at runtime
+# plugins/sessions/snippets/ — runtime-managed directories
+# nodes.json   — live Z-Wave network topology (regenerated at runtime)
+# users.json   — user accounts with scrypt password hashes (SECURITY)
+# *.pem        — SSL certificate + private key (SECURITY)
+# *.jsonl      — Z-Wave network state/values (d5eac29d.jsonl etc.)
+zwave/.config-db/
+zwave/plugins/
+zwave/sessions/
+zwave/snippets/
+zwave/nodes.json
+zwave/users.json
+zwave/*.pem
+zwave/*.jsonl

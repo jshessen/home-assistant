@@ -12,12 +12,15 @@ MQTT_SERVICE := mqtt
 COMPOSE_ZIGBEE := -f docker-compose.zigbee.yml
 ZIGBEE_SERVICE := zigbee2mqtt
 
-COMPOSE_HACS := -f docker-compose.yml ${COMPOSE_ZWAVE}
-HACS_SERVICE := home-assistant ${ZWAVE_SERVICE}
+COMPOSE_POSTGRES := -f docker-compose.postgres.yml
+POSTGRES_SERVICE := homeassistant-postgres 
+
+COMPOSE_HACS := -f docker-compose.yml
+HACS_SERVICE := home-assistant
 
 
-COMPOSE_ALL_FILES := ${COMPOSE_HACS} ${COMPOSE_MQTT} ${COMPOSE_ZIGBEE}
-ALL_SERVICES := ${HACS_SERVICE} ${MQTT_SERVICE} ${ZIGBEE_SERVICE}
+COMPOSE_ALL_FILES := ${COMPOSE_HACS} ${COMPOSE_POSTGRES} ${COMPOSE_ZWAVE} ${COMPOSE_MQTT} ${COMPOSE_ZIGBEE}
+ALL_SERVICES := ${HACS_SERVICE} ${POSTGRES_SERVICE} ${ZWAVE_SERVICE} ${MQTT_SERVICE} ${ZIGBEE_SERVICE}
 
 .PHONY: setup plex all up down orphan stop restart rm images update
 

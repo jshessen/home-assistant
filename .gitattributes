@@ -1,0 +1,22 @@
+# Squad: union merge for append-only team state files
+.squad/decisions.md merge=union
+.squad/agents/*/history.md merge=union
+.squad/log/** merge=union
+.squad/orchestration-log/** merge=union
+
+# ─── Line endings: LF for Linux container targets ────────────────────────────
+*.yaml text eol=lf
+*.yml  text eol=lf
+*.sh   text eol=lf
+*.py   text eol=lf
+
+# ─── JSON: text, auto line endings ────────────────────────────────────────────
+*.json text
+
+# ─── Secrets: suppress diff output (no plaintext leaks in `git diff`) ─────────
+secrets/* -diff
+
+# ─── HA database files: binary ────────────────────────────────────────────────
+*.db     binary
+*.db-shm binary
+*.db-wal binary

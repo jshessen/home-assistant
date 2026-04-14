@@ -1,0 +1,30 @@
+# Ignore file for ripgrep and fd
+# This prevents searching/indexing unnecessary directories
+
+# Version control
+.git/
+
+# Python caches
+__pycache__/
+*.pyc
+.mypy_cache/
+.pytest_cache/
+.tox/
+*.egg-info/
+
+# Virtual environments
+.venv/
+venv/
+
+# Home Assistant runtime
+home-assistant/config/.storage/
+home-assistant/config/deps/
+home-assistant/config/home-assistant.log*
+home-assistant/config/OZW_Log.txt
+
+# Node modules
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
