@@ -1,0 +1,231 @@
+{
+  "folders": [
+    {
+      "name": "Home Assistant Config",
+      "path": "./home-assistant/config",
+    },
+    {
+      "name": "Root",
+      "path": ".",
+    },
+  ],
+  "settings": {
+    "files.associations": {
+      "*.py": "python",
+      "*.yaml": "home-assistant",
+      "*.yml": "home-assistant",
+      "*.js": "javascript",
+      "*.json": "json",
+      "*.md": "markdown",
+      "*.conf": "nginx",
+      "*.log": "log",
+    },
+    "python.defaultInterpreterPath": "/usr/bin/python3.13",
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.exclude": [
+      "**/custom_components/**",
+      "**/.venv/**",
+      "**/venv/**",
+      "**/.tox/**",
+      "**/__pycache__/**",
+      "**/.storage/**",
+      "**/deps/**",
+    ],
+    "python.analysis.ignore": [
+      "**/custom_components/**",
+      "**/.venv/**",
+      "**/venv/**",
+      "**/.storage/**",
+      "**/deps/**",
+    ],
+    "pylint.enabled": true,
+    "pylint.args": ["--ignore=custom_components,.venv,venv,.storage,deps"],
+    "mypy-type-checker.enabled": true,
+    "mypy-type-checker.args": [
+      "--exclude=custom_components",
+      "--exclude=.venv",
+      "--exclude=.storage",
+      "--exclude=deps",
+    ],
+    "ruff.enable": true,
+    "ruff.configurationPreference": "filesystemFirst",
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": true,
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "yaml.schemas": {},
+    "yaml.validate": false,
+    "yaml.completion": false,
+    "yaml.hover": false,
+    "yaml.schemaStore.enable": false,
+    "yaml.customTags": [
+      "!include scalar",
+      "!include_dir_list scalar",
+      "!include_dir_merge_list scalar",
+      "!include_dir_named scalar",
+      "!include_dir_merge_named scalar",
+      "!secret scalar",
+      "!env_var scalar",
+    ],
+    "files.exclude": {
+      "**/__pycache__": true,
+      "**/*.pyc": true,
+      "**/node_modules": true,
+      "**/.git": true,
+      "**/.DS_Store": true,
+      "**/Thumbs.db": true,
+      "config/.storage": true,
+      "config/home-assistant.log*": true,
+      "config/OZW_Log.txt": true,
+      //"**/custom_components": true,
+    },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/bower_components": true,
+      "**/*.code-search": true,
+      "config/.storage": true,
+      "config/deps": true,
+      "**/custom_components/**": true,
+      "**/.venv/**": true,
+      "**/venv/**": true,
+    },
+    "git.ignoreLimitWarning": true,
+    "editor.rulers": [88, 120],
+    "editor.wordWrap": "on",
+    "editor.wordWrapColumn": 88,
+    "workbench.colorCustomizations": {
+      "editorRuler.foreground": "#ff4444",
+    },
+    "chat.tools.terminal.autoApprove": {
+      "pdftotext": true,
+    },
+    "homeassistant.hostUrl": "http://localhost:8123",
+    "redhat.telemetry.enabled": false,
+  },
+  "extensions": {
+    "recommendations": [
+      "ms-python.python",
+      "redhat.vscode-yaml",
+      "ms-vscode.vscode-json",
+      "esbenp.prettier-vscode",
+      "ms-python.black-formatter",
+      "ms-python.isort",
+      "ms-python.pylint",
+      "keesschollaart.vscode-home-assistant",
+      "bradlc.vscode-tailwindcss",
+    ],
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Check Home Assistant Config",
+        "type": "shell",
+        "command": "docker",
+        "args": [
+          "exec",
+          "home-assistant",
+          "python",
+          "-m",
+          "homeassistant",
+          "--script",
+          "check_config",
+          "-c",
+          "/config",
+        ],
+        "group": "test",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared",
+        },
+        "problemMatcher": [],
+      },
+      {
+        "label": "Restart Home Assistant",
+        "type": "shell",
+        "command": "docker",
+        "args": ["restart", "home-assistant"],
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared",
+        },
+      },
+      {
+        "label": "Deploy Lambda Function",
+        "type": "shell",
+        "command": "cd home-assistant/ha-external-connector/apple-ios && zip -r iOS-Companion-Wrapper.zip iOS-Companion-Wrapper.py && aws lambda update-function-code --function-name iOS-Companion-Wrapper --zip-file fileb://iOS-Companion-Wrapper.zip && aws lambda update-function-configuration --function-name iOS-Companion-Wrapper --handler iOS-Companion-Wrapper.lambda_handler",
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared",
+        },
+      },
+      {
+        "label": "Test iOS Lambda Locally",
+        "type": "shell",
+        "command": "cd home-assistant/ha-external-connector/apple-ios && python3 -c \"import iOS-Companion-Wrapper; print('Syntax OK')\"",
+        "group": "test",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared",
+        },
+      },
+    ],
+  },
+  "mcp": {
+    "inputs": [
+      {
+        "id": "ha-mcp-token",
+        "type": "promptString",
+        "description": "Home Assistant Long-Lived Access Token (Copilot MCP)",
+        "password": true
+      }
+    ],
+    "servers": {
+      "Home Assistant": {
+        "type": "http",
+        "url": "http://jarvis:8123/api/mcp",
+        "headers": {
+          "Authorization": "Bearer ${input:ha-mcp-token}"
+        }
+      }
+    }
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Debug Home Assistant Config",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${workspaceFolder}/config/configuration.yaml",
+        "console": "integratedTerminal",
+        "cwd": "${workspaceFolder}",
+      },
+      {
+        "name": "Test Lambda Function",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${workspaceFolder}/ha-external-connector/apple-ios/iOS-Companion-Wrapper.py",
+        "console": "integratedTerminal",
+        "env": {
+          "DEBUG": "1",
+          "APP_CONFIG_PATH": "/home-assistant/config",
+          "ALLOWED_HA_BASE_URL": "https://jarvis.hessenflow.net",
+        },
+      },
+    ],
+  },
+}

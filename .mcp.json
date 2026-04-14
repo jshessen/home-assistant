@@ -1,0 +1,19 @@
+{
+  "inputs": [
+    {
+      "id": "ha-mcp-token",
+      "type": "promptString",
+      "description": "Home Assistant Long-Lived Access Token (Copilot MCP)",
+      "password": true
+    }
+  ],
+  "mcpServers": {
+    "Home Assistant": {
+      "type": "http",
+      "url": "http://jarvis:8123/api/mcp",
+      "headers": {
+        "Authorization": "Bearer ${input:ha-mcp-token}"
+      }
+    }
+  }
+}
