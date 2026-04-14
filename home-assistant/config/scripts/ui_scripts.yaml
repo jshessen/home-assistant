@@ -1,0 +1,29 @@
+good_night_by_area:
+  alias: Good Night by Area
+  description: Run lights off, close covers, and lock doors for the selected areas.
+  icon: mdi:weather-night
+  fields:
+    target_areas:
+      selector:
+        area:
+          multiple: true
+      name: Areas
+      description: Areas to process
+      required: true
+  sequence:
+    - parallel:
+        - repeat:
+            for_each: "{{ target_areas | default([], true) }}"
+            sequence:
+              - action: light.turn_off
+                target:
+                  area_id: "{{ repeat.item }}"
+                data: {}
+              - action: cover.close_cover
+                target:
+                  area_id: "{{ repeat.item }}"
+                data: {}
+              - action: lock.lock
+                target:
+                  area_id: "{{ repeat.item }}"
+                data: {}

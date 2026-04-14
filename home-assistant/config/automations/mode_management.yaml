@@ -1,0 +1,185 @@
+# Mode Management Automations
+# Automated Good Night/Morning routines with time-based triggers
+
+- id: good_night_time_weekday
+  alias: "Good Night - Weekday (Time)"
+  description: Trigger Good Night at scheduled time on weekdays
+  triggers:
+    - trigger: time
+      at: input_datetime.schedule_good_night_weekday
+  conditions:
+    - condition: time
+      weekday:
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+    - condition: state
+      entity_id: input_boolean.disable_good_night
+      state: "off"
+    - condition: not
+      conditions:
+        - condition: state
+          entity_id: input_select.presence_mode
+          state: "Vacation"
+  actions:
+    - service: script.good_night
+
+# GOOD NIGHT - WEEKEND
+- id: good_night_time_weekend
+  alias: "Good Night - Weekend (Time)"
+  description: Trigger Good Night at scheduled time on weekends
+  triggers:
+    - trigger: time
+      at: input_datetime.schedule_good_night_weekend
+  conditions:
+    - condition: time
+      weekday:
+        - sat
+        - sun
+    - condition: state
+      entity_id: input_boolean.disable_good_night
+      state: "off"
+    - condition: not
+      conditions:
+        - condition: state
+          entity_id: input_select.presence_mode
+          state: "Vacation"
+  actions:
+    - service: script.good_night
+
+# GOOD MORNING - WEEKDAY
+- id: good_morning_weekday
+  alias: "Good Morning - Weekday"
+  description: Trigger Good Morning routine on weekday mornings
+  triggers:
+    - trigger: time
+      at: input_datetime.schedule_start_active_day_weekday
+  conditions:
+    - condition: time
+      weekday:
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+    - condition: state
+      entity_id: input_select.time_of_day
+      state: "Night"
+    - condition: state
+      entity_id: input_boolean.disable_good_morning
+      state: "off"
+    - condition: or
+      conditions:
+        - condition: state
+          entity_id: input_select.presence_mode
+          state: "Home"
+        - condition: state
+          entity_id: input_boolean.guest_mode
+          state: "on"
+  actions:
+    - service: script.start_active_day
+
+# GOOD MORNING - WEEKEND
+- id: good_morning_weekend
+  alias: "Good Morning - Weekend"
+  description: Trigger Good Morning routine on weekend mornings
+  triggers:
+    - trigger: time
+      at: input_datetime.schedule_start_active_day_weekend
+  conditions:
+    - condition: time
+      weekday:
+        - sat
+        - sun
+    - condition: state
+      entity_id: input_select.time_of_day
+      state: "Night"
+    - condition: state
+      entity_id: input_boolean.disable_good_morning
+      state: "off"
+    - condition: or
+      conditions:
+        - condition: state
+          entity_id: input_select.presence_mode
+          state: "Home"
+        - condition: state
+          entity_id: input_boolean.guest_mode
+          state: "on"
+  actions:
+    - service: script.start_active_day
+
+# GOOD MORNING - EARLY (Pre-Dawn Navigation)
+- id: good_morning_early
+  alias: "Good Morning - Early (Pre-Dawn Navigation)"
+  description: Pre-dawn kitchen navigation light — runs regardless of presence when it's still Night
+  triggers:
+    - trigger: time
+      at: input_datetime.schedule_good_morning_early
+  conditions:
+    - condition: state
+      entity_id: input_select.time_of_day
+      state: "Night"
+    - condition: state
+      entity_id: input_boolean.disable_good_morning
+      state: "off"
+  actions:
+    - service: script.good_morning
+
+# WORK TIME - WEEKDAY
+- id: work_time_weekday
+  alias: "Work Time - Weekday"
+  description: Start work-from-home setup when home on weekday mornings
+  triggers:
+    - trigger: time
+      at: input_datetime.schedule_work_time_weekday
+  conditions:
+    - condition: time
+      weekday:
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+    - condition: state
+      entity_id: input_select.presence_mode
+      state: "Home"
+    - condition: not
+      conditions:
+        - condition: state
+          entity_id: input_select.time_of_day
+          state: "Night"
+  actions:
+    - service: script.start_work_day
+
+# ALL PERSONS AWAY (stub)
+- id: all_persons_away
+  alias: "All Persons Away"
+  description: When all persons leave, set Away mode and secure home
+  triggers:
+    - trigger: state
+      entity_id: person.jeff
+      to: "not_home"
+    - trigger: state
+      entity_id: person.patricia
+      to: "not_home"
+  conditions:
+    - condition: state
+      entity_id: person.jeff
+      state: "not_home"
+    - condition: state
+      entity_id: person.patricia
+      state: "not_home"
+    - condition: not
+      conditions:
+        - condition: state
+          entity_id: input_select.presence_mode
+          state: "Vacation"
+  actions:
+    - service: input_select.select_option
+      target:
+        entity_id: input_select.presence_mode
+      data:
+        option: "Away"
+    - service: script.secure_home

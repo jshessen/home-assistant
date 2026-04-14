@@ -1,0 +1,84 @@
+# ============================================================================
+# Secure Home Script
+# ============================================================================
+# Locks all doors, verifies garage closes, and closes all covers.
+# Called by: good_night, all_persons_away, manual use
+#
+# Parameters:
+#   skip_guest_covers (bool, default false): when true, does not close guest blinds
+# ============================================================================
+
+secure_home:
+  alias: Secure Home
+  icon: mdi:shield-lock
+  mode: single
+  variables:
+    secure_locks:
+      - lock.touchscreen_deadbolt_front_door
+      - lock.touchscreen_deadbolt_back_door
+      - lock.touchscreen_deadbolt_kitchen_entry
+      - lock.connected_keypad_with_lever_garage_entry
+      - lock.sunroom_door_lock
+    garage_covers:
+      - cover.garage_door_controller
+    all_covers:
+      - cover.living_room_blinds
+      - cover.sunroom_blinds_2
+      - cover.window_blind_controller_4
+      - cover.window_blind_controller_1_horizontal_slats_angle_2
+    guest_covers:
+      - cover.window_blind_controller_2
+    skip_guest_covers: "{{ skip_guest_covers | default(false) }}"
+  sequence:
+    # ========================================================================
+    # PARALLEL: Lock all doors + close and verify garage
+    # ========================================================================
+    - parallel:
+        - choose:
+            - conditions:
+                - condition: template
+                  value_template: "{{ secure_locks | count > 0 }}"
+              sequence:
+                - service: lock.lock
+                  target:
+                    entity_id: "{{ secure_locks | join(', ') }}"
+        - sequence:
+            - choose:
+                - conditions:
+                    - condition: template
+                      value_template: "{{ garage_covers | count > 0 }}"
+                  sequence:
+                    - service: cover.close_cover
+                      target:
+                        entity_id: "{{ garage_covers | join(', ') }}"
+                    - wait_template: >
+                        {{ expand(garage_covers)
+                           | selectattr('state', 'eq', 'closed')
+                           | list
+                           | count == (garage_covers | count) }}
+                      timeout: "00:02:00"
+                      continue_on_timeout: true
+
+    # ========================================================================
+    # Close all interior covers
+    # ========================================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ all_covers | count > 0 }}"
+          sequence:
+            - service: cover.close_cover
+              target:
+                entity_id: "{{ all_covers | join(', ') }}"
+
+    # ========================================================================
+    # Close guest covers (unless skip_guest_covers is set)
+    # ========================================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ not (skip_guest_covers | bool) and guest_covers | count > 0 }}"
+          sequence:
+            - service: cover.close_cover
+              target:
+                entity_id: "{{ guest_covers | join(', ') }}"

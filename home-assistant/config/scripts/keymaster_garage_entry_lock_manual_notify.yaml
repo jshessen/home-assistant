@@ -1,0 +1,13 @@
+# Alias Scripts - One for each lock
+keymaster_garage_door_lock_manual_notify:
+  alias: "Garage Door Lock Manual Notify"
+  sequence:
+    - service: script.keymaster_manual_notify_master
+      data:
+        lock_name: "Garage Door Lock"
+        message: "{{ message }}"
+        entity_id: "lock.connected_keypad_with_lever_garage_entry"  # Replace with your actual entity
+  mode: parallel
+  icon: mdi:door-open
+  max: 10
+

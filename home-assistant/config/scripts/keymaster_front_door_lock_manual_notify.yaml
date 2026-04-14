@@ -1,0 +1,13 @@
+# Alias Scripts - One for each lock
+keymaster_front_door_lock_manual_notify:
+  alias: "Front Door Lock Manual Notify"
+  sequence:
+    - service: script.keymaster_manual_notify_master
+      data:
+        lock_name: "Front Door Lock"
+        message: "{{ message }}"
+        entity_id: "lock.touchscreen_deadbolt_front_door"  # Replace with your actual entity
+  mode: parallel
+  icon: mdi:door-open
+  max: 10
+

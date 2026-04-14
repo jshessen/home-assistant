@@ -1,0 +1,74 @@
+# ============================================================================
+# Start Work Day Script
+# ============================================================================
+# Sets up the home for work-from-home mode:
+#   - Turns off bedroom fan (was on for sleep noise)
+#   - Sets bedroom blinds to partial (working light without full glare)
+#   - Turns on guest/office desk lamp
+#   - Sets work_from_home_mode = on (persistent state for other automations)
+#
+# Called by: work_time_weekday automation
+# Desk lamp entity: light.guest_outlet_3 (guest room/office outlet)
+# Bedroom blinds position: UI-configurable via input_number.work_bedroom_blinds_pct
+# ============================================================================
+
+start_work_day:
+  alias: Start Work Day
+  icon: mdi:briefcase-variant
+  mode: single
+  variables:
+    bedroom_fan:
+      - fan.smart_strip_1_2
+    bedroom_blinds:
+      - cover.window_blind_controller_4
+    desk_lamp:
+      - light.guest_outlet_3
+    work_blinds_pct: >-
+      {%- set _caller = work_blinds_pct | default(none) -%}
+      {%- set _helper = states('input_number.work_bedroom_blinds_pct') -%}
+      {%- if _caller is not none -%}{{ _caller | int }}{%- elif _helper not in ('unavailable', 'unknown') -%}{{ _helper | int }}{%- else -%}51{%- endif -%}
+  sequence:
+    # ========================================================================
+    # Turn off bedroom fan (was running for sleep)
+    # ========================================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ bedroom_fan | count > 0 }}"
+          sequence:
+            - service: fan.turn_off
+              target:
+                entity_id: "{{ bedroom_fan | join(', ') }}"
+
+    # ========================================================================
+    # Set bedroom blinds to partial (not fully open — reduces screen glare)
+    # ========================================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ bedroom_blinds | count > 0 }}"
+          sequence:
+            - service: cover.set_cover_position
+              target:
+                entity_id: "{{ bedroom_blinds | join(', ') }}"
+              data:
+                position: "{{ work_blinds_pct }}"
+
+    # ========================================================================
+    # Turn on desk lamp in guest/office room
+    # ========================================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ desk_lamp | count > 0 }}"
+          sequence:
+            - service: light.turn_on
+              target:
+                entity_id: "{{ desk_lamp | join(', ') }}"
+
+    # ========================================================================
+    # SET work_from_home_mode (persistent state for other automations)
+    # ========================================================================
+    - service: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.work_from_home_mode

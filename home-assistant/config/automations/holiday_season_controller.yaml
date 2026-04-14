@@ -1,0 +1,183 @@
+# ============================================================================
+# Holiday Season Controller - Centralized Date Logic
+# ============================================================================
+# This automation maintains the input_select.active_holiday based on
+# precise date calculations. All other templates and automations reference
+# the input_select instead of duplicating these date rules.
+#
+# Replaces: Simple month-based auto-set automations
+# Benefits: Single source of truth, precise date ranges, Easter calculation
+# ============================================================================
+
+- id: holiday_season_controller
+  alias: "Holiday Season Controller"
+  description: "Automatically set active holiday based on precise date calculations"
+
+  triggers:
+    # Check at startup
+    - trigger: homeassistant
+      event: start
+
+    # Check daily at 12:01 AM
+    - trigger: time
+      at: "00:01:00"
+
+    # Check when manually changed (to allow manual override that expires next day)
+    - trigger: state
+      entity_id: input_select.active_holiday
+      for:
+        hours: 1
+
+  actions:
+    - action: input_select.select_option
+      target:
+        entity_id: input_select.active_holiday
+      data:
+        option: >
+          {% set today = now().date() %}
+          {% set month = now().month %}
+          {% set day = now().day %}
+          {% set year = now().year %}
+
+          {# ================================================================
+             NEW YEARS: January 1 only
+             ================================================================ #}
+          {% if month == 1 and day == 1 %}
+            New Years
+
+          {# ================================================================
+             CHRISTMAS: Black Friday - Epiphany (Jan 2-6)
+             ================================================================ #}
+          {% elif month == 1 and day >= 2 and day <= 6 %}
+            Christmas
+
+          {# ================================================================
+             VALENTINES DAY: February 7-14
+             ================================================================ #}
+          {% elif month == 2 and day >= 7 and day <= 14 %}
+            Valentines Day
+
+          {# ================================================================
+             ST. PATRICK'S DAY: March 10-17
+             ================================================================ #}
+          {% elif month == 3 and day >= 10 and day <= 17 %}
+            St. Patrick's Day
+
+          {# ================================================================
+             EASTER: Ash Wednesday - Easter Sunday (Computus Algorithm)
+             Note: Also covers Lent season decorations
+             ================================================================ #}
+          {% elif month >= 2 and month <= 5 %}
+            {# Calculate Easter using Computus algorithm #}
+            {% set a = year % 19 %}
+            {% set b = year // 100 %}
+            {% set c = year % 100 %}
+            {% set d = b // 4 %}
+            {% set e = b % 4 %}
+            {% set f = (b + 8) // 25 %}
+            {% set g = (b - f + 1) // 3 %}
+            {% set h = (19 * a + b - d - g + 15) % 30 %}
+            {% set i = c // 4 %}
+            {% set k = c % 4 %}
+            {% set l = (32 + 2 * e + 2 * i - h - k) % 7 %}
+            {% set m = (a + 11 * h + 22 * l) // 451 %}
+            {% set easter_month = (h + l - 7 * m + 114) // 31 %}
+            {% set easter_day = ((h + l - 7 * m + 114) % 31) + 1 %}
+
+            {% set easter_date = today.replace(month=easter_month, day=easter_day) %}
+            {% set ash_wednesday = easter_date - timedelta(days=46) %}
+
+            {% if today >= ash_wednesday and today <= easter_date %}
+              Easter
+            {% else %}
+              None
+            {% endif %}
+
+          {# ================================================================
+             CINCO DE MAYO: April 28 - May 5
+             ================================================================ #}
+          {% elif (month == 4 and day >= 28) or (month == 5 and day <= 5) %}
+            Cinco de Mayo
+
+          {# ================================================================
+             MEMORIAL DAY: Last Monday of May (week before to day of)
+             ================================================================ #}
+          {% elif month == 5 and day >= 18 %}
+            {# Calculate last Monday of May #}
+            {% set last_day_of_month = (today.replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1) %}
+            {% set last_monday_day = last_day_of_month.day %}
+            {% for i in range(7) %}
+              {% if (last_day_of_month - timedelta(days=i)).weekday() == 0 %}
+                {% set last_monday_day = (last_day_of_month - timedelta(days=i)).day %}
+              {% endif %}
+            {% endfor %}
+            {% if day >= last_monday_day - 7 %}
+              Memorial Day
+            {% else %}
+              None
+            {% endif %}
+
+          {# ================================================================
+             INDEPENDENCE DAY: June 27 - July 11 (2 weeks around July 4)
+             ================================================================ #}
+          {% elif (month == 6 and day >= 27) or (month == 7 and day <= 11) %}
+            Independence Day
+
+          {# ================================================================
+             LABOR DAY: First Monday of September (week before to day of)
+             ================================================================ #}
+          {% elif month == 8 and day >= 25 %}
+            Labor Day
+          {% elif month == 9 and day <= 7 %}
+            {# Calculate first Monday of September #}
+            {% set first_day = today.replace(day=1) %}
+            {% set first_monday_day = 1 %}
+            {% for i in range(7) %}
+              {% if (first_day + timedelta(days=i)).weekday() == 0 %}
+                {% set first_monday_day = (first_day + timedelta(days=i)).day %}
+              {% endif %}
+            {% endfor %}
+            {% if day <= first_monday_day %}
+              Labor Day
+            {% else %}
+              None
+            {% endif %}
+
+          {# ================================================================
+             HALLOWEEN: October 1-31 (all month)
+             ================================================================ #}
+          {% elif month == 10 %}
+            Halloween
+
+          {# ================================================================
+             THANKSGIVING: Nov 1 - Thanksgiving Day (4th Thursday)
+             Note: Goes straight into Thanksgiving for November decorations
+             ================================================================ #}
+          {% elif month == 11 %}
+            {# Calculate Thanksgiving (4th Thursday of November) #}
+            {% set first_day = today.replace(day=1) %}
+            {% set first_weekday = first_day.weekday() %}
+            {% set days_until_first_thursday = (3 - first_weekday) % 7 %}
+            {% set first_thursday = 1 + days_until_first_thursday %}
+            {% set fourth_thursday = first_thursday + 21 %}
+
+            {% if day < fourth_thursday %}
+              Thanksgiving
+            {% else %}
+              Christmas
+            {% endif %}
+
+          {# ================================================================
+             CHRISTMAS: December 1-31 (all month)
+             ================================================================ #}
+          {% elif month == 12 %}
+            Christmas
+
+          {# ================================================================
+             NONE: No active holiday
+             ================================================================ #}
+          {% else %}
+            None
+          {% endif %}
+
+  mode: single

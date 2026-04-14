@@ -1,0 +1,158 @@
+# ============================================================================
+# Holiday Decoration Automations
+# ============================================================================
+# Morning/afternoon turn-on automations for holiday decorations.
+# All automations gate on input_select.active_holiday (set by
+# holiday_season_controller) rather than duplicating date logic.
+#
+# Labels used (Settings > Areas & Zones > Labels):
+#   halloween, easter, thanksgiving, christmas, st_patrick_s_day,
+#   independence_day, inside, outside
+#
+# Turn-off is handled by the Good Night script.
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# HALLOWEEN - October (all month), 7:15 AM
+# ----------------------------------------------------------------------------
+- id: holiday_spooky_spirit
+  alias: "Spooky Spirit"
+  description: "Turn on Halloween decorations in the morning"
+  triggers:
+    - trigger: time
+      at: "07:15:00"
+  conditions:
+    - condition: state
+      entity_id: input_select.active_holiday
+      state: Halloween
+  actions:
+    - action: switch.turn_on
+      target:
+        label_id: halloween
+  mode: single
+
+# ----------------------------------------------------------------------------
+# THANKSGIVING - Nov 1 to 4th Thursday, 7:00 AM
+# ----------------------------------------------------------------------------
+- id: holiday_turkey_time
+  alias: "Turkey Time"
+  description: "Turn on Thanksgiving decorations in the morning"
+  triggers:
+    - trigger: time
+      at: "07:00:00"
+  conditions:
+    - condition: state
+      entity_id: input_select.active_holiday
+      state: Thanksgiving
+  actions:
+    - action: switch.turn_on
+      target:
+        label_id: thanksgiving
+  mode: single
+
+# ----------------------------------------------------------------------------
+# CHRISTMAS (inside) - Thanksgiving season OR Christmas, 7:00 AM
+# Inside Christmas decor starts going up during Thanksgiving week.
+# ----------------------------------------------------------------------------
+- id: holiday_christmas_spirit
+  alias: "Christmas Spirit"
+  description: "Turn on inside Christmas decorations (active through Thanksgiving too)"
+  triggers:
+    - trigger: time
+      at: "07:00:00"
+  conditions:
+    - condition: or
+      conditions:
+        - condition: state
+          entity_id: input_select.active_holiday
+          state: Thanksgiving
+        - condition: state
+          entity_id: input_select.active_holiday
+          state: Christmas
+  actions:
+    - action: switch.turn_on
+      target:
+        entity_id: >
+          {{ label_entities('christmas') | select('in', label_entities('inside')) | list }}
+  mode: single
+
+# ----------------------------------------------------------------------------
+# CHRISTMAS (all) - Christmas only, 3:00 PM
+# Outside lights and all Christmas devices at afternoon/dusk.
+# ----------------------------------------------------------------------------
+- id: holiday_christmas_lights
+  alias: "Christmas Lights"
+  description: "Turn on all Christmas decorations and lights at 3 PM"
+  triggers:
+    - trigger: time
+      at: "15:00:00"
+  conditions:
+    - condition: state
+      entity_id: input_select.active_holiday
+      state: Christmas
+  actions:
+    - action: switch.turn_on
+      target:
+        label_id: christmas
+    - action: light.turn_on
+      target:
+        label_id: christmas
+  mode: single
+
+# ----------------------------------------------------------------------------
+# EASTER - Ash Wednesday to Easter Sunday, 7:00 AM
+# ----------------------------------------------------------------------------
+- id: holiday_peter_cottontail
+  alias: "Peter Cottontail"
+  description: "Turn on Easter decorations in the morning"
+  triggers:
+    - trigger: time
+      at: "07:00:00"
+  conditions:
+    - condition: state
+      entity_id: input_select.active_holiday
+      state: Easter
+  actions:
+    - action: switch.turn_on
+      target:
+        label_id: easter
+  mode: single
+
+# ----------------------------------------------------------------------------
+# ST. PATRICK'S DAY - March 10-17, 7:00 AM
+# ----------------------------------------------------------------------------
+- id: holiday_shamrock_display
+  alias: "Shamrock Display"
+  description: "Turn on St. Patrick's Day decorations in the morning"
+  triggers:
+    - trigger: time
+      at: "07:00:00"
+  conditions:
+    - condition: state
+      entity_id: input_select.active_holiday
+      state: "St. Patrick's Day"
+  actions:
+    - action: switch.turn_on
+      target:
+        label_id: st_patrick_s_day
+  mode: single
+
+# ----------------------------------------------------------------------------
+# INDEPENDENCE DAY - June 27 - July 11, 3:00 PM
+# Evening/outdoor focus matches the outdoor nature of fireworks season.
+# ----------------------------------------------------------------------------
+- id: holiday_patriotic_display
+  alias: "Patriotic Display"
+  description: "Turn on Independence Day decorations at 3 PM for evening display"
+  triggers:
+    - trigger: time
+      at: "15:00:00"
+  conditions:
+    - condition: state
+      entity_id: input_select.active_holiday
+      state: Independence Day
+  actions:
+    - action: switch.turn_on
+      target:
+        label_id: independence_day
+  mode: single

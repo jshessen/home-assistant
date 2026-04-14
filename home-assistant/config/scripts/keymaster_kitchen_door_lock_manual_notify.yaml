@@ -1,0 +1,12 @@
+# Alias Scripts - One for each lock
+keymaster_kitchen_door_lock_manual_notify:
+  alias: "Kitchen Door Lock Manual Notify"
+  sequence:
+    - service: script.keymaster_manual_notify_master
+      data:
+        lock_name: "Kitchen Door Lock"
+        message: "{{ message }}"
+        entity_id: "lock.touchscreen_deadbolt_kitchen_entry"  # Replace with your actual entity
+  mode: parallel
+  icon: mdi:door-open
+  max: 10

@@ -1,0 +1,59 @@
+# ============================================================================
+# Good Morning Script (Pre-Dawn Navigation)
+# ============================================================================
+# Minimal pre-dawn routine — sets time_of_day to Morning and provides
+# low-level kitchen navigation light. Called at ~5:30am by the
+# good_morning_early automation when time_of_day is still Night.
+#
+# Full wake-up (blinds, bright lights, kids room) is in start_active_day.
+# ============================================================================
+
+good_morning:
+  alias: Good Morning
+  icon: mdi:weather-sunny
+  mode: single
+  variables:
+    kitchen_lights:
+      - light.kitchen_light_3
+    announce_enabled: "{{ announce_enabled | default(false) }}"
+    announce_message: "{{ announce_message | default('Good morning.') }}"
+    announce_targets: "{{ announce_targets | default(['media_player.kitchen_echo']) }}"
+  sequence:
+    # ========================================================================
+    # SET TIME OF DAY
+    # ========================================================================
+    - service: input_select.select_option
+      target:
+        entity_id: input_select.time_of_day
+      data:
+        option: Morning
+
+    # ========================================================================
+    # OPTIONAL ANNOUNCEMENT
+    # ========================================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ announce_enabled | bool and (announce_targets | count > 0) }}"
+          sequence:
+            - service: notify.alexa_media
+              data:
+                message: "{{ announce_message }}"
+                data:
+                  type: tts
+                target: "{{ announce_targets }}"
+
+    # ========================================================================
+    # PRE-DAWN NAVIGATION LIGHT (low warm light for kitchen navigation)
+    # ========================================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ kitchen_lights | count > 0 }}"
+          sequence:
+            - service: light.turn_on
+              target:
+                entity_id: "{{ kitchen_lights | join(', ') }}"
+              data:
+                brightness_pct: 20
+                color_temp: 425

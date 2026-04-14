@@ -1,0 +1,24 @@
+# Master Script - Contains the actual logic
+keymaster_manual_notify_master:
+  alias: "Keymaster Manual Notify Master"
+  sequence:
+    - service: logbook.log
+      data:
+        name: "{{ lock_name | default('Door Lock') }}"
+        message: "{{ message }}"
+        entity_id: "{{ entity_id }}"
+        domain: lock
+  mode: parallel
+  icon: mdi:door-open
+  max: 10
+  fields:
+    lock_name:
+      description: "Display name for the lock"
+      example: "Front Door Lock"
+    message:
+      description: "Notification message"
+      example: "Lock was manually operated"
+    entity_id:
+      description: "Entity ID of the lock"
+      example: "lock.front_door"
+

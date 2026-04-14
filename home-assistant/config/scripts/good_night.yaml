@@ -1,0 +1,210 @@
+# ============================================================================
+# Good Night Script
+# ============================================================================
+# Comprehensive house shutdown routine that:
+# - Locks all doors and verifies the garage closes
+# - Uses grouped wrapper entities for common-room covers and media
+# - Shuts down common rooms with bounded parallelism
+# - Respects Guest mode exceptions
+# - Turns off holiday decorations
+# - Turns on bedroom fan and enables Night mode
+# ============================================================================
+
+good_night:
+  alias: Good Night
+  icon: mdi:weather-night
+  mode: single
+  variables:
+    night_covers:
+      - cover.living_room_blinds
+      - cover.sunroom_blinds_2
+      - cover.window_blind_controller_4
+      - cover.window_blind_controller_1_horizontal_slats_angle_2
+    guest_covers:
+      - cover.window_blind_controller_2
+    night_media_players:
+      - media_player.living_room_2
+      - media_player.sunroom_tv_2
+    living_room_lights: []
+    kitchen_lights:
+      - light.kitchen_light_3
+    dining_room_lights: []
+    hallway_lights:
+      - light.hallway_lights_2
+      - light.entry_outlet_1
+    kids_room_lights:
+      - light.bedroom_lamps_2
+    guest_room_lights:
+      - light.guest_outlet_3
+    guest_room_fans:
+      - fan.guest_outlet_2
+    bedroom_overhead_lights: []
+    bedroom_lamps:
+      - light.bedroom_lamps
+    bedroom_fans:
+      - fan.smart_strip_1_2
+    announce_enabled: "{{ announce_enabled | default(false) }}"
+    announce_start_message: "{{ announce_start_message | default('Good night. Securing the house.') }}"
+    announce_start_targets: "{{ announce_start_targets | default(['media_player.living_room_echo']) }}"
+    announce_end_message: "{{ announce_end_message | default('Good night. Sleep well.') }}"
+    announce_end_targets: "{{ announce_end_targets | default(['media_player.bedroom_echo']) }}"
+  sequence:
+    # ========================================================================
+    # CONTEXT + SAFETY GATES
+    # ========================================================================
+    - condition: state
+      entity_id: input_boolean.disable_good_night
+      state: "off"
+    - condition: not
+      conditions:
+        - condition: state
+          entity_id: input_select.presence_mode
+          state: "Vacation"
+    - variables:
+        is_guest_mode: "{{ is_state('input_boolean.guest_mode', 'on') }}"
+
+    # ========================================================================
+    # ANNOUNCEMENT (Variable-driven, disabled by default)
+    # ========================================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ announce_enabled | bool and (announce_start_targets | count > 0) }}"
+          sequence:
+            - service: notify.alexa_media
+              data:
+                message: "{{ announce_start_message }}"
+                data:
+                  type: tts
+                target: "{{ announce_start_targets }}"
+
+    # ========================================================================
+    # SECURITY + COVER CLOSE (delegate to secure_home)
+    # ========================================================================
+    - service: script.secure_home
+      data:
+        skip_guest_covers: "{{ is_guest_mode }}"
+
+    # ========================================================================
+    # COMMON-ROOM SHUTDOWN — BOUNDED PARALLELISM
+    # ========================================================================
+    - parallel:
+        # Media + holiday cleanup
+        - sequence:
+            - choose:
+                - conditions:
+                    - condition: template
+                      value_template: "{{ night_media_players | count > 0 }}"
+                  sequence:
+                    - service: media_player.turn_off
+                      target:
+                        entity_id: "{{ night_media_players | join(', ') }}"
+            - service: input_boolean.turn_off
+              target:
+                entity_id:
+                  - input_boolean.holiday_decorations_inside
+                  - input_boolean.holiday_decorations_outside
+            - service: switch.turn_off
+              target:
+                entity_id:
+                  - switch.pumpkin_patch
+                  - switch.turkey_tom
+                  - switch.christmas_accent_lights
+                  - switch.peter_cottontail
+
+        # Common-room lights
+        - choose:
+            - conditions:
+                - condition: template
+                  value_template: >
+                    {{ (living_room_lights
+                        + kitchen_lights
+                        + dining_room_lights
+                        + hallway_lights
+                        + kids_room_lights) | count > 0 }}
+              sequence:
+                - service: light.turn_off
+                  target:
+                    entity_id: >
+                      {{ (living_room_lights
+                          + kitchen_lights
+                          + dining_room_lights
+                          + hallway_lights
+                          + kids_room_lights) | join(', ') }}
+
+    # ========================================================================
+    # ROOM-SPECIFIC EXCEPTIONS
+    # ========================================================================
+
+    # Guest room / office stays untouched when house mode is Guest
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ guest_room_lights | count > 0 and not is_guest_mode }}"
+          sequence:
+            - service: light.turn_off
+              target:
+                entity_id: "{{ guest_room_lights | join(', ') }}"
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ guest_room_fans | count > 0 and not is_guest_mode }}"
+          sequence:
+            - service: fan.turn_off
+              target:
+                entity_id: "{{ guest_room_fans | join(', ') }}"
+
+    # Main bedroom overheads off, but keep lamps on dim for comfort
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ bedroom_overhead_lights | count > 0 }}"
+          sequence:
+            - service: light.turn_off
+              target:
+                entity_id: "{{ bedroom_overhead_lights | join(', ') }}"
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ bedroom_lamps | count > 0 }}"
+          sequence:
+            - service: light.turn_on
+              target:
+                entity_id: "{{ bedroom_lamps | join(', ') }}"
+              data:
+                brightness_pct: 10
+                color_temp: 500
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ bedroom_fans | count > 0 }}"
+          sequence:
+            - service: fan.turn_on
+              target:
+                entity_id: "{{ bedroom_fans | join(', ') }}"
+
+    # ========================================================================
+    # FINAL STATE UPDATE + ANNOUNCEMENT
+    # ========================================================================
+    - service: input_select.select_option
+      target:
+        entity_id: input_select.time_of_day
+      data:
+        option: Night
+
+    - delay:
+        seconds: 2
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ announce_enabled | bool and (announce_end_targets | count > 0) }}"
+          sequence:
+            - service: notify.alexa_media
+              data:
+                message: "{{ announce_end_message }}"
+                data:
+                  type: tts
+                target: "{{ announce_end_targets }}"

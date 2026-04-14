@@ -1,0 +1,195 @@
+# ============================================================================
+# Start Active Day Script
+# ============================================================================
+# Full wake-up routine: opens blinds in phases, sets kitchen lights to
+# appropriate brightness for weekday/weekend. Sets time_of_day = Day at end.
+#
+# Called by: good_morning_weekday and good_morning_weekend automations.
+# All timing and brightness values are UI-configurable via input_number helpers.
+# ============================================================================
+
+start_active_day:
+  alias: Start Active Day
+  icon: mdi:weather-sunny-alert
+  mode: single
+  variables:
+    # -- Brightness (weekday/weekend, input_number-backed) --
+    brightness_weekday: >-
+      {%- set _caller = brightness_weekday | default(none) -%}
+      {%- set _helper = states('input_number.wake_brightness_weekday') -%}
+      {%- if _caller is not none -%}{{ _caller | int }}{%- elif _helper not in ('unavailable', 'unknown') -%}{{ _helper | int }}{%- else -%}80{%- endif -%}
+    brightness_weekend: >-
+      {%- set _caller = brightness_weekend | default(none) -%}
+      {%- set _helper = states('input_number.wake_brightness_weekend') -%}
+      {%- if _caller is not none -%}{{ _caller | int }}{%- elif _helper not in ('unavailable', 'unknown') -%}{{ _helper | int }}{%- else -%}50{%- endif -%}
+    # -- Color temp (weekday/weekend, input_number-backed) --
+    color_temp_weekday: >-
+      {%- set _caller = color_temp_weekday | default(none) -%}
+      {%- set _helper = states('input_number.wake_color_temp_weekday') -%}
+      {%- if _caller is not none -%}{{ _caller | int }}{%- elif _helper not in ('unavailable', 'unknown') -%}{{ _helper | int }}{%- else -%}370{%- endif -%}
+    color_temp_weekend: >-
+      {%- set _caller = color_temp_weekend | default(none) -%}
+      {%- set _helper = states('input_number.wake_color_temp_weekend') -%}
+      {%- if _caller is not none -%}{{ _caller | int }}{%- elif _helper not in ('unavailable', 'unknown') -%}{{ _helper | int }}{%- else -%}420{%- endif -%}
+    # -- Delays (input_number-backed) --
+    blinds_delay_min: >-
+      {%- set _caller = blinds_delay_min | default(none) -%}
+      {%- set _helper = states('input_number.wake_blinds_delay_min') -%}
+      {%- if _caller is not none -%}{{ _caller | int }}{%- elif _helper not in ('unavailable', 'unknown') -%}{{ _helper | int }}{%- else -%}5{%- endif -%}
+    kids_lights_delay_min: >-
+      {%- set _caller = kids_lights_delay_min | default(none) -%}
+      {%- set _helper = states('input_number.wake_kids_lights_delay_min') -%}
+      {%- if _caller is not none -%}{{ _caller | int }}{%- elif _helper not in ('unavailable', 'unknown') -%}{{ _helper | int }}{%- else -%}10{%- endif -%}
+    # -- Entity lists --
+    morning_blinds:
+      - cover.living_room_blinds
+      - cover.sunroom_blinds_2
+    bedroom_blinds:
+      - cover.window_blind_controller_4
+    kids_blinds:
+      - cover.window_blind_controller_1_horizontal_slats_angle_2
+    guest_blinds:
+      - cover.window_blind_controller_2
+    kitchen_lights:
+      - light.kitchen_light_3
+    kids_room_lights:
+      - light.bedroom_lamps_2
+    # -- Guest mode check --
+    is_guest_mode: "{{ is_state('input_boolean.guest_mode', 'on') }}"
+    # -- Announcement (disabled by default) --
+    announce_enabled: "{{ announce_enabled | default(false) }}"
+    announce_message: "{{ announce_message | default('Good morning. Starting your day.') }}"
+    announce_targets: "{{ announce_targets | default(['media_player.kitchen_echo']) }}"
+  sequence:
+    # ========================================================================
+    # OPTIONAL ANNOUNCEMENT
+    # ========================================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ announce_enabled | bool and (announce_targets | count > 0) }}"
+          sequence:
+            - service: notify.alexa_media
+              data:
+                message: "{{ announce_message }}"
+                data:
+                  type: tts
+                target: "{{ announce_targets }}"
+
+    # ========================================================================
+    # PARALLEL: Open common-area blinds + set kitchen lights
+    # ========================================================================
+    - parallel:
+        - choose:
+            - conditions:
+                - condition: template
+                  value_template: "{{ morning_blinds | count > 0 }}"
+              sequence:
+                - service: cover.open_cover
+                  target:
+                    entity_id: "{{ morning_blinds | join(', ') }}"
+        - sequence:
+            - choose:
+                # WEEKDAY
+                - conditions:
+                    - condition: time
+                      weekday:
+                        - mon
+                        - tue
+                        - wed
+                        - thu
+                        - fri
+                  sequence:
+                    - choose:
+                        - conditions:
+                            - condition: template
+                              value_template: "{{ kitchen_lights | count > 0 }}"
+                          sequence:
+                            - service: light.turn_on
+                              target:
+                                entity_id: "{{ kitchen_lights | join(', ') }}"
+                              data:
+                                brightness_pct: "{{ brightness_weekday }}"
+                                color_temp: "{{ color_temp_weekday }}"
+                # WEEKEND
+                - conditions:
+                    - condition: time
+                      weekday:
+                        - sat
+                        - sun
+                  sequence:
+                    - choose:
+                        - conditions:
+                            - condition: template
+                              value_template: "{{ kitchen_lights | count > 0 }}"
+                          sequence:
+                            - service: light.turn_on
+                              target:
+                                entity_id: "{{ kitchen_lights | join(', ') }}"
+                              data:
+                                brightness_pct: "{{ brightness_weekend }}"
+                                color_temp: "{{ color_temp_weekend }}"
+
+    # ========================================================================
+    # DELAY — wait before opening bedroom blinds
+    # ========================================================================
+    - delay:
+        minutes: "{{ blinds_delay_min }}"
+
+    # ========================================================================
+    # Bedroom blinds (skip while guests are using that room)
+    # ========================================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ bedroom_blinds | count > 0 and not is_guest_mode }}"
+          sequence:
+            - service: cover.open_cover
+              target:
+                entity_id: "{{ bedroom_blinds | join(', ') }}"
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ guest_blinds | count > 0 and not is_guest_mode }}"
+          sequence:
+            - service: cover.open_cover
+              target:
+                entity_id: "{{ guest_blinds | join(', ') }}"
+
+    # ========================================================================
+    # WEEKDAY ONLY: Kids lights (school days)
+    # ========================================================================
+    - choose:
+        - conditions:
+            - condition: time
+              weekday:
+                - mon
+                - tue
+                - wed
+                - thu
+                - fri
+          sequence:
+            - delay:
+                minutes: "{{ kids_lights_delay_min }}"
+            - choose:
+                - conditions:
+                    - condition: template
+                      value_template: "{{ kids_room_lights | count > 0 }}"
+                  sequence:
+                    - service: light.turn_on
+                      target:
+                        entity_id: "{{ kids_room_lights | join(', ') }}"
+                      data:
+                        brightness_pct: 30
+                        color_temp: 400
+                        transition: 300
+
+    # ========================================================================
+    # SET TIME OF DAY = Day (set at END so partial runs don't set wrong state)
+    # ========================================================================
+    - service: input_select.select_option
+      target:
+        entity_id: input_select.time_of_day
+      data:
+        option: Day

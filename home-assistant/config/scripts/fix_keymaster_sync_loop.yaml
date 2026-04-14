@@ -1,0 +1,31 @@
+##############################################
+# Fix Keymaster Sync Status
+##############################################
+#
+# This script reloads the keymaster integration to force it
+# to re-query the actual Z-Wave lock states and update the
+# sync status displays.
+#
+# Use this when child locks get stuck in "Deleting" state
+# even though the codes are actually cleared at Z-Wave level.
+##############################################
+
+fix_keymaster_sync_status:
+  alias: "Fix Keymaster Sync Status"
+  description: "Reload keymaster to refresh sync status from Z-Wave"
+  sequence:
+    # Reload the Front Door Lock keymaster integration
+    - action: homeassistant.reload_config_entry
+      target:
+        entity_id: lock.touchscreen_deadbolt_front_door
+
+    # Wait for reload to complete
+    - delay:
+        seconds: 5
+
+    # Notify completion
+    - action: persistent_notification.create
+      data:
+        title: "Keymaster Sync Status Fixed"
+        message: "Keymaster integration reloaded. Sync status should now be correct."
+  mode: single
