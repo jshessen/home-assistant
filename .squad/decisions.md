@@ -130,6 +130,49 @@ variable_name: >-
 
 ---
 
+### 2026-04-14: Repo scope audit — initial findings
+**By:** Saul
+**What:** First-pass audit of `.gitignore`, `.gitattributes`, and `home-assistant.code-workspace`.
+
+**Findings:**
+- **`.gitignore`:** Added security gap (secrets/ directory), HA runtime exclusions (.storage/, deps/, etc.), Docker state (postgres/data/, etc.), Python artifacts, DB variants, log variants, external sub-repo placeholders
+- **`.gitattributes`:** Added text eol=lf for YAML/shell/Python, secrets/* -diff for security, binary markers for SQLite
+- **`home-assistant.code-workspace`:** Added missing `!env_var scalar` to customTags; noted stale keymaster-github workspace folder; flagged container name discrepancy (homeassistant vs home-assistant)
+
+**Decisions Made:**
+1. Added `secrets/` to `.gitignore` — critical security gap
+2. Merged all new entries; kept existing entries
+3. Added EOL normalization and secrets diff suppression
+4. Did not remove keymaster-github folder — requires user confirmation
+5. Did not change task container names — out of audit scope
+
+---
+
+### 2026-04-14: Tracking scope — Repo Hygiene Audit
+**By:** Saul
+**Status:** Implemented
+**What:** Defined policy for what gets tracked in git. All authored content tracked; HACS components, runtime artifacts, Z-Wave state, Docker secrets, and credentials excluded.
+
+**What We Track:**
+- Docker compose files, Makefile, .env, .github/, .copilot/, .squad/
+- All authored HA YAML: configuration.yaml, automations/, blueprints/, docs/, lovelace/, packages/, scripts/, templates/, alexa.yaml, input helpers, etc.
+- mosquitto/config/mosquitto.conf, zigbee2mqtt/data/configuration.yaml, zwave/settings.json
+
+**Security Finding:** `config.d/mqtt.env` was tracked and contained plaintext MQTT password. Added to `.gitignore` and untracked with `git rm --cached`. **Password remains in git history** — user should rotate and consider history cleanup.
+
+**Priority Additions:** docker-compose.postgres.yml, home-assistant.code-workspace, .env, .github/, .copilot/, .squad/, alexa.yaml, automations/, blueprints/, docs/, lovelace/, packages/, scripts/, templates/, zwave/settings.json
+
+---
+
+### 2026-04-14: Added Yen — AI & Emerging Tech Specialist
+**By:** jshessen
+**Status:** Decided
+**What:** Added Yen to the squad as the AI & Emerging Tech Specialist. Role covers AI/ML integrations (Ollama, LocalAI, Whisper, conversation agents, HA AI Task), prompt engineering, Jinja2 optimization via LLM techniques, emerging tech evaluation, team upskilling, and skill codification.
+**Why:** User identified gap — team lacked a "cutting edge, high tech player" constantly reviewing the AI industry and translating new techniques into team-usable patterns.
+**Routing:** squad:yen label; AI/ML research and integration domains; tech briefings to all team members
+
+---
+
 ## Governance
 
 - All meaningful changes require team consensus

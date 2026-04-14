@@ -18,6 +18,7 @@
 | Basher | Template Dev | `.squad/agents/basher/charter.md` | ✅ Active |
 | Livingston | Troubleshooter | `.squad/agents/livingston/charter.md` | ✅ Active |
 | Saul | Project Steward | `.squad/agents/saul/charter.md` | ✅ Active |
+| Yen | AI & Emerging Tech Specialist | `.squad/agents/yen/charter.md` | ✅ Active |
 | Scribe | Session Logger | `.squad/agents/scribe/charter.md` | 📋 Silent |
 | Ralph | Work Monitor | `.squad/agents/ralph/charter.md` | 🔄 Monitor |
 
