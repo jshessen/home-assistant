@@ -91,6 +91,9 @@ coverage.xml
 # Password also at secrets/mqtt_admin_password (already gitignored via secrets/)
 config.d/mqtt.env
 
+# ─── Root .env — contains plaintext credentials (MQTTADMINPW etc.) ───────────
+.env
+
 # ─── Home Assistant: HACS-managed components ─────────────────────────────────
 # custom_components/ is installed by HACS — not authored in this repo
 # Source for any custom component lives in its own repo (e.g. keymaster-github/)
