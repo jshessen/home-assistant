@@ -178,3 +178,12 @@ variable_name: >-
 - All meaningful changes require team consensus
 - Document architectural decisions here
 - Keep history focused on work, decisions focused on direction
+
+---
+
+### 2026-04-14: CRITICAL — scripts include pattern in configuration.yaml
+**By:** Jeff (via Copilot)
+**What:** `configuration.yaml` line 10 MUST use `script: !include_dir_merge_named scripts/` — NOT `script: !include scripts.yaml`. The `scripts/` directory contains multiple YAML files; there is no `scripts.yaml` flat file. Using the wrong form puts HA into recovery mode immediately on startup.
+**Why:** This has been introduced twice by squad agents. Do NOT change this line. Verify before any commit touching `configuration.yaml`.
+**Correct:**   `script: !include_dir_merge_named scripts/`
+**WRONG:**     `script: !include scripts.yaml`  ← breaks HA, triggers recovery mode
