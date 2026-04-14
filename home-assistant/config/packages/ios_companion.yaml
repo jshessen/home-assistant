@@ -1,0 +1,241 @@
+# iOS Companion App Integration Package
+
+# Modern template integration (replaces deprecated template platform)
+template:
+  - sensor:
+      - name: "iOS App Connection Status"
+        state: >-
+          {% if states('input_datetime.last_ios_request') != 'unknown' %}
+            {% set last_seen = as_timestamp(states('input_datetime.last_ios_request')) %}
+            {% set now = as_timestamp(now()) %}
+            {% if (now - last_seen) < 300 %}
+              Connected
+            {% elif (now - last_seen) < 900 %}
+              Idle
+            {% else %}
+              Disconnected
+            {% endif %}
+          {% else %}
+            Unknown
+          {% endif %}
+        icon: >-
+          {% set status = this.state %}
+          {% if status == 'Connected' %}
+            mdi:cellphone-check
+          {% elif status == 'Idle' %}
+            mdi:cellphone-wireless
+          {% else %}
+            mdi:cellphone-off
+          {% endif %}
+        attributes:
+          last_seen: >-
+            {% if states('input_datetime.last_ios_request') != 'unknown' %}
+              {{ states('input_datetime.last_ios_request') }}
+            {% else %}
+              Never
+            {% endif %}
+          requests_today: "{{ states('sensor.ios_requests_daily') }}"
+          total_requests: "{{ states('counter.ios_requests_total') }}"
+
+  - binary_sensor:
+      - name: "iOS App Connected"
+        state: >-
+          {% if states('input_datetime.last_ios_request') != 'unknown' %}
+            {% set last_seen = as_timestamp(states('input_datetime.last_ios_request')) %}
+            {% set now = as_timestamp(now()) %}
+            {{ (now - last_seen) < 300 }}
+          {% else %}
+            false
+          {% endif %}
+        icon: >-
+          {% if this.state %}
+            mdi:cellphone-check
+          {% else %}
+            mdi:cellphone-off
+          {% endif %}
+        attributes:
+          connection_age_seconds: >-
+            {% if states('input_datetime.last_ios_request') != 'unknown' %}
+              {% set last_seen = as_timestamp(states('input_datetime.last_ios_request')) %}
+              {% set now = as_timestamp(now()) %}
+              {{ (now - last_seen) | int }}
+            {% else %}
+              null
+            {% endif %}
+
+# Input datetime to store last iOS request time
+input_datetime:
+  last_ios_request:
+    name: "Last iOS Request"
+    has_date: true
+    has_time: true
+
+# Counter for iOS requests
+counter:
+  ios_requests_total:
+    name: "Total iOS Requests"
+    icon: mdi:counter
+    initial: 0
+    step: 1
+
+# Utility meters to track iOS requests over different periods
+utility_meter:
+  ios_requests_daily:
+    source: counter.ios_requests_total
+    cycle: daily
+
+  ios_requests_weekly:
+    source: counter.ios_requests_total
+    cycle: weekly
+
+  ios_requests_monthly:
+    source: counter.ios_requests_total
+    cycle: monthly
+
+# REST commands for testing iOS wrapper only
+rest_command:
+  test_ios_wrapper:
+    url: !secret ios_wrapper_states_url
+    method: GET
+    headers:
+      X-iOS-Secret: !secret ios_app_secret
+      Content-Type: "application/json"
+      User-Agent: "Home Assistant iOS Wrapper Test"
+    timeout: 15
+    verify_ssl: true
+
+  test_ios_wrapper_config:
+    url: !secret ios_wrapper_config_url
+    method: GET
+    headers:
+      X-iOS-Secret: !secret ios_app_secret
+      Content-Type: "application/json"
+      User-Agent: "Home Assistant iOS Wrapper Test"
+    timeout: 10
+    verify_ssl: true
+
+  test_ios_wrapper_services:
+    url: !secret ios_wrapper_services_url
+    method: GET
+    headers:
+      X-iOS-Secret: !secret ios_app_secret
+      Content-Type: "application/json"
+      User-Agent: "Home Assistant iOS Wrapper Test"
+    timeout: 10
+    verify_ssl: true
+
+# Automation to track iOS app requests
+automation:
+  - id: ios_app_request_tracker
+    alias: "Track iOS App Requests"
+    description: "Updates timestamp when iOS app makes requests"
+    triggers:
+      - platform: event
+        event_type: api_request
+        event_data:
+          source: "iOS-Wrapper"
+      - platform: event
+        event_type: call_service
+        event_data:
+          domain: "rest_command"
+          service: "test_ios_wrapper"
+    actions:
+      - service: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.last_ios_request
+        data:
+          datetime: "{{ now() }}"
+      - service: system_log.write
+        data:
+          message: "iOS app request detected at {{ now() }}"
+          level: info
+          logger: "custom_components.ios_companion"
+
+  - id: ios_app_request_counter
+    alias: "Count iOS App Requests"
+    description: "Increments counter for each iOS app request"
+    triggers:
+      - platform: event
+        event_type: api_request
+        event_data:
+          source: "iOS-Wrapper"
+      - platform: state
+        entity_id: input_datetime.last_ios_request
+    actions:
+      - service: counter.increment
+        target:
+          entity_id: counter.ios_requests_total
+
+# Scripts for testing iOS wrapper connectivity
+script:
+  test_ios_connection:
+    alias: "Test iOS Wrapper Connection"
+    description: "Tests the iOS Lambda wrapper connectivity across multiple endpoints"
+    mode: single
+    sequence:
+      - service: persistent_notification.create
+        data:
+          title: "iOS Test Started"
+          message: "Starting iOS wrapper connectivity test..."
+          notification_id: ios_wrapper_test
+
+      - service: rest_command.test_ios_wrapper
+      - delay:
+          seconds: 1
+      - service: rest_command.test_ios_wrapper_config
+      - delay:
+          seconds: 1
+      - service: rest_command.test_ios_wrapper_services
+      - delay:
+          seconds: 2
+
+      - service: persistent_notification.create
+        data:
+          title: "iOS Wrapper Test Complete"
+          message: >-
+            **iOS wrapper test completed** at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+
+            **Status**: {{ states('sensor.ios_app_connection_status') }}
+            **Connected**: {{ states('binary_sensor.ios_app_connected') }}
+            **Total Requests**: {{ states('counter.ios_requests_total') }}
+            **Today's Requests**: {{ states('sensor.ios_requests_daily') }}
+
+            ✅ Tested endpoints: /api/states, /api/config, /api/services
+          notification_id: ios_wrapper_test
+
+  ios_wrapper_health_check:
+    alias: "iOS Wrapper Health Check"
+    description: "Comprehensive health check of iOS Lambda wrapper"
+    mode: single
+    sequence:
+      - service: persistent_notification.create
+        data:
+          title: "iOS Health Check Started"
+          message: "Starting comprehensive iOS wrapper health check..."
+          notification_id: ios_health_check
+
+      - repeat:
+          count: 3
+          sequence:
+            - service: rest_command.test_ios_wrapper
+            - delay:
+                seconds: 2
+
+      - service: persistent_notification.create
+        data:
+          title: "iOS Health Check Complete"
+          message: >-
+            **📊 Health Check Results**
+
+            **Connection Status**: {{ states('sensor.ios_app_connection_status') }}
+            **Last Request**: {{ state_attr('sensor.ios_app_connection_status', 'last_seen') }}
+            **Connection Age**: {{ state_attr('binary_sensor.ios_app_connected', 'connection_age_seconds') }}s
+
+            **Request Statistics**:
+            - Total: {{ states('counter.ios_requests_total') }}
+            - Today: {{ states('sensor.ios_requests_daily') }}
+            - Weekly: {{ states('sensor.ios_requests_weekly') }}
+            - Monthly: {{ states('sensor.ios_requests_monthly') }}
+
+            ✅ Health check completed successfully
+          notification_id: ios_health_check

@@ -1,0 +1,60 @@
+blueprint:
+  name: Mirror Contact Sensor to Virtual Switch/Boolean (with Delay)
+  description: >
+    Mirrors a real contact sensor to a virtual device (input_boolean, switch, etc.),
+    with an optional delay before syncing states.
+  domain: automation
+  input:
+    real_contact_sensor:
+      name: Real Contact Sensor
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class: door
+    virtual_device:
+      name: Virtual Device (input_boolean, switch, etc.)
+      selector:
+        entity:
+          domain:
+            - input_boolean
+            - switch
+            - light
+    delay_seconds:
+      name: Delay (in seconds)
+      description: Time to wait before changing the virtual device's state
+      default: 0
+      selector:
+        number:
+          min: 0
+          max: 300
+          unit_of_measurement: seconds
+          mode: slider
+
+trigger:
+  - platform: state
+    entity_id: !input real_contact_sensor
+
+action:
+  - delay:
+      seconds: !input delay_seconds
+
+  - choose:
+      - conditions:
+          - condition: state
+            entity_id: !input real_contact_sensor
+            state: 'on'  # Contact is OPEN
+        sequence:
+          - service: homeassistant.turn_on
+            target:
+              entity_id: !input virtual_device
+
+      - conditions:
+          - condition: state
+            entity_id: !input real_contact_sensor
+            state: 'off'  # Contact is CLOSED
+        sequence:
+          - service: homeassistant.turn_off
+            target:
+              entity_id: !input virtual_device
+
+mode: restart

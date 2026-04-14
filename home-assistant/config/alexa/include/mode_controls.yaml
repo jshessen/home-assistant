@@ -1,0 +1,22 @@
+# Mode Controls and Holiday Decorations
+#
+# Input helpers for controlling house-wide modes and holiday settings.
+# These provide high-level control through Alexa voice commands.
+#
+# Examples:
+# - "Alexa, set house mode to away"
+# - "Alexa, turn on holiday decorations"
+
+# House mode controls
+- input_select.presence_mode
+- input_select.active_holiday
+
+# Mode toggles
+- input_boolean.guest_mode
+- input_boolean.movie_mode
+- input_boolean.party_mode
+- input_boolean.work_from_home_mode
+
+# Holiday decoration controls
+- input_boolean.holiday_decorations_inside
+- input_boolean.holiday_decorations_outside

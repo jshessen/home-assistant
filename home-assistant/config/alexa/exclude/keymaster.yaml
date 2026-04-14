@@ -1,0 +1,32 @@
+# Keymaster Lock Code Manager Integration Exclusions
+#
+# The Keymaster integration creates extensive helper entities for managing
+# lock codes on Z-Wave/Zigbee smart locks. These are not physical devices
+# and should not be exposed to Alexa voice control.
+#
+# Affected entities: ~2,010 entities per lock
+# Categories: switches, binary_sensors, sensors, numbers, text inputs
+#
+# Reference: https://github.com/FutureTense/keymaster
+
+# Keymaster switches (auto-lock, notifications, retry logic, code slots)
+- switch.*_lock_code_slot_*
+- switch.*_lock_auto_lock
+- switch.*_lock_door_notifications
+- switch.*_lock_lock_notifications
+- switch.*_lock_retry_lock
+
+# Keymaster binary sensors (code slot status, network status)
+- binary_sensor.*_lock_code_slot_*
+- binary_sensor.*_lock_network
+
+# Keymaster sensors (code slot metadata, lock info)
+- sensor.*_lock_code_slot_*
+- sensor.*_lock_lock_name
+- sensor.*_lock_parent_lock
+
+# Keymaster number inputs (PIN codes)
+- number.*_lock_*
+
+# Keymaster text inputs (code names, metadata)
+- text.*_lock_*

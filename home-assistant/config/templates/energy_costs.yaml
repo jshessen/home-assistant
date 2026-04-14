@@ -1,0 +1,210 @@
+# ============================================================================
+# Energy Cost Tracking Templates - Seasonal & Tiered Rates
+# ============================================================================
+# Calculates electricity costs based on consumption and seasonal rates
+# Ameren Missouri seasonal rates: Summer (flat) vs Winter (tiered)
+# Auto-updated by packages/ameren/ameren_rate_manager.py
+# ============================================================================
+
+- sensor:
+    - name: "Current Electricity Season"
+      unique_id: sensor_current_electricity_season
+      icon: mdi:calendar-month
+      state: >-
+        {% set month = now().month %}
+        {% if 6 <= month <= 9 %}
+          Summer
+        {% else %}
+          Winter
+        {% endif %}
+      attributes:
+        months: >-
+          {% set month = now().month %}
+          {% if 6 <= month <= 9 %}
+            June - September
+          {% else %}
+            October - May
+          {% endif %}
+        rate_type: >-
+          {% set month = now().month %}
+          {% if 6 <= month <= 9 %}
+            Flat Rate
+          {% else %}
+            Tiered (750 kWh breakpoint)
+          {% endif %}
+
+    - name: "Current Electricity Rate"
+      unique_id: sensor_current_electricity_rate
+      unit_of_measurement: "USD/kWh"
+      icon: mdi:flash
+      state_class: measurement
+      state: >-
+        {% set month = now().month %}
+        {% set consumption = states('sensor.monthly_electricity') | float(0) %}
+        {% if 6 <= month <= 9 %}
+          {# Summer: flat rate #}
+          {{ states('input_number.ameren_mo_summer_rate') | float(0.1560) }}
+        {% else %}
+          {# Winter: tiered rate - calculate effective blended rate #}
+          {% set tier1_limit = states('input_number.ameren_mo_winter_tier1_limit') | float(750) %}
+          {% set tier1_rate = states('input_number.ameren_mo_winter_tier1_rate') | float(0.1062) %}
+          {% set tier2_rate = states('input_number.ameren_mo_winter_tier2_rate') | float(0.0714) %}
+          {% if consumption <= tier1_limit %}
+            {{ tier1_rate }}
+          {% else %}
+            {# Blended rate for mixed-tier consumption #}
+            {% set tier1_cost = tier1_limit * tier1_rate %}
+            {% set tier2_kwh = consumption - tier1_limit %}
+            {% set tier2_cost = tier2_kwh * tier2_rate %}
+            {% set total_cost = tier1_cost + tier2_cost %}
+            {{ (total_cost / consumption) | round(4) }}
+          {% endif %}
+        {% endif %}
+      attributes:
+        season: "{{ states('sensor.current_electricity_season') }}"
+        consumption_kwh: "{{ states('sensor.monthly_electricity') }}"
+        rate_breakdown: >-
+          {% set month = now().month %}
+          {% set consumption = states('sensor.monthly_electricity') | float(0) %}
+          {% if 6 <= month <= 9 %}
+            All kWh @ {{ states('input_number.ameren_mo_summer_rate') }}
+          {% else %}
+            {% set tier1_limit = states('input_number.ameren_mo_winter_tier1_limit') | float(750) %}
+            {% if consumption <= tier1_limit %}
+              {{ consumption | round(1) }} kWh @ {{ states('input_number.ameren_mo_winter_tier1_rate') }}
+            {% else %}
+              {{ tier1_limit }} kWh @ {{ states('input_number.ameren_mo_winter_tier1_rate') }}, {{ (consumption - tier1_limit) | round(1) }} kWh @ {{ states('input_number.ameren_mo_winter_tier2_rate') }}
+            {% endif %}
+          {% endif %}
+
+    - name: "Monthly Electricity Cost"
+      unique_id: sensor_monthly_electricity_cost
+      unit_of_measurement: "$"
+      icon: mdi:currency-usd
+      device_class: monetary
+      state: >-
+        {% set consumption = states('sensor.monthly_electricity') | float(0) %}
+        {% set month = now().month %}
+        {% set fixed_charge = states('input_number.ameren_mo_monthly_fixed') | float(9.19) %}
+
+        {% if consumption > 0 %}
+          {% if 6 <= month <= 9 %}
+            {# Summer: flat rate #}
+            {% set rate = states('input_number.ameren_mo_summer_rate') | float(0.1560) %}
+            {% set energy_cost = consumption * rate %}
+            {{ (energy_cost + fixed_charge) | round(2) }}
+          {% else %}
+            {# Winter: tiered rate #}
+            {% set tier1_limit = states('input_number.ameren_mo_winter_tier1_limit') | float(750) %}
+            {% set tier1_rate = states('input_number.ameren_mo_winter_tier1_rate') | float(0.1062) %}
+            {% set tier2_rate = states('input_number.ameren_mo_winter_tier2_rate') | float(0.0714) %}
+
+            {% if consumption <= tier1_limit %}
+              {% set energy_cost = consumption * tier1_rate %}
+            {% else %}
+              {% set tier1_cost = tier1_limit * tier1_rate %}
+              {% set tier2_kwh = consumption - tier1_limit %}
+              {% set tier2_cost = tier2_kwh * tier2_rate %}
+              {% set energy_cost = tier1_cost + tier2_cost %}
+            {% endif %}
+
+            {{ (energy_cost + fixed_charge) | round(2) }}
+          {% endif %}
+        {% else %}
+          0.00
+        {% endif %}
+      attributes:
+        consumption_kwh: "{{ states('sensor.monthly_electricity') }}"
+        fixed_charge: "{{ states('input_number.ameren_mo_monthly_fixed') }}"
+        energy_cost: >-
+          {% set consumption = states('sensor.monthly_electricity') | float(0) %}
+          {% set month = now().month %}
+          {% if consumption > 0 %}
+            {% if 6 <= month <= 9 %}
+              {% set rate = states('input_number.ameren_mo_summer_rate') | float(0.1560) %}
+              {{ (consumption * rate) | round(2) }}
+            {% else %}
+              {% set tier1_limit = states('input_number.ameren_mo_winter_tier1_limit') | float(750) %}
+              {% set tier1_rate = states('input_number.ameren_mo_winter_tier1_rate') | float(0.1062) %}
+              {% set tier2_rate = states('input_number.ameren_mo_winter_tier2_rate') | float(0.0714) %}
+              {% if consumption <= tier1_limit %}
+                {{ (consumption * tier1_rate) | round(2) }}
+              {% else %}
+                {% set tier1_cost = tier1_limit * tier1_rate %}
+                {% set tier2_kwh = consumption - tier1_limit %}
+                {% set tier2_cost = tier2_kwh * tier2_rate %}
+                {{ (tier1_cost + tier2_cost) | round(2) }}
+              {% endif %}
+            {% endif %}
+          {% else %}
+            0.00
+          {% endif %}
+        season: "{{ states('sensor.current_electricity_season') }}"
+        effective_rate: "{{ states('sensor.current_electricity_rate') }}"
+
+    - name: "Daily Electricity Cost"
+      unique_id: sensor_daily_electricity_cost
+      unit_of_measurement: "$"
+      icon: mdi:currency-usd
+      device_class: monetary
+      state: >-
+        {% set consumption = states('sensor.daily_electricity') | float(0) %}
+        {% set month = now().month %}
+        {% if consumption > 0 %}
+          {% if 6 <= month <= 9 %}
+            {# Summer: flat rate #}
+            {% set rate = states('input_number.ameren_mo_summer_rate') | float(0.1560) %}
+            {{ (consumption * rate) | round(2) }}
+          {% else %}
+            {# Winter: use tier 1 rate for daily (unlikely to exceed 750 kWh/day) #}
+            {% set rate = states('input_number.ameren_mo_winter_tier1_rate') | float(0.1062) %}
+            {{ (consumption * rate) | round(2) }}
+          {% endif %}
+        {% else %}
+          0.00
+        {% endif %}
+      attributes:
+        consumption_kwh: "{{ states('sensor.daily_electricity') }}"
+        rate_per_kwh: >-
+          {% set month = now().month %}
+          {% if 6 <= month <= 9 %}
+            {{ states('input_number.ameren_mo_summer_rate') }}
+          {% else %}
+            {{ states('input_number.ameren_mo_winter_tier1_rate') }}
+          {% endif %}
+        season: "{{ states('sensor.current_electricity_season') }}"
+
+    - name: "Estimated Monthly Bill Projection"
+      unique_id: sensor_estimated_monthly_bill_projection
+      unit_of_measurement: "$"
+      icon: mdi:calculator
+      device_class: monetary
+      state: >-
+        {% set current_cost = states('sensor.monthly_electricity_cost') | float(0) %}
+        {% set current_day = now().day %}
+        {% set days_in_month = (now().replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1) %}
+        {% set total_days = days_in_month.day %}
+        {% set days_remaining = total_days - current_day %}
+
+        {% if days_remaining > 0 and current_day > 1 %}
+          {# Project based on current daily average #}
+          {% set daily_avg = current_cost / current_day %}
+          {% set projected_total = daily_avg * total_days %}
+          {{ projected_total | round(2) }}
+        {% else %}
+          {{ current_cost | round(2) }}
+        {% endif %}
+      attributes:
+        current_month_cost: "{{ states('sensor.monthly_electricity_cost') }}"
+        current_day: "{{ now().day }}"
+        days_in_month: >-
+          {% set days_in_month = (now().replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1) %}
+          {{ days_in_month.day }}
+        daily_average: >-
+          {% set current_cost = states('sensor.monthly_electricity_cost') | float(0) %}
+          {% set current_day = now().day %}
+          {% if current_day > 0 %}
+            {{ (current_cost / current_day) | round(2) }}
+          {% else %}
+            0.00
+          {% endif %}

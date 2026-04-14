@@ -1,0 +1,83 @@
+# ========================================================================
+# House Christmas Lights - Dig-Octa-32-8L WLED Controller
+# ========================================================================
+#
+# SMART LIGHT (changes with season):
+#   - light.house_seasonal_lights
+#     Shows current season name in UI, auto-updates icons
+#     Full brightness support
+#
+# STATIC ALIASES (always available for Alexa):
+#   - light.house_christmas_lights
+#
+# Physical entity: light.dig_octa_32_8l_main (Main light)
+# Segments: Segment 1, Segment 2, Segment 3
+# Location: Attic
+#
+# Say any name to Alexa - they all work year-round!
+# ========================================================================
+
+# SMART LIGHT - Auto-updates name and icon based on current season
+# References input_select.active_holiday (maintained by holiday_season_controller automation)
+- light:
+    - name: >
+        {% set season = states('input_select.active_holiday') %}
+        {% if season == 'Halloween' %}
+          House Halloween Lights
+        {% elif season == 'Thanksgiving' %}
+          House Harvest Lights
+        {% elif season == 'Christmas' %}
+          House Christmas Lights
+        {% elif season == 'Easter' %}
+          House Easter Lights
+        {% elif season == 'St. Patrick\'s Day' %}
+          House Shamrock Lights
+        {% elif season == 'Independence Day' %}
+          House Patriotic Lights
+        {% else %}
+          House Seasonal Lights
+        {% endif %}
+
+      unique_id: house_seasonal_lights
+
+      icon: >
+        {% set season = states('input_select.active_holiday') %}
+        {{ {
+          'Halloween': 'mdi:halloween',
+          'Thanksgiving': 'mdi:leaf-maple',
+          'Christmas': 'mdi:string-lights',
+          'Easter': 'mdi:egg-easter',
+          "St. Patrick's Day": 'mdi:clover',
+          'Independence Day': 'mdi:firework',
+          'None': 'mdi:led-strip-variant'
+        }.get(season, 'mdi:led-strip-variant') }}
+
+      # State and attributes from physical light
+      state: &state_template "{{ states('light.dig_octa_32_8l_main') }}"
+      level: &level_template "{{ state_attr('light.dig_octa_32_8l_main', 'brightness') }}"
+      availability: &availability_template "{{ has_value('light.dig_octa_32_8l_main') }}"
+
+      turn_on: &turn_on_action
+        action: light.turn_on
+        target:
+          entity_id: &physical_light light.dig_octa_32_8l_main
+        data:
+          brightness: "{{ brightness | default(255) }}"
+
+      turn_off: &turn_off_action
+        action: light.turn_off
+        target:
+          entity_id: *physical_light
+
+# STATIC ALIASES - Always available with consistent names for Alexa
+
+# House Christmas Lights (always works, year-round)
+- light:
+    - name: "House Christmas Lights"
+      unique_id: house_christmas_lights
+      icon: mdi:string-lights
+      state: *state_template
+      level: *level_template
+      availability: *availability_template
+      turn_on: *turn_on_action
+      turn_off: *turn_off_action

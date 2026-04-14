@@ -1,0 +1,21 @@
+# Orbit B-hyve Smart Irrigation Integration Exclusions
+#
+# Orbit B-hyve WiFi irrigation timers expose many state/status entities
+# as switches. These represent programs, rain delays, and zone history
+# which are better managed through the Orbit B-hyve app or automation.
+#
+# Integration: Orbit B-hyve
+# Reference: https://www.home-assistant.io/integrations/bhyve/
+# Note: Actual zone control (watering on/off) uses switch.{area}_zone entities
+
+# Timer programs (scheduled watering programs)
+- switch.*_timer_program*
+- switch.*_timer_garden_program
+
+# Rain delay toggles (pause watering due to weather)
+- switch.*_rain_delay
+- switch.*_timer_rain_delay
+
+# Zone history and state sensors
+# These are read-only status entities, not controls
+# (Actual zone switches like switch.front_porch_zone are kept for manual control)

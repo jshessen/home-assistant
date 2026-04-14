@@ -1,0 +1,10 @@
+# Home Assistant Cloud Integration Exclusions
+#
+# Home Assistant Cloud (Nabu Casa) configuration switches.
+# These are settings toggles, not controllable devices.
+#
+# Integration: Home Assistant Cloud
+# Reference: https://www.home-assistant.io/integrations/cloud/
+
+# Cloud configuration switches
+- switch.cloud_*

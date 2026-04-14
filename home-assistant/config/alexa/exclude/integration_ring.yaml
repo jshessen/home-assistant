@@ -1,0 +1,15 @@
+# Ring Doorbell/Camera Integration Exclusions
+#
+# Ring devices expose settings and configuration options as switch entities.
+# These are preferences for motion detection and chime settings.
+#
+# Integration: Ring
+# Reference: https://www.home-assistant.io/integrations/ring/
+
+# Doorbell/camera motion detection toggles
+# Security camera settings, not devices
+- switch.*_motion_detection
+
+# Doorbell chime settings
+# Configuration option, not a device
+- switch.*_in_home_chime

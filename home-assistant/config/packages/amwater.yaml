@@ -1,0 +1,26 @@
+# ============================================================================
+# Missouri American Water - Rate Management Package
+# ============================================================================
+# Automated rate tracking for Missouri American Water (St Louis County)
+# ============================================================================
+
+shell_command:
+  update_amwater_rates: >-
+    python3 /config/packages/amwater/amwater_rate_manager.py --download --parse --dry-run
+
+automation:
+  - id: check_amwater_rates_monthly
+    alias: "Check MO American Water Rates Monthly"
+    description: "Automatically check for updated water rate sheets"
+    triggers:
+      - platform: time
+        at: "03:30:00"
+    conditions:
+      - condition: template
+        value_template: "{{ now().day == 1 }}"
+    actions:
+      - service: shell_command.update_amwater_rates
+      - service: system_log.write
+        data:
+          message: "MO American Water rate check completed"
+          level: info

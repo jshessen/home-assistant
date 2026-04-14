@@ -1,0 +1,32 @@
+# ========================================================================
+# Christmas Tree - Template Switch
+# ========================================================================
+#
+# TEMPLATE SWITCH:
+#   - switch.christmas_tree
+#     Friendly name for voice control via Alexa
+#
+# Controls: switch.in_wall_single_outlet_5 (Living Room Outlet - 3)
+# Say "Alexa, turn on Christmas Tree" to control the outlet
+#
+# YAML Anchors defined inline for reuse
+# ========================================================================
+
+- switch:
+    - name: "Christmas Tree"
+      unique_id: christmas_tree_living_room
+      icon: mdi:pine-tree
+
+      # Define anchors here on first use
+      state: &state_template "{{ is_state('switch.in_wall_single_outlet_5', 'on') }}"
+      availability: &availability_template "{{ has_value('switch.in_wall_single_outlet_5') }}"
+
+      turn_on: &turn_on_action
+        action: switch.turn_on
+        target:
+          entity_id: &physical_switch switch.in_wall_single_outlet_5
+
+      turn_off: &turn_off_action
+        action: switch.turn_off
+        target:
+          entity_id: *physical_switch

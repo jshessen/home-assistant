@@ -1,0 +1,48 @@
+# ============================================================================
+# Schedule Helpers
+# ============================================================================
+# Controls trigger times for automated routines.
+# Adjust times via UI without editing YAML.
+# ============================================================================
+
+schedule_good_morning_early:
+  name: "Schedule: Good Morning (Early)"
+  has_time: true
+  has_date: false
+  icon: mdi:clock-outline
+  initial: "05:30:00"
+
+schedule_start_active_day_weekday:
+  name: "Schedule: Start Active Day (Weekday)"
+  has_time: true
+  has_date: false
+  icon: mdi:clock-time-six
+  initial: "06:00:00"
+
+schedule_start_active_day_weekend:
+  name: "Schedule: Start Active Day (Weekend)"
+  has_time: true
+  has_date: false
+  icon: mdi:clock-time-eight
+  initial: "08:00:00"
+
+schedule_work_time_weekday:
+  name: "Schedule: Work Time (Weekday)"
+  has_time: true
+  has_date: false
+  icon: mdi:briefcase-clock
+  initial: "08:00:00"
+
+schedule_good_night_weekday:
+  name: "Schedule: Good Night (Weekday)"
+  has_time: true
+  has_date: false
+  icon: mdi:clock-time-eleven
+  initial: "23:00:00"
+
+schedule_good_night_weekend:
+  name: "Schedule: Good Night (Weekend)"
+  has_time: true
+  has_date: false
+  icon: mdi:clock-time-twelve
+  initial: "00:00:00"

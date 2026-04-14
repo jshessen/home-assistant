@@ -1,0 +1,111 @@
+# ========================================================================
+# Seasonal Display - Smart Dynamic Switch + Static Aliases
+# ========================================================================
+#
+# SMART SWITCH (changes with season):
+#   - switch.front_yard_seasonal_display
+#     Shows current season name in UI, auto-updates icons
+#
+# STATIC ALIASES (always available for Alexa):
+#   - switch.pumpkin_patch
+#   - switch.turkey_tom
+#   - switch.christmas_accent_lights
+#   - switch.peter_cottontail
+#
+# All switches control: switch.plug_in_front_yard_adapters (helper group)
+# Say any name to Alexa - they all work year-round!
+#
+# YAML Anchors defined inline for reuse
+# ========================================================================
+
+# SMART SWITCH - Auto-updates name and icon based on current season
+# References input_select.active_holiday (maintained by holiday_season_controller automation)
+- switch:
+    - name: >
+        {% set season = states('input_select.active_holiday') %}
+        {% if season == 'Halloween' %}
+          Pumpkin Patch
+        {% elif season == 'Thanksgiving' %}
+          Turkey Tom
+        {% elif season == 'Christmas' %}
+          Christmas Accent Lights
+        {% elif season == 'Easter' %}
+          Peter Cottontail
+        {% elif season == 'St. Patrick\'s Day' %}
+          Shamrock Display
+        {% elif season == 'Independence Day' %}
+          Patriotic Display
+        {% else %}
+          Front Yard Display
+        {% endif %}
+
+      unique_id: front_yard_seasonal_display
+      default_entity_id: switch.front_yard_seasonal_display
+
+      icon: >
+        {% set season = states('input_select.active_holiday') %}
+        {{ {
+          'Halloween': 'mdi:halloween',
+          'Thanksgiving': 'mdi:turkey',
+          'Christmas': 'mdi:string-lights',
+          'Easter': 'mdi:rabbit-variant',
+          "St. Patrick's Day": 'mdi:clover',
+          'Independence Day': 'mdi:flag-variant',
+          'None': 'mdi:power-socket-us'
+        }.get(season, 'mdi:power-socket-us') }}
+
+      # Define anchors here on first use
+      state: &state_template "{{ is_state('switch.plug_in_front_yard_adapters', 'on') }}"
+      availability: &availability_template "{{ has_value('switch.plug_in_front_yard_adapters') }}"
+
+      turn_on: &turn_on_action
+        action: switch.turn_on
+        target:
+          entity_id: &physical_switch switch.plug_in_front_yard_adapters
+
+      turn_off: &turn_off_action
+        action: switch.turn_off
+        target:
+          entity_id: *physical_switch
+
+# STATIC ALIASES - Always available with consistent names for Alexa
+
+# Pumpkin Patch (October - Halloween)
+- switch:
+    - name: "Pumpkin Patch"
+      unique_id: seasonal_pumpkin_patch
+      icon: &icon_halloween mdi:halloween
+      state: *state_template
+      availability: *availability_template
+      turn_on: *turn_on_action
+      turn_off: *turn_off_action
+
+# Turkey Tom (November 1 - Thanksgiving)
+- switch:
+    - name: "Turkey Tom"
+      unique_id: seasonal_turkey_tom
+      icon: &icon_turkey mdi:turkey
+      state: *state_template
+      availability: *availability_template
+      turn_on: *turn_on_action
+      turn_off: *turn_off_action
+
+# Christmas Accent Lights (Black Friday - Epiphany)
+- switch:
+    - name: "Christmas Accent Lights"
+      unique_id: seasonal_christmas_lights
+      icon: &icon_christmas mdi:string-lights
+      state: *state_template
+      availability: *availability_template
+      turn_on: *turn_on_action
+      turn_off: *turn_off_action
+
+# Peter Cottontail (Ash Wednesday - Easter)
+- switch:
+    - name: "Peter Cottontail"
+      unique_id: seasonal_peter_cottontail
+      icon: &icon_easter mdi:rabbit-variant
+      state: *state_template
+      availability: *availability_template
+      turn_on: *turn_on_action
+      turn_off: *turn_off_action

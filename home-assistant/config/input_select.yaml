@@ -1,0 +1,57 @@
+# ============================================================================
+# Home Mode Management
+# ============================================================================
+# Primary house mode - mutually exclusive states
+# Used as conditions in automations to control house-wide behavior
+# ============================================================================
+
+presence_mode:
+  name: Presence Mode
+  icon: mdi:home-account
+  options:
+    - Home
+    - Away
+    - Vacation
+  initial: Home
+
+# ============================================================================
+# Holiday Management
+# ============================================================================
+# Active holiday selector - determines which decorations should be active
+# Set manually or via calendar automation
+# ============================================================================
+
+active_holiday:
+  name: Active Holiday
+  icon: mdi:calendar-star
+  options:
+    - None
+    - New Years            # Jan 1
+    - Valentines Day       # Feb 14 (week before to day of)
+    - St. Patrick's Day    # March 17 (week before to day of)
+    - Easter               # Ash Wednesday to Easter Sunday (movable)
+    - Cinco de Mayo        # May 5 (week before to day of)
+    - Memorial Day         # Last Monday of May
+    - Independence Day     # July 4 (week before to week after)
+    - Labor Day            # First Monday of September
+    - Halloween            # October (all month)
+    - Thanksgiving         # Nov 1 to Thanksgiving Day (4th Thursday)
+    - Christmas            # Black Friday to Epiphany (Jan 6)
+  initial: None
+
+# ============================================================================
+# Time of Day
+# ============================================================================
+# Represents current phase of the day — set by good_morning, start_active_day,
+# and good_night scripts. Replaces the night_mode boolean.
+# ============================================================================
+
+time_of_day:
+  name: Time of Day
+  icon: mdi:clock-outline
+  options:
+    - Morning
+    - Day
+    - Evening
+    - Night
+  initial: Morning

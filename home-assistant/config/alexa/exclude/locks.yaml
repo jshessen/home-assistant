@@ -1,0 +1,6 @@
+# Lock Duplicate Exclusions
+#
+# Bolt-checked lock entities (duplicates of main lock entities)
+
+# BoltChecked lock duplicates
+- lock.boltchecked_*

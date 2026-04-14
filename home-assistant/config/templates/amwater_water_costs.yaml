@@ -1,0 +1,36 @@
+# ============================================================================
+# Missouri American Water - St Louis County Cost Tracking Templates
+# ============================================================================
+# Uses EyeOnWater usage in gallons and applies STL County rates
+# ============================================================================
+
+- sensor:
+    - name: "Current Water Rate"
+      unique_id: sensor_current_water_rate
+      unit_of_measurement: "USD/gal"
+      icon: mdi:cash
+      state_class: measurement
+      state: >-
+        {% set per_100 = states('input_number.amwater_mo_stl_rate_per_100_gal') | float(0) %}
+        {{ (per_100 / 100) | round(6) }}
+      attributes:
+        rate_per_100_gal: "{{ states('input_number.amwater_mo_stl_rate_per_100_gal') }}"
+
+    - name: "Monthly Water Cost"
+      unique_id: sensor_monthly_water_cost
+      unit_of_measurement: "USD"
+      icon: mdi:currency-usd
+      device_class: monetary
+      state: >-
+        {% set usage = states('sensor.monthly_water') | float(0) %}
+        {% set rate = states('sensor.current_water_rate') | float(0) %}
+        {% set fixed = states('input_number.amwater_mo_stl_monthly_fixed') | float(0) %}
+        {% if usage > 0 %}
+          {{ (usage * rate + fixed) | round(2) }}
+        {% else %}
+          0.00
+        {% endif %}
+      attributes:
+        usage_gal: "{{ states('sensor.monthly_water') }}"
+        fixed_charge: "{{ states('input_number.amwater_mo_stl_monthly_fixed') }}"
+        rate_gal: "{{ states('sensor.current_water_rate') }}"

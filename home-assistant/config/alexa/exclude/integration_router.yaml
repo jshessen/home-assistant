@@ -1,0 +1,14 @@
+# ASUS RT-AX88U Router Integration Exclusions
+#
+# Router management entities including device tracker controls,
+# network settings, and LED controls. These should be managed
+# through the router admin interface, not voice control.
+#
+# Integration: ASUS Router
+# Reference: https://www.home-assistant.io/integrations/asuswrt/
+
+# Router LED controls
+- light.*rt_ax88u*
+
+# Router switch controls (WiFi, parental controls, etc.)
+- switch.*rt_ax88u*

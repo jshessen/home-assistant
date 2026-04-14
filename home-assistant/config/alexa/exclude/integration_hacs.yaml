@@ -1,0 +1,10 @@
+# HACS (Home Assistant Community Store) Integration Exclusions
+#
+# HACS provides UI toggle switches for pre-release versions of custom
+# components. These are configuration toggles, not controllable devices.
+#
+# Integration: HACS (Custom)
+# Reference: https://hacs.xyz/
+
+# Pre-release version toggles for custom components
+- switch.*_pre_release

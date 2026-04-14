@@ -1,0 +1,26 @@
+# ============================================================================
+# Spire Missouri East - Gas Rate Management Package
+# ============================================================================
+# Automated rate tracking for Spire MO East gas service
+# ============================================================================
+
+shell_command:
+  update_spire_rates: >-
+    python3 /config/packages/spire/spire_rate_manager.py --download --parse --dry-run
+
+automation:
+  - id: check_spire_rates_monthly
+    alias: "Check Spire Rates Monthly"
+    description: "Automatically check for updated rate sheets from Spire Missouri East"
+    triggers:
+      - platform: time
+        at: "03:15:00"
+    conditions:
+      - condition: template
+        value_template: "{{ now().day == 1 }}"
+    actions:
+      - service: shell_command.update_spire_rates
+      - service: system_log.write
+        data:
+          message: "Spire rate check completed"
+          level: info

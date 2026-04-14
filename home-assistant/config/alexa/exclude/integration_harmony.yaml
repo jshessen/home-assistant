@@ -1,0 +1,14 @@
+# Logitech Harmony Hub Integration Exclusions
+#
+# Harmony Hub activity switches. These control entertainment system activities
+# and can optionally be exposed through the native Alexa Harmony Skill instead.
+#
+# Integration: Harmony
+# Reference: https://www.home-assistant.io/integrations/harmony/
+# Alexa Skill: https://www.amazon.com/Logitech-Harmony/dp/B0713WPQX9
+#
+# NOTE: Comment out to expose Harmony activities to Alexa through Home Assistant
+# (useful if you prefer HA control over native Harmony skill)
+
+# Harmony Hub activity switches
+- switch.hb_*

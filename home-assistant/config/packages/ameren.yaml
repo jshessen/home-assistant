@@ -1,0 +1,29 @@
+# ============================================================================
+# Ameren Missouri Rate Management Package
+# ============================================================================
+# Automated rate tracking, parsing, and cost calculation for Ameren MO
+# ============================================================================
+
+# Shell command to update rates from PDF
+shell_command:
+  update_ameren_rates: >-
+    python3 /config/packages/ameren/ameren_rate_manager.py --download --parse --dry-run
+
+# Automation to check for rate updates monthly
+automation:
+  - id: check_ameren_rates_monthly
+    alias: "Check Ameren Rates Monthly"
+    description: "Automatically check for updated rate sheets from Ameren Missouri"
+    triggers:
+      # Run on the 1st of each month at 3 AM
+      - platform: time
+        at: "03:00:00"
+    conditions:
+      - condition: template
+        value_template: "{{ now().day == 1 }}"
+    actions:
+      - service: shell_command.update_ameren_rates
+      - service: system_log.write
+        data:
+          message: "Ameren rate check completed"
+          level: info

@@ -1,0 +1,15 @@
+# WLED Light Strip Integration Exclusions
+#
+# WLED light strip configuration switches. These control sync behavior,
+# reverse direction, and nightlight mode - which are settings, not
+# the actual light control (use light domain for on/off/brightness/color).
+#
+# Integration: WLED
+# Reference: https://www.home-assistant.io/integrations/wled/
+
+# WLED light strip configuration switches
+# Sync and reverse settings, not light control
+- switch.wled_nightlight
+- switch.wled_reverse
+- switch.wled_sync_receive
+- switch.wled_sync_send

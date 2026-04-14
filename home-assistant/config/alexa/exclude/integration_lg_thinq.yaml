@@ -1,0 +1,18 @@
+# LG ThinQ Integration Exclusions
+#
+# LG appliances connected via ThinQ that should not be voice controlled
+# through Alexa (too easy to accidentally start/stop). This includes
+# mode switches and temporary settings.
+#
+# Integration: LG ThinQ
+# Reference: https://www.home-assistant.io/integrations/smartthinq_sensors/
+# Manufacturer: LG
+
+# LG appliance mode switches
+# Refrigerator express mode (temporary setting)
+- switch.refrigerator_express_mode
+
+# Additional LG appliance switches (microwave, oven)
+# Uncomment if you have these devices and want to exclude them:
+# - switch.*microwave*
+# - switch.*oven*

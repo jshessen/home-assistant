@@ -1,0 +1,11 @@
+# Home Connect Integration Exclusions
+#
+# Bosch appliances connected via Home Connect that should not be
+# voice controlled through Alexa (too easy to accidentally start/stop).
+#
+# Integration: Home Connect
+# Reference: https://www.home-assistant.io/integrations/home_connect/
+# Manufacturer: Bosch/Siemens
+
+# Bosch Dishwasher switches
+- switch.*dishwasher*

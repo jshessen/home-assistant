@@ -1,0 +1,11 @@
+# SmartThings Integration Exclusions
+#
+# Samsung appliances connected via SmartThings that should not be
+# voice controlled through Alexa (too easy to accidentally start/stop).
+#
+# Integration: SmartThings
+# Reference: https://www.home-assistant.io/integrations/smartthings/
+# Manufacturer: Samsung
+
+# Samsung Washer/Dryer switches
+- switch.*dryer*

@@ -1,0 +1,173 @@
+# Alexa Smart Home Configuration
+
+smart_home:
+  locale: en-US
+  endpoint: https://api.amazonalexa.com/v3/events
+  client_id: ***REDACTED_ALEXA_CLIENT_ID***
+  client_secret: ***REDACTED_ALEXA_CLIENT_SECRET***
+  filter:
+    # Include entire domains (expose all entities in these domains)
+    include_domains:
+      - climate # Thermostats
+      - light # Lights and lamps
+      - fan # Fans and air circulators
+      - cover # Blinds, shades, garage doors
+      - lock # Smart locks
+      - switch # Switches and outlets
+
+    # Include specific entities (from domains not fully included above)
+    include_entities: !include_dir_merge_list alexa/include/
+
+    # Exclude specific entity patterns (remove unwanted entities from included domains)
+    exclude_entity_globs: !include_dir_merge_list alexa/exclude/
+
+# Alexa Lambda Wrapper Testing Configuration
+template:
+  - sensor:
+      - name: "Alexa Wrapper Connection Status"
+        state: >-
+          {% if states('input_datetime.last_alexa_request') != 'unknown' %}
+            {% set last_seen = as_timestamp(states('input_datetime.last_alexa_request')) %}
+            {% set now = as_timestamp(now()) %}
+            {% if (now - last_seen) < 600 %}
+              Connected
+            {% elif (now - last_seen) < 1800 %}
+              Idle
+            {% else %}
+              Disconnected
+            {% endif %}
+          {% else %}
+            Unknown
+          {% endif %}
+        icon: >-
+          {% set status = this.state %}
+          {% if status == 'Connected' %}
+            mdi:amazon-alexa
+          {% elif status == 'Idle' %}
+            mdi:voice-off
+          {% else %}
+            mdi:voice-off
+          {% endif %}
+
+# Input datetime to store last Alexa request time
+input_datetime:
+  last_alexa_request:
+    name: "Last Alexa Request"
+    has_date: true
+    has_time: true
+
+# Counter for Alexa requests
+counter:
+  alexa_requests_total:
+    name: "Total Alexa Requests"
+    icon: mdi:amazon-alexa
+    initial: 0
+    step: 1
+
+# Utility meter for Alexa requests
+utility_meter:
+  alexa_requests_daily:
+    source: counter.alexa_requests_total
+    cycle: daily
+
+# REST command for testing Alexa wrapper
+rest_command:
+  test_alexa_wrapper:
+    url: !secret alexa_wrapper_smart_home_url
+    method: POST
+    headers:
+      X-Alexa-Secret: !secret alexa_app_secret
+      Content-Type: "application/json"
+      User-Agent: "Home Assistant Alexa Wrapper Test"
+    payload: '{"directive":{"header":{"namespace":"Alexa.Discovery","name":"Discover","messageId":"test-message-id","payloadVersion":"3"},"payload":{}}}'
+    timeout: 15
+    verify_ssl: true
+
+# Alexa wrapper automation
+automation:
+  - id: alexa_app_request_tracker
+    alias: "Track Alexa App Requests"
+    description: "Updates timestamp when Alexa wrapper makes requests"
+    triggers:
+      - platform: event
+        event_type: api_request
+        event_data:
+          source: "Alexa-Wrapper"
+      - platform: event
+        event_type: call_service
+        event_data:
+          domain: "rest_command"
+          service: "test_alexa_wrapper"
+    actions:
+      - service: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.last_alexa_request
+        data:
+          datetime: "{{ now() }}"
+      - service: counter.increment
+        target:
+          entity_id: counter.alexa_requests_total
+
+# Alexa wrapper testing script
+script:
+  test_alexa_connection:
+    alias: "Test Alexa Wrapper Connection"
+    description: "Tests the Alexa Lambda wrapper connectivity"
+    mode: single
+    sequence:
+      - service: persistent_notification.create
+        data:
+          title: "Alexa Test Started"
+          message: "Starting Alexa wrapper connectivity test..."
+          notification_id: alexa_wrapper_test
+
+      - service: rest_command.test_alexa_wrapper
+      - delay:
+          seconds: 2
+
+      - service: persistent_notification.create
+        data:
+          title: "Alexa Wrapper Test Complete"
+          message: >-
+            **Alexa wrapper test completed** at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+
+            **Status**: {{ states('sensor.alexa_wrapper_connection_status') }}
+            **Total Requests**: {{ states('counter.alexa_requests_total') }}
+            **Today's Requests**: {{ states('sensor.alexa_requests_daily') }}
+
+            ✅ Successfully tested Alexa Smart Home endpoint
+          notification_id: alexa_wrapper_test
+
+  alexa_wrapper_health_check:
+    alias: "Alexa Wrapper Health Check"
+    description: "Comprehensive health check of Alexa Lambda wrapper"
+    mode: single
+    sequence:
+      - service: persistent_notification.create
+        data:
+          title: "Alexa Health Check Started"
+          message: "Starting comprehensive Alexa wrapper health check..."
+          notification_id: alexa_health_check
+
+      - repeat:
+          count: 2
+          sequence:
+            - service: rest_command.test_alexa_wrapper
+            - delay:
+                seconds: 3
+
+      - service: persistent_notification.create
+        data:
+          title: "Alexa Health Check Complete"
+          message: >-
+            **📊 Alexa Health Check Results**
+
+            **Connection Status**: {{ states('sensor.alexa_wrapper_connection_status') }}
+            **Last Request**: {{ states('input_datetime.last_alexa_request') }}
+
+            **Request Statistics**:
+            - Total: {{ states('counter.alexa_requests_total') }}
+            - Today: {{ states('sensor.alexa_requests_daily') }}
+
+            ✅ Health check completed successfully
+          notification_id: alexa_health_check

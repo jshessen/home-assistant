@@ -1,0 +1,20 @@
+# Domain Duplicate Exclusions
+#
+# These entities are duplicates of other entities already exposed through
+# their proper domain types (fan, cover, light). The domain-specific entities
+# provide better Alexa integration and voice control.
+
+# Fan switches (already exposed via fan domain)
+- switch.*_fan                           # Generic fan pattern
+- switch.attic_gable_fan*                # Specific attic fan
+
+# Window blind controllers (already exposed via cover domain)
+- switch.window_blind_controller*        # All window blind switches
+
+# Motion sensor duplicate light entities
+# These are secondary entities created by motion sensor switches
+- light.motion_sensor*
+
+# Smart strip basic light entities (duplicates of main entities)
+# Some smart strips expose both detailed and "basic" light entities
+- light.smart_strip*basic*

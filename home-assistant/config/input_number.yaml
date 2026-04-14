@@ -1,0 +1,232 @@
+# ============================================================================
+# Utility Rate Configuration
+# ============================================================================
+# Store current electricity rates for easy cost calculation updates
+# Adjust these values without editing YAML files
+# Rates auto-updated by packages/ameren/ameren_rate_manager.py
+# ============================================================================
+
+# Fixed Monthly Charges
+ameren_mo_monthly_fixed:
+  name: "Ameren MO Monthly Fixed Charge"
+  unit_of_measurement: "$"
+  min: 0.00
+  max: 50.00
+  step: 0.01
+  icon: mdi:currency-usd
+  mode: box
+  initial: 9.19  # Customer ($9.00) + Low-Income Pilot ($0.19)
+
+# Summer Rates (June - September)
+ameren_mo_summer_rate:
+  name: "Ameren MO Summer Rate"
+  unit_of_measurement: "$/kWh"
+  min: 0.05
+  max: 0.25
+  step: 0.0001
+  icon: mdi:weather-sunny
+  mode: box
+  initial: 0.1560  # 15.60¢/kWh
+
+# Winter Rates (October - May) - Tiered Pricing
+ameren_mo_winter_tier1_rate:
+  name: "Ameren MO Winter Tier 1 Rate (0-750 kWh)"
+  unit_of_measurement: "$/kWh"
+  min: 0.05
+  max: 0.25
+  step: 0.0001
+  icon: mdi:snowflake
+  mode: box
+  initial: 0.1062  # 10.62¢/kWh
+
+ameren_mo_winter_tier2_rate:
+  name: "Ameren MO Winter Tier 2 Rate (>750 kWh)"
+  unit_of_measurement: "$/kWh"
+  min: 0.05
+  max: 0.25
+  step: 0.0001
+  icon: mdi:snowflake-variant
+  mode: box
+  initial: 0.0714  # 7.14¢/kWh
+
+ameren_mo_winter_tier1_limit:
+  name: "Ameren MO Winter Tier 1 Limit"
+  unit_of_measurement: "kWh"
+  min: 0
+  max: 2000
+  step: 50
+  icon: mdi:meter-electric
+  mode: box
+  initial: 750  # kWh breakpoint
+
+# ============================================================================
+# Spire Missouri East - Gas Rate Configuration
+# ============================================================================
+# Rates based on Spire MO East tariffs (effective 11/26/2025)
+# ============================================================================
+
+spire_mo_east_monthly_fixed:
+  name: "Spire MO East Monthly Customer Charge"
+  unit_of_measurement: "USD"
+  min: 0.00
+  max: 100.00
+  step: 0.01
+  icon: mdi:currency-usd
+  mode: box
+  initial: 22.00
+
+spire_mo_east_winter_rate:
+  name: "Spire MO East Winter Distribution Rate (Nov-Apr)"
+  unit_of_measurement: "USD/ccf"
+  min: 0.00
+  max: 5.00
+  step: 0.00001
+  icon: mdi:snowflake
+  mode: box
+  initial: 0.50550
+
+spire_mo_east_summer_rate:
+  name: "Spire MO East Summer Distribution Rate (May-Oct)"
+  unit_of_measurement: "USD/ccf"
+  min: 0.00
+  max: 5.00
+  step: 0.00001
+  icon: mdi:weather-sunny
+  mode: box
+  initial: 0.48671
+
+spire_mo_east_pga_rate:
+  name: "Spire MO East Purchased Gas Adjustment (PGA)"
+  unit_of_measurement: "USD/ccf"
+  min: 0.00
+  max: 5.00
+  step: 0.00001
+  icon: mdi:gas-cylinder
+  mode: box
+  initial: 0.61674
+
+# ============================================================================
+# Missouri American Water - St Louis County (Rate A RT 1.1)
+# ============================================================================
+# Rates based on tariff effective June 11, 2025
+# Commodity charge: $1.03749 per 100 gallons
+# Minimum customer charge (5/8" meter): $11.00
+# ============================================================================
+
+amwater_mo_stl_monthly_fixed:
+  name: "MO American Water STL Monthly Customer Charge"
+  unit_of_measurement: "USD"
+  min: 0.00
+  max: 100.00
+  step: 0.01
+  icon: mdi:currency-usd
+  mode: box
+  initial: 11.00
+
+amwater_mo_stl_rate_per_100_gal:
+  name: "MO American Water STL Commodity Rate (per 100 gal)"
+  unit_of_measurement: "USD/100gal"
+  min: 0.00
+  max: 10.00
+  step: 0.00001
+  icon: mdi:water
+  mode: box
+  initial: 1.03749
+
+# For future use with time-of-use rates
+# ameren_mo_peak_rate:
+#   name: "Ameren MO Peak Rate (9am-9pm)"
+#   unit_of_measurement: "$/kWh"
+#   min: 0.05
+#   max: 0.30
+#   step: 0.0001
+#   icon: mdi:sun
+#   mode: box
+#   initial: 0.1500
+
+# ameren_mo_offpeak_rate:
+#   name: "Ameren MO Off-Peak Rate (9pm-9am)"
+#   unit_of_measurement: "$/kWh"
+#   min: 0.05
+#   max: 0.25
+#   step: 0.0001
+#   icon: mdi:moon-waning-crescent
+#   mode: box
+#   initial: 0.1000
+
+# ============================================================================
+# Wake Profile Configuration
+# ============================================================================
+# Controls brightness, color, and timing for morning wake routines.
+# Adjusted via UI without editing YAML.
+# ============================================================================
+
+wake_brightness_weekday:
+  name: Wake Brightness (Weekday)
+  unit_of_measurement: "%"
+  min: 0
+  max: 100
+  step: 5
+  icon: mdi:brightness-7
+  mode: slider
+  initial: 80
+
+wake_brightness_weekend:
+  name: Wake Brightness (Weekend)
+  unit_of_measurement: "%"
+  min: 0
+  max: 100
+  step: 5
+  icon: mdi:brightness-5
+  mode: slider
+  initial: 50
+
+wake_color_temp_weekday:
+  name: Wake Color Temp (Weekday)
+  unit_of_measurement: "mireds"
+  min: 153
+  max: 500
+  step: 10
+  icon: mdi:thermometer
+  mode: slider
+  initial: 370
+
+wake_color_temp_weekend:
+  name: Wake Color Temp (Weekend)
+  unit_of_measurement: "mireds"
+  min: 153
+  max: 500
+  step: 10
+  icon: mdi:thermometer-low
+  mode: slider
+  initial: 420
+
+wake_blinds_delay_min:
+  name: Wake Blinds Delay (Minutes)
+  unit_of_measurement: "min"
+  min: 0
+  max: 30
+  step: 1
+  icon: mdi:timer-outline
+  mode: slider
+  initial: 5
+
+wake_kids_lights_delay_min:
+  name: Wake Kids Lights Delay (Minutes)
+  unit_of_measurement: "min"
+  min: 0
+  max: 60
+  step: 5
+  icon: mdi:timer
+  mode: slider
+  initial: 10
+
+work_bedroom_blinds_pct:
+  name: Work Day Bedroom Blinds Position
+  unit_of_measurement: "%"
+  min: 0
+  max: 100
+  step: 1
+  icon: mdi:blinds
+  mode: slider
+  initial: 51

@@ -1,0 +1,13 @@
+# Z-Wave JS Integration Exclusions (Garage Door Controller)
+#
+# Z-Wave garage door controllers expose signaling state switches for
+# visual and audible notifications. These are settings for how the
+# device alerts you, not the actual garage door control.
+#
+# Integration: Z-Wave JS
+# Reference: https://www.home-assistant.io/integrations/zwave_js/
+
+# Garage door controller signaling settings
+# Visual/audible notification preferences
+- switch.garage_door_controller_signaling_state_audible
+- switch.garage_door_controller_signaling_state_visual

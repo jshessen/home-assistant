@@ -1,0 +1,98 @@
+# ============================================================================
+# Spire Missouri East - Gas Cost Tracking Templates
+# ============================================================================
+# Converts ft3 to ccf and calculates gas costs using seasonal rates + PGA
+# ============================================================================
+
+- sensor:
+    - name: "Gas Usage Ccf"
+      unique_id: sensor_gas_usage_ccf
+      unit_of_measurement: "CCF"
+      icon: mdi:gas-cylinder
+      device_class: gas
+      state_class: total_increasing
+      state: >-
+        {% set ft3 = states('sensor.scmplus_111066304_gas_usage') | float(0) %}
+        {{ (ft3 / 100) | round(4) }}
+      attributes:
+        source_ft3: "{{ states('sensor.scmplus_111066304_gas_usage') }}"
+
+    - name: "Current Gas Season"
+      unique_id: sensor_current_gas_season
+      icon: mdi:calendar-month
+      state: >-
+        {% set month = now().month %}
+        {% if 5 <= month <= 10 %}
+          Summer
+        {% else %}
+          Winter
+        {% endif %}
+      attributes:
+        months: >-
+          {% set month = now().month %}
+          {% if 5 <= month <= 10 %}
+            May - October
+          {% else %}
+            November - April
+          {% endif %}
+
+    - name: "Current Gas Rate"
+      unique_id: sensor_current_gas_rate
+      unit_of_measurement: "USD/CCF"
+      icon: mdi:cash
+      state_class: measurement
+      state: >-
+        {% set month = now().month %}
+        {% set pga = states('input_number.spire_mo_east_pga_rate') | float(0) %}
+        {% if 5 <= month <= 10 %}
+          {% set base = states('input_number.spire_mo_east_summer_rate') | float(0) %}
+        {% else %}
+          {% set base = states('input_number.spire_mo_east_winter_rate') | float(0) %}
+        {% endif %}
+        {{ (base + pga) | round(5) }}
+      attributes:
+        season: "{{ states('sensor.current_gas_season') }}"
+        pga_rate: "{{ states('input_number.spire_mo_east_pga_rate') }}"
+        base_rate: >-
+          {% set month = now().month %}
+          {% if 5 <= month <= 10 %}
+            {{ states('input_number.spire_mo_east_summer_rate') }}
+          {% else %}
+            {{ states('input_number.spire_mo_east_winter_rate') }}
+          {% endif %}
+
+    - name: "Monthly Gas Cost"
+      unique_id: sensor_monthly_gas_cost
+      unit_of_measurement: "USD"
+      icon: mdi:currency-usd
+      device_class: monetary
+      state: >-
+        {% set usage = states('sensor.monthly_gas') | float(0) %}
+        {% set rate = states('sensor.current_gas_rate') | float(0) %}
+        {% set fixed = states('input_number.spire_mo_east_monthly_fixed') | float(0) %}
+        {% if usage > 0 %}
+          {{ (usage * rate + fixed) | round(2) }}
+        {% else %}
+          0.00
+        {% endif %}
+      attributes:
+        usage_ccf: "{{ states('sensor.monthly_gas') }}"
+        fixed_charge: "{{ states('input_number.spire_mo_east_monthly_fixed') }}"
+        rate_ccf: "{{ states('sensor.current_gas_rate') }}"
+
+    - name: "Daily Gas Cost"
+      unique_id: sensor_daily_gas_cost
+      unit_of_measurement: "USD"
+      icon: mdi:currency-usd
+      device_class: monetary
+      state: >-
+        {% set usage = states('sensor.daily_gas') | float(0) %}
+        {% set rate = states('sensor.current_gas_rate') | float(0) %}
+        {% if usage > 0 %}
+          {{ (usage * rate) | round(2) }}
+        {% else %}
+          0.00
+        {% endif %}
+      attributes:
+        usage_ccf: "{{ states('sensor.daily_gas') }}"
+        rate_ccf: "{{ states('sensor.current_gas_rate') }}"

@@ -1,0 +1,20 @@
+# Sonos Speaker Integration Exclusions
+#
+# Sonos speaker grouping switches and audio settings. Group membership
+# is better managed through the native Alexa Sonos Skill for multi-room
+# audio control. Audio settings (crossfade, loudness) are preferences
+# that should be managed through the Sonos app.
+#
+# Integration: Sonos
+# Reference: https://www.home-assistant.io/integrations/sonos/
+# Alexa Skill: https://www.amazon.com/Sonos-Inc/dp/B07D7RH1QJ
+
+# Speaker group connection switches
+- switch.connect_*
+
+# Sonos speaker audio settings (crossfade, loudness)
+# Better managed through Sonos app or native speaker controls
+- switch.*_sonos_crossfade
+- switch.*_sonos_loudness
+- switch.*_sono_crossfade
+- switch.*_sono_loudness

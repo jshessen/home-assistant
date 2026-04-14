@@ -1,0 +1,15 @@
+{
+  "effective_date": null,
+  "summer": {
+    "customer_charge": null,
+    "low_income_charge": null,
+    "energy_rate": null
+  },
+  "winter": {
+    "customer_charge": null,
+    "low_income_charge": null,
+    "tier1_kwh_limit": null,
+    "tier1_rate": null,
+    "tier2_rate": null
+  }
+}

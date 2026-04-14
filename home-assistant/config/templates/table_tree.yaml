@@ -1,0 +1,32 @@
+# ========================================================================
+# Table Tree - Template Switch
+# ========================================================================
+#
+# TEMPLATE SWITCH:
+#   - switch.table_tree
+#     Friendly name for voice control via Alexa
+#
+# Controls: switch.entry_outlet_1_2 (Entry Outlet)
+# Say "Alexa, turn on Table Tree" to control the outlet
+#
+# YAML Anchors defined inline for reuse
+# ========================================================================
+
+- switch:
+    - name: "Table Tree"
+      unique_id: table_tree_entry
+      icon: mdi:pine-tree
+
+      # Define anchors here on first use
+      state: &state_template "{{ is_state('switch.entry_outlet_1_2', 'on') }}"
+      availability: &availability_template "{{ has_value('switch.entry_outlet_1_2') }}"
+
+      turn_on: &turn_on_action
+        action: switch.turn_on
+        target:
+          entity_id: &physical_switch switch.entry_outlet_1_2
+
+      turn_off: &turn_off_action
+        action: switch.turn_off
+        target:
+          entity_id: *physical_switch

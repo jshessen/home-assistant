@@ -1,0 +1,22 @@
+# Z-Wave Device Configuration Switch Exclusions
+#
+# Z-Wave devices expose configuration parameters as switch entities.
+# These are settings/preferences, not controllable devices.
+#
+# Examples: LED behavior, button behavior, multi-tap settings
+# Should be configured in Z-Wave settings, not voice controlled
+
+# Multi-tap configuration switches
+- switch.*_disablemultitaps
+
+# LED night light settings
+- switch.*_nightledset
+
+# Button behavior settings
+- switch.*_onbuttonset
+
+# Status mode settings
+- switch.*_statusmodeen
+
+# Multi-channel association settings
+- switch.*_multichannel

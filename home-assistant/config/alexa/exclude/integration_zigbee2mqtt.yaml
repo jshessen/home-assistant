@@ -1,0 +1,12 @@
+# Zigbee2MQTT Integration Exclusions
+#
+# Zigbee2MQTT administrative switches for managing the Zigbee network.
+# These are integration management functions, not devices.
+#
+# Integration: Zigbee2MQTT (MQTT)
+# Reference: https://www.home-assistant.io/integrations/mqtt/
+# Zigbee2MQTT: https://www.zigbee2mqtt.io/
+
+# Zigbee2MQTT administrative switches
+# Integration management, not devices
+- switch.zigbee2mqtt_bridge_permit_join

@@ -1,0 +1,5 @@
+  # Allow for default dashboard to be configured in the UI
+  mode: storage
+
+  # Include external resources only add when mode is yaml, otherwise manage in the resources in the dashboard configuration panel.
+  resources: !include resources.yaml

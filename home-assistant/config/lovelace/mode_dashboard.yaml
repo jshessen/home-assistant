@@ -1,0 +1,226 @@
+# ============================================================================
+# Mode Management Dashboard
+# ============================================================================
+# Lovelace dashboard configuration for house mode and holiday controls
+#
+# To add this to your dashboard:
+# 1. Go to Settings > Dashboards
+# 2. Create a new dashboard or edit existing
+# 3. Add a new view
+# 4. Use YAML mode and paste the relevant sections below
+# ============================================================================
+
+# ============================================================================
+# HOUSE MODE CONTROL CARD
+# ============================================================================
+type: vertical-stack
+title: House Mode
+cards:
+  - type: entities
+    title: Primary Mode
+    entities:
+      - entity: input_select.presence_mode
+        name: House Mode
+      - type: divider
+      - entity: input_select.time_of_day
+        name: Night Mode
+      - entity: input_boolean.movie_mode
+        name: Movie Mode
+      - entity: input_boolean.party_mode
+        name: Party Mode
+      - entity: input_boolean.guest_mode
+        name: Guest Mode
+      - entity: input_boolean.work_from_home_mode
+        name: Work From Home
+
+  - type: horizontal-stack
+    cards:
+      - type: button
+        entity: script.good_night
+        name: Good Night
+        icon: mdi:weather-night
+        tap_action:
+          action: call-service
+          service: script.good_night
+        hold_action:
+          action: more-info
+
+      - type: button
+        entity: script.good_morning
+        name: Good Morning
+        icon: mdi:weather-sunny
+        tap_action:
+          action: call-service
+          service: script.good_morning
+        hold_action:
+          action: more-info
+
+# ============================================================================
+# HOLIDAY CONTROL CARD
+# ============================================================================
+---
+type: vertical-stack
+title: Holiday Controls
+cards:
+  - type: entities
+    title: Active Holiday
+    entities:
+      - entity: input_select.active_holiday
+        name: Active Holiday
+      - type: divider
+      - entity: input_boolean.holiday_decorations_inside
+        name: Inside Decorations
+      - entity: input_boolean.holiday_decorations_outside
+        name: Outside Decorations
+      - entity: input_boolean.disable_holiday_schedules
+        name: Disable Auto Schedules
+
+  - type: conditional
+    conditions:
+      - entity: input_select.active_holiday
+        state: Halloween
+    card:
+      type: entities
+      title: Halloween Decorations
+      entities:
+        - entity: switch.pumpkin_patch
+          name: Pumpkin Patch
+          icon: mdi:halloween
+
+  - type: conditional
+    conditions:
+      - entity: input_select.active_holiday
+        state: Thanksgiving
+    card:
+      type: entities
+      title: Thanksgiving Decorations
+      entities:
+        - entity: switch.turkey_tom
+          name: Turkey Tom
+          icon: mdi:food-turkey
+
+  - type: conditional
+    conditions:
+      - entity: input_select.active_holiday
+        state: Christmas
+    card:
+      type: entities
+      title: Christmas Decorations
+      entities:
+        - entity: switch.christmas_spirit
+          name: Christmas Spirit
+          icon: mdi:pine-tree
+        - entity: switch.christmas_tree_inside
+          name: Tree Inside
+          icon: mdi:pine-tree
+        - entity: switch.christmas_lights_outside
+          name: Lights Outside
+          icon: mdi:string-lights
+
+  - type: conditional
+    conditions:
+      - entity: input_select.active_holiday
+        state: Easter
+    card:
+      type: entities
+      title: Easter Decorations
+      entities:
+        - entity: switch.easter_bunny
+          name: Easter Bunny
+          icon: mdi:rabbit
+
+  - type: conditional
+    conditions:
+      - entity: input_select.active_holiday
+        state: "Independence Day"
+    card:
+      type: entities
+      title: July 4th Decorations
+      entities:
+        - entity: switch.red_white_and_blue
+          name: Red White & Blue
+          icon: mdi:flag-usa
+
+# ============================================================================
+# AUTOMATION CONTROL CARD
+# ============================================================================
+---
+type: entities
+title: Automation Controls
+entities:
+  - entity: input_boolean.disable_good_morning
+    name: Disable Good Morning
+  - entity: input_boolean.disable_good_night
+    name: Disable Good Night
+  - entity: input_boolean.disable_holiday_schedules
+    name: Disable Holiday Schedules
+
+# ============================================================================
+# QUICK ACTIONS CARD
+# ============================================================================
+---
+type: grid
+title: Quick Actions
+columns: 2
+square: false
+cards:
+  - type: button
+    entity: input_select.presence_mode
+    name: Home
+    icon: mdi:home
+    tap_action:
+      action: call-service
+      service: input_select.select_option
+      service_data:
+        option: Home
+      target:
+        entity_id: input_select.presence_mode
+
+  - type: button
+    entity: input_select.presence_mode
+    name: Away
+    icon: mdi:home-export-outline
+    tap_action:
+      action: call-service
+      service: input_select.select_option
+      service_data:
+        option: Away
+      target:
+        entity_id: input_select.presence_mode
+
+  - type: button
+    entity: input_select.presence_mode
+    name: Vacation
+    icon: mdi:beach
+    tap_action:
+      action: call-service
+      service: input_select.select_option
+      service_data:
+        option: Vacation
+      target:
+        entity_id: input_select.presence_mode
+
+  - type: button
+    entity: input_boolean.guest_mode
+    tap_action:
+      action: toggle
+    name: Guest Mode
+    icon: mdi:account-multiple
+
+# ============================================================================
+# MODE STATUS CARD (Glance)
+# ============================================================================
+---
+type: glance
+title: Current Status
+entities:
+  - entity: input_select.presence_mode
+    name: House Mode
+  - entity: input_select.time_of_day
+    name: Night
+  - entity: input_select.active_holiday
+    name: Holiday
+  - entity: input_boolean.holiday_decorations_inside
+    name: Inside
+  - entity: input_boolean.holiday_decorations_outside
+    name: Outside

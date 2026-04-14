@@ -1,0 +1,62 @@
+automation:
+  - alias: "RTL433 Device Manager: Add Entities"
+    description: "Extends entities not covered by the autodiscover whitelist with aligned nomenclature"
+    mode: parallel
+    triggers:
+      - platform: mqtt
+        topic: "rtl_433/rtl433/devices/+/+/+"
+      - platform: mqtt
+        topic: "rtl_433/rtl433/devices/+/+/+/+"
+    actions:
+      - variables:
+          parts: "{{ trigger.topic.split('/') }}"
+          # This captures everything between 'devices/' and the final value (e.g., 'Acurite-Tower/A/5506')
+          # Then replaces slashes with dashes to match the script: 'Acurite-Tower-A-5506'
+          discovery_id: >
+            {{ trigger.topic.split('devices/')[1].split('/' ~ parts[-1])[0] | replace('/', '-') }}
+          field: "{{ parts[-1] }}"
+
+      - choose:
+          # --- EXTENSION 1: SCMplus Gas Consumption ---
+          - conditions:
+              - "{{ 'SCMplus' in discovery_id }}"
+              - "{{ field == 'Consumption' }}"
+            sequence:
+              - service: mqtt.publish
+                data:
+                  retain: true
+                  topic: "homeassistant/sensor/{{ discovery_id }}/{{ discovery_id }}-consumption/config"
+                  payload: >
+                    {
+                      "name": "Consumption",
+                      "unique_id": "{{ discovery_id }}-consumption",
+                      "state_topic": "{{ trigger.topic }}",
+                      "unit_of_measurement": "ft³",
+                      "device_class": "gas",
+                      "state_class": "total_increasing",
+                      "device": {
+                        "identifiers": ["{{ discovery_id }}"],
+                        "name": "{{ discovery_id }}"
+                      }
+                    }
+
+          # --- EXTENSION 2: Universal Battery Binary Sensor ---
+          - conditions:
+              - "{{ field == 'battery_ok' }}"
+            sequence:
+              - service: mqtt.publish
+                data:
+                  retain: true
+                  topic: "homeassistant/binary_sensor/{{ discovery_id }}/{{ discovery_id }}-bat-low/config"
+                  payload: >
+                    {
+                      "name": "Battery Status",
+                      "unique_id": "{{ discovery_id }}-bat-low",
+                      "state_topic": "{{ trigger.topic }}",
+                      "payload_on": "0",
+                      "payload_off": "1",
+                      "device_class": "battery",
+                      "device": {
+                        "identifiers": ["{{ discovery_id }}"]
+                      }
+                    }

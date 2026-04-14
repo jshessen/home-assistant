@@ -1,0 +1,43 @@
+# ============================================================================
+# Energy Cost Tracking - Ameren Missouri
+# ============================================================================
+# Tracks electricity consumption cycles and calculates costs
+# Rates from: https://www.ameren.com
+# Base Rate: 12.64 cents/kWh | Monthly Fixed: $9.00
+# ============================================================================
+
+# Monthly electricity consumption tracking
+monthly_electricity:
+  source: sensor.dryer_energy
+  name: Monthly Electricity
+  cycle: monthly
+
+# Daily electricity consumption tracking (helpful for monitoring usage patterns)
+daily_electricity:
+  source: sensor.dryer_energy
+  name: Daily Electricity
+  cycle: daily
+
+# Monthly gas consumption tracking (from ft3 -> ccf template)
+monthly_gas:
+  source: sensor.gas_usage_ccf
+  name: Monthly Gas
+  cycle: monthly
+
+# Daily gas consumption tracking
+daily_gas:
+  source: sensor.gas_usage_ccf
+  name: Daily Gas
+  cycle: daily
+
+# Monthly water consumption tracking (EyeOnWater total in gallons)
+monthly_water:
+  source: sensor.water_meter_60439875
+  name: Monthly Water
+  cycle: monthly
+
+# Daily water consumption tracking
+daily_water:
+  source: sensor.water_meter_60439875
+  name: Daily Water
+  cycle: daily

@@ -1,0 +1,125 @@
+- id: "1749441927335"
+  alias: "Guest Light: 2x"
+  description: ""
+  use_blueprint:
+    path: jshessen/zwave-js-homeseer-hs-wd200-dimmer.yaml
+    input:
+      homeseer_switch: 50ef380bedd782c5a294f89dbf21668c
+      button_a2:
+        - action: light.toggle
+          metadata: {}
+          data: {}
+          target:
+            device_id: a2bc131b82d4147beeee9e54d6f1bd3b
+      button_b2:
+        - action: light.toggle
+          metadata: {}
+          data: {}
+          target:
+            device_id: a2bc131b82d4147beeee9e54d6f1bd3b
+      button_a3:
+        - action: fan.toggle
+          metadata: {}
+          data: {}
+          target:
+            device_id: a590eac95dab0561906757ac91bea174
+      button_b3:
+        - action: fan.toggle
+          metadata: {}
+          data: {}
+          target:
+            device_id: a590eac95dab0561906757ac91bea174
+- id: "1749486800022"
+  alias: Dining Room - 2x
+  description: ""
+  use_blueprint:
+    path: jshessen/zwave-js-homeseer-hs-wd200-dimmer.yaml
+    input:
+      homeseer_switch: 01cbb3f7bf9d52c19a0f7a05cdb3ad0a
+      button_a2:
+        - action: light.toggle
+          metadata: {}
+          data: {}
+          target:
+            device_id:
+              - e8d89cdcd73992c3412cdd066387adf8
+      button_b2:
+        - action: light.toggle
+          metadata: {}
+          data: {}
+          target:
+            device_id: e8d89cdcd73992c3412cdd066387adf8
+      button_a3: []
+      button_b3: []
+- id: "1749498282113"
+  alias: "Kid's Light: 2x"
+  description: ""
+  use_blueprint:
+    path: jshessen/zwave-js-homeseer-hs-wd200-dimmer.yaml
+    input:
+      homeseer_switch: 34ab4995a6bc86978e32cd624ed22a4d
+      button_a2:
+        - action: light.toggle
+          metadata: {}
+          data: {}
+          target:
+            device_id:
+              - f116cdbfae78d3eaa2e6873c263386b8
+              - ac33bde7d81b9408c7cf61e313cc2d7a
+      button_b2:
+        - action: light.toggle
+          metadata: {}
+          data: {}
+          target:
+            device_id:
+              - f116cdbfae78d3eaa2e6873c263386b8
+              - ac33bde7d81b9408c7cf61e313cc2d7a
+- id: "1749581747125"
+  alias: "Bedroom Light: 2x"
+  description: ""
+  use_blueprint:
+    path: jshessen/zwave-js-homeseer-hs-wd200-dimmer.yaml
+    input:
+      homeseer_switch: 61b18c1591fd89794b5c18003ec148b9
+      button_a2:
+        - action: light.toggle
+          metadata: {}
+          data: {}
+          target:
+            entity_id: light.bedroom_lamps
+      button_b2:
+        - action: light.toggle
+          metadata: {}
+          data: {}
+          target:
+            entity_id: light.bedroom_lamps
+- id: "1750857661630"
+  alias: AsusRouter/New device connected
+  description:
+    Create a HA notification for any new device connected to the local
+    network
+  triggers:
+    - event_type: asusrouter_device_connected
+      trigger: event
+  conditions: []
+  actions:
+    - data_template:
+        title: Device has joined the local network
+        message:
+          "MAC: {{trigger.event.data.mac}}, IP: {{trigger.event.data.ip}}, name:
+          {{trigger.event.data.name}}"
+      action: persistent_notification.create
+  mode: queued
+  max: 100
+- id: "1752004821602"
+  alias: Good Night Button (Selected Areas)
+  description: Set the day mode to Night and run the reusable area-based night routine.
+  triggers:
+    - trigger: state
+      entity_id:
+        - input_button.good_night_mode
+      to:
+  conditions: []
+  actions:
+    - service: script.good_night
+  mode: single

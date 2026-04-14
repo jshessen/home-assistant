@@ -1,0 +1,46 @@
+# Switch as X Integration Exclusions
+#
+# Home Assistant's "Switch as X" helper creates wrapper entities (lights, fans)
+# from switch entities. The original switches should be excluded since they're
+# already exposed through their more appropriate wrapper entities.
+#
+# Affected entities: 19 switches
+# Wrappers created: 10 lights, 2 fans
+#
+# Reference: https://www.home-assistant.io/integrations/switch_as_x/
+
+# Bathroom lights (motion sensor switches wrapped as lights)
+- switch.in_wall_motion_switch_500s      # → light.main_bathroom_light
+- switch.in_wall_motion_switch_500s_2    # → light.bathroom_light
+
+# Front porch light (switch wrapped as light)
+- switch.front_porch_light               # → light.front_porch_light
+
+# Attic gable fan (switch wrapped as fan)
+- switch.attic_gable_fan                 # → fan.attic_gable_fan
+
+# Guest bedroom outlets (wrapped as light and fan)
+- switch.in_wall_outlet_tr_500s          # → light.guest_outlet_3 (Guest Desk Lamp)
+- switch.in_wall_single_outlet           # → fan.guest_outlet_2 (Guest Fan)
+
+# Kid's bedroom outlets (wrapped as lights)
+- switch.in_wall_single_outlet_2         # → light.kid_s_outlet_2 (Kid's Dresser Lamps)
+- switch.kr_outlet_4_3                   # → light.kid_s_outlet_4 (Kid's Bed Lamp)
+
+# Entry outlet (wrapped as light)
+- switch.entry_outlet_1_2                # → light.entry_outlet_1 (Entry Lamp)
+
+# Main bedroom smart strips (outlets wrapped as lights and fans)
+# Smart Strip 1 outlets (Jeff's side)
+- switch.smart_strip_1                   # → light.smart_strip_1_1 (Jeff's Lamp) & fan.smart_strip_1_2 (Jeff's Fan)
+- switch.smart_strip_1_1                 # → light.smart_strip_1_1 (Jeff's Lamp)
+- switch.smart_strip_1_2                 # → fan.smart_strip_1_2 (Jeff's Fan)
+- switch.smart_strip_1_3                 # (additional outlets on same strip)
+- switch.smart_strip_1_4                 # (additional outlets on same strip)
+
+# Smart Strip 2 outlets (Patricia's side)
+- switch.smart_strip                     # → light.smart_strip_2_1 (Patricia's Lamp)
+- switch.smart_strip_2_1_5               # → light.smart_strip_2_1 (Patricia's Lamp)
+- switch.smart_strip_2_2                 # (additional outlets on same strip)
+- switch.smart_strip_2_3                 # (additional outlets on same strip)
+- switch.smart_strip_2_4                 # (additional outlets on same strip)

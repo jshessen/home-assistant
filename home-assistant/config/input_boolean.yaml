@@ -1,0 +1,63 @@
+# ============================================================================
+# House Mode Toggles
+# ============================================================================
+# Secondary modes that can overlap with primary house mode
+# Used as conditions to modify automation behavior
+# ============================================================================
+
+movie_mode:
+  name: Movie Mode
+  icon: mdi:movie-open
+  initial: off
+
+party_mode:
+  name: Party Mode
+  icon: mdi:party-popper
+  initial: off
+
+guest_mode:
+  name: Guest Mode
+  icon: mdi:account-multiple
+  initial: off
+
+work_from_home_mode:
+  name: Work From Home Mode
+  icon: mdi:desk
+  initial: off
+
+# ============================================================================
+# Automation Control Flags
+# ============================================================================
+# Used to temporarily disable specific automation behaviors
+# ============================================================================
+
+disable_good_morning:
+  name: Disable Good Morning
+  icon: mdi:alarm-off
+  initial: off
+
+disable_good_night:
+  name: Disable Good Night
+  icon: mdi:sleep-off
+  initial: off
+
+# ============================================================================
+# Holiday Decoration Controls
+# ============================================================================
+# Manual toggles for holiday decor and schedule suppression
+# ============================================================================
+
+holiday_decorations_inside:
+  name: Holiday Decorations Inside
+  icon: mdi:string-lights
+  initial: off
+
+holiday_decorations_outside:
+  name: Holiday Decorations Outside
+  icon: mdi:pine-tree
+  initial: off
+
+disable_holiday_schedules:
+  name: Disable Holiday Schedules
+  icon: mdi:calendar-remove
+  initial: off
