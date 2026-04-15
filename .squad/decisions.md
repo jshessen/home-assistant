@@ -2,6 +2,102 @@
 
 ## Active Decisions
 
+### 2026-04-15: Ollama Local LLM Deployment
+**Date:** 2026-04-15  
+**Author:** Linus (Integration Specialist)  
+**Status:** Implemented  
+**Context:** Yen Tech Briefing (2026-04-15) — Action 3 & 4
+
+**Decision:** Deploy Ollama as a containerized local LLM server for Home Assistant AI integrations using the dual-config pattern.
+
+**Model Selected:** `llama3.2:3b` (CPU-friendly, 2GB, general-purpose)
+
+**What Was Built:**
+- Docker Compose: `docker-compose.ollama.yml` with Ollama service on port 11434
+- Makefile: Added `make ollama` target (HA + Ollama), integrated into `make all`
+- Documentation: `home-assistant/config/docs/setup/ollama-setup.md` with dual-config setup guide
+- Directory: `ollama/models/` for model persistence
+
+**Dual-Config Pattern:**
+- Two HA integrations point to same Ollama server (localhost:11434)
+- "Ollama Chat" — Assist pipeline (conversation agent)
+- "Ollama Control" — Device control (scripts, automations)
+- Rationale: Context isolation, independent tuning, future model flexibility
+
+**Technical Decisions:**
+- No GPU acceleration (CPU-only, universal compatibility)
+- Host networking: HA resolves `localhost:11434` directly
+- Restart policy: `unless-stopped` (respects user intent)
+- Volume: Bind mount `./ollama/models` → `/root/.ollama`
+- Manual model pull: `docker exec ollama ollama pull llama3.2:3b` required on first startup
+
+**Integration:**
+- Preserves existing `make hacs` target
+- Ollama optional via `make ollama`, default in `make all`
+- Included in `make restart`, `make stop`, `make down`, `make update`
+
+**Files Changed:**
+- Created: `docker-compose.ollama.yml`, `home-assistant/config/docs/setup/ollama-setup.md`, `ollama/models/`
+- Modified: `Makefile`, `home-assistant/config/docs/README.md`
+
+**Open Questions:**
+1. Should `make all` include Ollama by default? (Recommended: Yes)
+2. Should health check be added? (Deferred)
+3. Should model pull be automated? (Deferred)
+
+**Next Steps:** HA UI configuration, Assist pipeline wiring, performance monitoring
+
+---
+
+### 2026-04-15: Purpose-Specific Triggers Investigation
+**Date:** 2026-04-15  
+**Investigator:** Rusty (Automation Engineer)  
+**Source:** Yen Tech Briefing (2026-04-15) - Action Item 2  
+**Status:** Research Complete
+
+**Finding:** Purpose-Specific Triggers do not exist in Home Assistant 2026.4.2 — feature was speculative.
+
+**Labs System Findings:**
+- ✅ Labs system confirmed (UI at Settings → System → Labs)
+- ✅ Configuration: `.storage/core.labs` (UI-managed JSON only)
+- ✅ No YAML configuration possible — Labs is UI-only
+- Currently enabled: `analytics/snapshots` only
+
+**Trigger Architecture:**
+- Core types: state, numeric_state, time, time_pattern, event, homeassistant
+- Device-specific triggers exist (Z-Wave, Zigbee) but NOT cross-domain semantic
+
+**Closest Equivalents:**
+- Labels: Cross-domain grouping (`target: { label_id: halloween }`)
+- Template sensors: Semantic state creation via auto-discovery
+
+**High-Value Opportunity: Battery Monitoring Automation**
+- Template binary_sensor auto-discovers battery entities via `device_class`
+- Single automation covers entire deployment
+- Implementation: `templates/battery_monitor.yaml` + `automations/battery_alerts.yaml`
+- Benefit: Zero maintenance on new devices
+
+**Medium-Value Opportunity: Label-Based Motion Detection**
+- Deferred (2-person deployment doesn't justify yet)
+- Revisit when adding children's devices or guest tracking
+
+**Future Opportunity: Door/Window Security**
+- Implementation pattern documented
+- Blocked pending entity IDs in deployment
+
+**Recommendations:**
+1. ✅ Document Labs features (completed → `docs/setup/labs-features.md`)
+2. ⏭️ Implement battery monitoring (pending team approval)
+3. Watch HA release notes for semantic triggers in Labs
+
+**Files Changed:**
+- Created: `home-assistant/config/docs/setup/labs-features.md`
+- Modified: `home-assistant/config/docs/README.md`
+
+**Conclusion:** Modern HA patterns achieve similar semantic goals to hypothetical "Purpose-Specific Triggers." Recommend adopting template-based semantic sensors where valuable (battery monitoring has clearest ROI).
+
+---
+
 ### 2026-04-14: UI-configurable helper schema design
 **By:** Danny (Lead)
 **What:** Defined 18 input helpers across 6 logical groups for the mode/routine system. All timing trigger times, brightness levels, color temps, delays, and positional values are moved out of hardcoded YAML into HA UI-manageable helpers. Mode flags and enumerated states (covered in main plan) round out the full picture.

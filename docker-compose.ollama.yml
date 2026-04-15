@@ -1,0 +1,51 @@
+##############################
+# NETWORKS
+#
+networks:
+  home-automation:
+    external: true
+#
+##############################
+
+##############################
+# VOLUMES
+#
+volumes:
+  ollama-models:
+    driver: local
+    driver_opts:
+      type: none
+      device: ./ollama/models
+      o: bind
+#
+##############################
+
+##############################
+# SERVICES
+#
+services:
+  ##########
+  # Ollama - Local LLM server for Home Assistant AI integration
+  #
+  ollama:
+    image: ollama/ollama:${OLLAMA_TAG:-latest}
+    container_name: ollama
+    restart: unless-stopped
+    tty: true
+    stop_signal: SIGINT
+    networks:
+      - home-automation
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - ${OLLAMA_PORT:-11434}:11434/tcp    # API
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ollama-models:/root/.ollama
+    environment:
+      TZ: ${TZ}
+  ##########
+  #
+  #################### 
+#
+##############################

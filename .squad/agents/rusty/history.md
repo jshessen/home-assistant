@@ -17,3 +17,17 @@
 
 ### 2026-04-14: Mode system refactor completed
 All files updated and config-check validated. Full context — including all decisions, trade-offs, and entity ID resolutions — in `decisions.md` (entries: "Mode system refactor completed", "Script architecture refactor", "Mode system UI layer update", "TBD entity ID resolution", "UI-configurable helper schema design").
+
+### 2026-04-15: Purpose-Specific Triggers Investigation
+- **Finding:** "Purpose-Specific Triggers" mentioned in Yen's briefing **does not exist** in HA 2026.4.2
+- **Labs System:** Confirmed HA has Labs feature system (Settings → System → Labs), UI-only configuration
+- **Current Labs:** Only `analytics/snapshots` preview enabled; no semantic trigger features available
+- **Trigger Types:** HA 2026.4.2 has: state, numeric_state, time, time_pattern, event, homeassistant triggers
+- **Closest Equivalent:** Labels (cross-domain grouping), template sensors (semantic states), device_class (auto-discovery)
+- **Automation Opportunities Identified:**
+  1. Battery monitoring with device_class auto-discovery (HIGH VALUE - single template sensor replaces manual entity lists)
+  2. Label-based motion detection (deferred - current 2-person deployment too simple)
+  3. Door/window security templates (future - need sensors first)
+- **Documentation:** Created `docs/setup/labs-features.md` with full research findings and modern trigger pattern examples
+- **Decision Inbox:** Filed `.squad/decisions/inbox/rusty-purpose-specific-triggers.md` with battery monitoring implementation proposal
+- **Key Insight:** Modern HA patterns (labels + templates + device_class) achieve semantic trigger goals without new features
