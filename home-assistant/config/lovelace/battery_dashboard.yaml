@@ -21,7 +21,7 @@ views:
 
       # ---- Summary --------------------------------------------------------
       - type: markdown
-        content: >-
+        content: |-
           ## 🔋 Battery Monitor
 
           {% set ns = namespace(critical=0, low=0, good=0) %}
@@ -138,7 +138,7 @@ views:
 
       # ---- Battery Notes Summary Table -------------------------------------
       - type: markdown
-        content: >-
+        content: |-
           ## 🔋 Battery Notes — Detail View
 
           {% set ns = namespace(rows=[], missing=0) %}
@@ -193,7 +193,7 @@ views:
             - state: unavailable
             - state: unknown
             - attributes:
-                battery_last_replaced: "*.+*"
+                battery_last_replaced: "?*"
         sort:
           method: state
           numeric: true
