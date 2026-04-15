@@ -2,7 +2,7 @@
 alias: "Evening AI Summary"
 description: >-
   Daily evening summary using ai_task.generate_data with structured output.
-  Sends a typed summary to Jeff and Patricia at 21:00 when presence_mode is Home.
+  Sends a typed summary to Jeff at 21:00 when presence_mode is Home.
   Uses weather, lock states, and mode data to generate contextual insights.
 
 trigger:
@@ -23,7 +23,6 @@ action:
         
         Current Status:
         - Jeff is {{ states('person.jeff') }}
-        - Patricia is {{ states('person.patricia') }}
         - Presence Mode: {{ states('input_select.presence_mode') }}
         - Time of Day: {{ states('input_select.time_of_day') }}
         - Guest Mode: {{ states('input_boolean.guest_mode') }}
@@ -52,16 +51,6 @@ action:
     response_variable: evening_data
 
   - action: notify.mobile_app_jeff
-    data:
-      title: "🏡 Evening Summary"
-      message: >-
-        {{ evening_data.data.summary }}
-        
-        🔒 {{ evening_data.data.security_note }}
-        
-        📅 {{ evening_data.data.tomorrow_note }}
-
-  - action: notify.mobile_app_patricia
     data:
       title: "🏡 Evening Summary"
       message: >-
