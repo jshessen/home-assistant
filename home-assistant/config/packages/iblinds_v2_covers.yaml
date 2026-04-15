@@ -13,6 +13,11 @@
 #   - close_cover / set_cover_position → pass through to the _hw entity unchanged
 #   - Intercepts ALL callers: scripts, automations, Alexa, Lovelace — zero script changes
 #
+# Stop-point resolution (per-device overrides global):
+#   1. If iblinds_v2_node{N}_open_position > 0 → use that value for this device only
+#   2. If iblinds_v2_node{N}_open_position == 0 (default) → fall back to iblinds_v2_open_position
+#   Setting a per-device helper to 0 means "inherit from global."
+#
 # ─── PREREQUISITE: Rename physical entities in HA UI (one-time) ────────────────
 # Settings → Entities → find each entity → Edit (pencil) → change Entity ID:
 #
@@ -33,6 +38,8 @@
 #   Template covers provide the stop-point behavior firmware cannot.
 
 input_number:
+  # ── Global stop point ──────────────────────────────────────────────────────────
+  # Used by any device whose per-device helper is set to 0 (default).
   iblinds_v2_open_position:
     name: "iBlinds v2 Open Position"
     min: 10
@@ -40,6 +47,49 @@ input_number:
     step: 5
     unit_of_measurement: "%"
     initial: 50
+    icon: mdi:blinds-open
+    mode: slider
+
+  # ── Per-device stop points ─────────────────────────────────────────────────────
+  # Setting a value here (5–100) overrides the global for that specific blind.
+  # Leave at 0 (default) to inherit from iblinds_v2_open_position above.
+  iblinds_v2_node71_open_position:
+    name: "iBlinds v2 Node 71 Open Position (Right Blinds)"
+    min: 0
+    max: 100
+    step: 5
+    unit_of_measurement: "%"
+    initial: 0
+    icon: mdi:blinds-open
+    mode: slider
+
+  iblinds_v2_node107_open_position:
+    name: "iBlinds v2 Node 107 Open Position (Guest Blinds)"
+    min: 0
+    max: 100
+    step: 5
+    unit_of_measurement: "%"
+    initial: 0
+    icon: mdi:blinds-open
+    mode: slider
+
+  iblinds_v2_node72_open_position:
+    name: "iBlinds v2 Node 72 Open Position (Left Blinds)"
+    min: 0
+    max: 100
+    step: 5
+    unit_of_measurement: "%"
+    initial: 0
+    icon: mdi:blinds-open
+    mode: slider
+
+  iblinds_v2_node103_open_position:
+    name: "iBlinds v2 Node 103 Open Position (Bedroom Blinds)"
+    min: 0
+    max: 100
+    step: 5
+    unit_of_measurement: "%"
+    initial: 0
     icon: mdi:blinds-open
     mode: slider
 
@@ -58,7 +108,9 @@ template:
           target:
             entity_id: cover.window_blind_controller_hw
           data:
-            position: "{{ states('input_number.iblinds_v2_open_position') | int(50) }}"
+            position: >-
+              {% set per = states('input_number.iblinds_v2_node71_open_position') | int(0) %}
+              {{ per if per > 0 else states('input_number.iblinds_v2_open_position') | int(50) }}
         close_cover:
           action: cover.close_cover
           target:
@@ -87,7 +139,9 @@ template:
           target:
             entity_id: cover.window_blind_controller_2_hw
           data:
-            position: "{{ states('input_number.iblinds_v2_open_position') | int(50) }}"
+            position: >-
+              {% set per = states('input_number.iblinds_v2_node107_open_position') | int(0) %}
+              {{ per if per > 0 else states('input_number.iblinds_v2_open_position') | int(50) }}
         close_cover:
           action: cover.close_cover
           target:
@@ -116,7 +170,9 @@ template:
           target:
             entity_id: cover.window_blind_controller_3_hw
           data:
-            position: "{{ states('input_number.iblinds_v2_open_position') | int(50) }}"
+            position: >-
+              {% set per = states('input_number.iblinds_v2_node72_open_position') | int(0) %}
+              {{ per if per > 0 else states('input_number.iblinds_v2_open_position') | int(50) }}
         close_cover:
           action: cover.close_cover
           target:
@@ -145,7 +201,9 @@ template:
           target:
             entity_id: cover.window_blind_controller_4_hw
           data:
-            position: "{{ states('input_number.iblinds_v2_open_position') | int(50) }}"
+            position: >-
+              {% set per = states('input_number.iblinds_v2_node103_open_position') | int(0) %}
+              {{ per if per > 0 else states('input_number.iblinds_v2_open_position') | int(50) }}
         close_cover:
           action: cover.close_cover
           target:
