@@ -89,7 +89,7 @@ automation:
         response_variable: summary
       - action: notify.mobile_app_jeff
         data:
-          message: "{{ summary.text }}"
+          message: "{{ summary.data }}"
 ```
 
 ### Recipe 3: LLM-Enhanced Jinja2 Templates

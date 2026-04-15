@@ -63,3 +63,67 @@ data:
 
 **Deployed Example:** `automations/evening_ai_summary.yaml` — 3-field structure (summary, security_note, tomorrow_note) with weather/lock/mode context injection via Jinja2 template in `instructions`.
 
+
+### 2026-04-15: Broad AI Landscape Briefing — Developer Tooling & Copilot Ecosystem
+
+**What:** Researched and synthesized the broader AI developer tooling landscape for this project — GitHub Copilot, VS Code agent mode, MCP protocol, Claude/GPT model evolution, and local LLM trajectory.
+
+**Key Findings:**
+
+1. **The Copilot coding agent (what I am) is already in use** — but the project doesn't have GitHub issue templates that would enable truly autonomous async pickup. Adding structured issue templates is a low-effort, high-leverage improvement.
+
+2. **`.github/copilot-instructions.md` is the project's most important prompt engineering artifact** — it's the system prompt for every agent invocation. Should be treated as living code, not boilerplate. Co-owned by Yen + Danny.
+
+3. **MCP (Model Context Protocol) is the biggest unlock we're not using** — an HA MCP server would give squad agents live entity/state context without user copy-paste. Eliminates the `TODO: replace entity_id` problem systemically. Linus to evaluate.
+
+4. **Yen's charter needs expansion** — add Copilot ecosystem monitoring, copilot-instructions.md stewardship, and squad model optimization. Currently these have no owner.
+
+5. **`qwen2.5:7b` is likely a better default Ollama model** than `llama3.2:3b` for structured output tasks — better reasoning with acceptable RAM overhead. Test this sprint before recommending the switch.
+
+6. **Model assignment by agent role** — the squad doesn't have explicit model assignments except Yen (claude-sonnet-4.6). Adding `model:` to each charter would optimize cost/quality tradeoff across all agents.
+
+7. **"Tooling Pulse" ceremony needed** — monthly check-in on Copilot/VS Code/Ollama ecosystem. This briefing is its first instance.
+
+8. **Per-agent `.agent.md` files** for direct invocation (beyond Squad coordinator) — Yen and Rusty are good first candidates.
+
+**Confidence calibration:** Items 1–3, 7 are 🟢 High (confirmed from direct observation and training). Items 4–6 are 🟡 Medium (trajectory extrapolation). Item 8 is 🔴 Low (speculative value assessment).
+
+**Artifacts:** `.squad/log/yen-broad-briefing-2026-04-15.md`, `.squad/decisions/inbox/yen-broad-briefing-actions.md`
+
+
+### 2026-04-15: Live-Sourced AI Landscape Research — Methodology: web_fetch from primary sources
+
+**What:** Conducted live-sourced research briefing using `web_fetch` tool to pull real, current content from 12+ primary sources. Compared findings against prior training-knowledge briefing to identify what was correct, new, or incorrect.
+
+**Sources fetched (successfully):**
+- VS Code 1.116.0 release notes (code.visualstudio.com/updates) — Released April 15, 2026 (same day!)
+- GitHub Copilot features docs (docs.github.com) — Live docs
+- MCP official site (modelcontextprotocol.io) — Current
+- HA Blog + HA 2026.4 release notes (home-assistant.io) — April 1–11, 2026
+- HA Ollama integration docs (home-assistant.io) — HA 2026.4.2
+- HA Conversation integration docs (home-assistant.io) — HA 2026.4.2
+- Ollama blog (ollama.com/blog) — March 30, 2026
+- Ollama library (ollama.com/library) — Live model data
+- Anthropic Claude 4 announcement + Claude Opus 4.5 announcement
+
+**Key corrections to prior training-knowledge briefing:**
+1. "Copilot coding agent" → officially renamed "Copilot cloud agent" [3]
+2. qwen2.5 recommendation upgraded to qwen3:8b (new generation with thinking support)
+3. MCP is universal (OpenAI supports it too) — not Anthropic-only as implied before
+4. Ollama HA integration has "Think before responding" toggle — thinking is not Claude-exclusive
+5. deepseek-r1 is #2 most popular Ollama model with thinking — not in prior briefing
+
+**New findings (not in prior training knowledge):**
+- GitHub Copilot built-in to VS Code 1.116+ (no extension needed)
+- Copilot Memory (public preview) — autonomous repo-level memory for cloud agent
+- HA 2026.4 "Show details" in Assist — sees AI thinking steps, tool calls, results
+- VS Code Agents app (new companion app for agent-native development)
+- Agent debug logs now persistent (review past sessions)
+- qwen3 and qwen3.5 models available (qwen3.5 updated 1 week ago as of research date)
+- Claude Code GA with GitHub Actions integration (tag @claude-code on PRs)
+- Claude Opus 4.5 at $5/$25/M tokens (dramatically cheaper than Opus 4)
+
+**Artifacts:**
+- `.squad/log/yen-sourced-research-2026-04-15.md` — raw research notes with source table
+- `.squad/log/yen-sourced-briefing-2026-04-15.md` — full cited briefing replacing prior training-based one
+- `.squad/decisions/inbox/yen-sourced-research-complete.md` — decision inbox summary
