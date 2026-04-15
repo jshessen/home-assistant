@@ -15,3 +15,15 @@ Defined full UI-configurable helper schema for the mode/routine system. 6 input_
 ### 2026-04-14: Populated routing table in `.squad/routing.md`
 
 Replaced unfilled `{domain}` placeholder template with a complete authoritative routing table covering all 7 team members and all known work domains for this Home Assistant Docker project. Added domain disambiguation for ambiguous cases (packages, input helpers). Decision filed: `decisions/inbox/danny-routing-table-filled.md`.
+
+### 2026-04-16: Reviewed battery_dashboard.yaml — REJECTED (2 bugs)
+
+Reviewed `lovelace/battery_dashboard.yaml` written by the Squad coordinator. Found two bugs requiring fixes:
+
+1. **YAML `>-` scalar breaks markdown tables.** Both markdown cards (View 1 summary, View 2 detail table) use `content: >-` which folds newlines between table rows into spaces. Empirically verified with PyYAML: `>-` on `| Col A | Col B |\n|---|---|\n| v1 | v2 |` produces a single space-joined string. Tables won't render. Fix: use `|-` (literal block scalar).
+
+2. **`"*.+*"` glob pattern in auto-entities attribute exclude filter.** Intended to match "any entity with a battery_last_replaced value" but glob interprets `.+` as literal characters (dot-plus), not regex. ISO date strings from Battery Notes don't contain a literal `.+` sequence, so the filter fails silently. Fix: use `"*"` which matches any non-empty value.
+
+Correct patterns confirmed: `sort(attribute='0')` on tuples works (Jinja2 `make_attrgetter` converts digit strings to int), `is_number` filter and `selectattr` test are valid HA Jinja2, `as_timestamp | timestamp_custom` chain is correct, `options:` key in auto-entities include filters correctly passes `multiple-entity-row` config. Dashboard registration in `configuration.yaml` as a separate YAML-mode sidebar dashboard is properly configured.
+
+Key architectural learning: YAML block scalar choice (`>-` vs `|-` vs `|`) is a common silent-failure pattern in HA Lovelace markdown cards. Any card with markdown tables or pre-formatted output MUST use literal (`|`) scalars, never folded (`>`). Decision filed: `decisions/inbox/danny-battery-dashboard-review.md`.
