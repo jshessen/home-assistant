@@ -64,3 +64,35 @@ entity_name(hass, entity_id) -> str | None
 ```
 
 Deployment uses modern, idiomatic HA patterns — no changes required. Full report: `.squad/decisions/inbox/basher-template-audit-2026-04-15.md`
+### 2026-04-15: |-  vs >- for markdown card content; fnmatch vs regex in auto-entities
+
+**`|-` vs `>-` for Lovelace markdown cards:**
+- `>-` is YAML "folded block scalar" — collapses newlines into spaces. Correct for multi-line Jinja2 variable templates where whitespace is irrelevant.
+- `|-` is YAML "literal block scalar with chomp" — preserves newlines exactly. **Required** for markdown `content:` fields because markdown table rows must be on separate lines to render as tables. Using `>-` on a markdown card collapses the table into a single line of garbage.
+- Rule: `>-` for Jinja2 expression blocks; `|-` for any `content:` block that contains rendered markdown.
+
+**fnmatch glob vs regex in auto-entities attribute filters:**
+- auto-entities `attributes:` filter values use **fnmatch glob syntax**, NOT regex.
+- `*.+*` is a regex pattern (meaning: any chars, then one-or-more of `.`, then any chars) — meaningless in fnmatch, matches nothing.
+- `?*` is the correct fnmatch idiom for "one or more characters" (i.e., any non-empty string).
+- Use `?*` to match "attribute has any non-empty value set"; use `*` to match any value including empty.
+
+---
+
+### 2026-04-14: YAML scalar choice in Lovelace markdown cards
+
+**Bug pattern:** Using `>-` (folded scalar) in `content:` fields of `type: markdown` cards collapses all newlines into spaces. Markdown tables depend on literal newlines to render rows — a folded scalar turns the entire table into one unreadable line.
+
+**Rule:** In Lovelace markdown card `content:` blocks, always use `|-` (literal block scalar, strip trailing newline). Reserve `>-` only for Jinja2 template variable definitions in `variables:` maps or `template:` sensor value_templates.
+
+**Context:** `battery_dashboard.yaml` — both View 1 summary table and View 2 Battery Notes detail table were broken with `>-`.
+
+---
+
+### 2026-04-14: auto-entities glob vs regex filter values
+
+**Bug pattern:** `battery_last_replaced: "*.+*"` was an attempt to match any non-empty string using regex syntax (`.+` = one or more chars). But auto-entities `filter:` uses **glob wildcards**, not regex. The string `"*.+*"` matches only attribute values that literally contain `.+` — ISO date strings like `2024-06-15T10:30:00+00:00` do NOT match `.+` literally.
+
+**Fix:** Use `"*"` to match any value (including empty), or `"?*"` to match one-or-more characters. For "has any replacement date set", `"*"` is the correct choice per Danny's spec.
+
+**Rule:** Never use regex patterns in auto-entities filter attribute values. Glob only: `*` (any), `?` (single char), `[abc]` (char class).

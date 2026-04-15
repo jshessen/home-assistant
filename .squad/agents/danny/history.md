@@ -27,3 +27,11 @@ Reviewed `lovelace/battery_dashboard.yaml` written by the Squad coordinator. Fou
 Correct patterns confirmed: `sort(attribute='0')` on tuples works (Jinja2 `make_attrgetter` converts digit strings to int), `is_number` filter and `selectattr` test are valid HA Jinja2, `as_timestamp | timestamp_custom` chain is correct, `options:` key in auto-entities include filters correctly passes `multiple-entity-row` config. Dashboard registration in `configuration.yaml` as a separate YAML-mode sidebar dashboard is properly configured.
 
 Key architectural learning: YAML block scalar choice (`>-` vs `|-` vs `|`) is a common silent-failure pattern in HA Lovelace markdown cards. Any card with markdown tables or pre-formatted output MUST use literal (`|`) scalars, never folded (`>`). Decision filed: `decisions/inbox/danny-battery-dashboard-review.md`.
+
+### 2026-04-17: Re-reviewed battery_dashboard.yaml — REJECTED (same 2 bugs, refined fix #2)
+
+Re-review of commit `2024949`. Both bugs from 2026-04-16 remain unfixed. Performed comprehensive checklist review covering Jinja2 correctness, Battery Notes v3.4.3 attribute names, auto-entities syntax, multiple-entity-row config, and HA YAML anti-patterns. All attribute names confirmed correct. All Jinja2 patterns (namespace, is_number, sort(attribute='0'), as_timestamp chain) confirmed valid. Only the same 2 bugs remain.
+
+**Refined recommendation for Bug 2:** Changed fix from `"*"` to `"?*"`. Empirical testing revealed `fnmatch("", "*")` returns `True` — so `"*"` would incorrectly exclude entities with empty-string `battery_last_replaced` attribute. `"?*"` requires ≥1 character, correctly excluding only entities with actual date values. Always test glob patterns with `fnmatch` edge cases (empty string, None-as-string).
+
+Decision updated: `decisions/inbox/danny-battery-dashboard-review.md`.
