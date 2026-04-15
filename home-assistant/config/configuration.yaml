@@ -10,6 +10,13 @@ automation: !include automations.yaml
 script: !include_dir_merge_named scripts/
 scene: !include scenes.yaml
 
+# Alexa Smart Home Skill integration
+alexa: !include alexa.yaml
+
+# Packages for self-contained feature modules (recorder, alexa helpers, iOS companion, etc.)
+homeassistant:
+  packages: !include_dir_named packages
+
 http:
   # For extra security set this to only accept connections on localhost if NGINX is on the same machine
   # Uncommenting this will mean that you can only reach Home Assistant using the proxy, not directly via IP from other clients.
@@ -27,3 +34,10 @@ lovelace:
   resources:
     - url: /hacsfiles/lovelace-multiple-entity-row/multiple-entity-row.js
       type: module
+  dashboards:
+    battery-status:
+      mode: yaml
+      filename: lovelace/battery_dashboard.yaml
+      title: "Battery Status"
+      icon: mdi:battery-alert
+      show_in_sidebar: true

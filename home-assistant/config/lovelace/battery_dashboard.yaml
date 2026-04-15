@@ -1,0 +1,121 @@
+# ============================================================================
+# Battery Status Dashboard
+# ============================================================================
+# Displays all battery-powered devices sorted by charge level (lowest first).
+# Sections: Critical (<20%), Low (20–40%), All Devices, Binary Low Alerts.
+#
+# Requires:
+#   - auto-entities (HACS) — already installed
+#   - battery_notes (custom_component) — already installed v3.4.3
+# ============================================================================
+
+views:
+  - title: Battery Monitor
+    path: battery
+    icon: mdi:battery-alert
+    cards:
+
+      # ---- Summary --------------------------------------------------------
+      - type: markdown
+        content: >-
+          ## 🔋 Battery Monitor
+
+          {% set ns = namespace(critical=0, low=0, good=0) %}
+          {% for s in states.sensor
+            | selectattr('attributes.device_class', 'eq', 'battery')
+            | selectattr('state', 'is_number') %}
+            {% set pct = s.state | float %}
+            {% if pct < 20 %}{% set ns.critical = ns.critical + 1 %}
+            {% elif pct < 40 %}{% set ns.low = ns.low + 1 %}
+            {% else %}{% set ns.good = ns.good + 1 %}{% endif %}
+          {% endfor %}
+
+          | Status | Count |
+          |--------|------:|
+          | 🔴 Critical (< 20%) | **{{ ns.critical }}** |
+          | 🟡 Low (20 – 40%) | **{{ ns.low }}** |
+          | ✅ Good (≥ 40%) | **{{ ns.good }}** |
+
+          *All {{ ns.critical + ns.low + ns.good }} devices. Sorted lowest first.*
+
+      # ---- Critical: below 20% --------------------------------------------
+      - type: custom:auto-entities
+        card:
+          type: entities
+          title: "🔴 Critical — Below 20%"
+          state_color: true
+          show_header_toggle: false
+        filter:
+          include:
+            - domain: sensor
+              attributes:
+                device_class: battery
+              state: "< 20"
+          exclude:
+            - state: unavailable
+            - state: unknown
+        sort:
+          method: state
+          numeric: true
+        show_empty: false
+
+      # ---- Low: 20 – 40% --------------------------------------------------
+      - type: custom:auto-entities
+        card:
+          type: entities
+          title: "🟡 Low — 20 to 40%"
+          state_color: true
+          show_header_toggle: false
+        filter:
+          include:
+            - domain: sensor
+              attributes:
+                device_class: battery
+              state: ">= 20"
+          exclude:
+            - state: ">= 40"
+            - state: unavailable
+            - state: unknown
+        sort:
+          method: state
+          numeric: true
+        show_empty: false
+
+      # ---- All Devices (complete reference) --------------------------------
+      - type: custom:auto-entities
+        card:
+          type: entities
+          title: "📋 All Battery Devices"
+          state_color: true
+          show_header_toggle: false
+        filter:
+          include:
+            - domain: sensor
+              attributes:
+                device_class: battery
+          exclude:
+            - state: unavailable
+            - state: unknown
+        sort:
+          method: state
+          numeric: true
+        show_empty: true
+
+      # ---- Binary low-battery alerts (RTL433, binary sensors) -------------
+      - type: custom:auto-entities
+        card:
+          type: entities
+          title: "⚠️ Battery Low Alerts"
+          state_color: true
+          show_header_toggle: false
+        filter:
+          include:
+            - domain: binary_sensor
+              attributes:
+                device_class: battery
+          exclude:
+            - state: unavailable
+            - state: unknown
+        sort:
+          method: name
+        show_empty: false
