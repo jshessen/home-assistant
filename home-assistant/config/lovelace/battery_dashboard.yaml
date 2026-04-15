@@ -4,9 +4,13 @@
 # Displays all battery-powered devices sorted by charge level (lowest first).
 # Sections: Critical (<20%), Low (20–40%), All Devices, Binary Low Alerts.
 #
+# View 1 (battery): Overview — level-based grouping, alerts
+# View 2 (battery-details): Details — battery type, last replaced, days from Battery Notes
+#
 # Requires:
 #   - auto-entities (HACS) — already installed
 #   - battery_notes (custom_component) — already installed v3.4.3
+#   - multiple-entity-row (HACS) — already installed
 # ============================================================================
 
 views:
@@ -119,3 +123,104 @@ views:
         sort:
           method: name
         show_empty: false
+
+  # ==========================================================================
+  # View 2: Battery Details (Battery Notes metadata drill-down)
+  # ==========================================================================
+  # Shows battery type, last-replaced date, and days-since-replaced for all
+  # devices tracked by Battery Notes (entities ending in _battery_plus).
+  # Tap-action on each row navigates to HA's entity detail (history + attributes).
+  # ==========================================================================
+  - title: Battery Details
+    path: battery-details
+    icon: mdi:battery-check
+    cards:
+
+      # ---- Battery Notes Summary Table -------------------------------------
+      - type: markdown
+        content: >-
+          ## 🔋 Battery Notes — Detail View
+
+          {% set ns = namespace(rows=[], missing=0) %}
+          {% for s in states.sensor %}
+            {% if s.entity_id.endswith('_battery_plus') and s.state | is_number %}
+              {% set level = s.state | int %}
+              {% set btype = s.attributes.battery_type_and_quantity | default('?') %}
+              {% set replaced = s.attributes.battery_last_replaced | default(none) %}
+              {% set days = s.attributes.battery_last_replaced_days | default(none) %}
+              {% set name = s.name | replace(' Battery+', '') | replace(' battery+', '') %}
+              {% set ind = '🔴' if level < 20 else ('🟡' if level < 40 else '✅') %}
+              {% set days_str = (days | int) ~ 'd' if days != none else '—' %}
+              {% if replaced != none %}
+                {% set rep_str = replaced | as_timestamp | timestamp_custom('%b %d, %Y') %}
+              {% else %}
+                {% set rep_str = '—' %}
+                {% set ns.missing = ns.missing + 1 %}
+              {% endif %}
+              {% set ns.rows = ns.rows + [(level, '| ' ~ ind ~ ' ' ~ name ~ ' | ' ~ level ~ '% | ' ~ btype ~ ' | ' ~ rep_str ~ ' | ' ~ days_str ~ ' |')] %}
+            {% endif %}
+          {% endfor %}
+
+          | Device | Level | Type | Last Replaced | Days |
+          |--------|------:|------|---------------|-----:|
+          {% for _, row in ns.rows | sort(attribute='0') %}
+          {{ row }}
+          {% endfor %}
+
+          {% if ns.missing > 0 %}
+          > ⚠️ **{{ ns.missing }} device(s)** have no replacement date recorded.
+          {% endif %}
+
+      # ---- Devices Never Replaced (no recorded replacement) ----------------
+      - type: custom:auto-entities
+        card:
+          type: entities
+          title: "❓ No Replacement Date Recorded"
+          state_color: true
+          show_header_toggle: false
+        filter:
+          include:
+            - entity_id: "*_battery_plus"
+              options:
+                type: custom:multiple-entity-row
+                secondary_info: last-updated
+                entities:
+                  - attribute: battery_type_and_quantity
+                    name: Type
+                  - attribute: battery_level
+                    name: Level
+          exclude:
+            - state: unavailable
+            - state: unknown
+            - attributes:
+                battery_last_replaced: "*.+*"
+        sort:
+          method: state
+          numeric: true
+        show_empty: false
+
+      # ---- All Battery+ Devices with Notes Detail --------------------------
+      - type: custom:auto-entities
+        card:
+          type: entities
+          title: "🔋 All Devices — Type & Replacement"
+          state_color: true
+          show_header_toggle: false
+        filter:
+          include:
+            - entity_id: "*_battery_plus"
+              options:
+                type: custom:multiple-entity-row
+                secondary_info: last-updated
+                entities:
+                  - attribute: battery_type_and_quantity
+                    name: Type
+                  - attribute: battery_last_replaced_days
+                    name: Days Ago
+          exclude:
+            - state: unavailable
+            - state: unknown
+        sort:
+          method: state
+          numeric: true
+        show_empty: true
