@@ -75,6 +75,10 @@ Modes configuration:
 - `scripts/good_night.yaml` - Evening automation
 - `scripts/good_morning.yaml` - Morning automation
 
+### 🪟 iBlinds Covers (`docs/iblinds/`)
+
+- **ADR-001-iblinds-v2-stop-point.md** - Architecture Decision Record: two-layer fix for v2 stop-point behavior (Z-Wave config + Template Cover package). Includes migration steps and open items.
+
 ### 📦 Setup & Configuration (`docs/setup/`)
 
 - **QUICK_START.md** - 5-minute quick start guide

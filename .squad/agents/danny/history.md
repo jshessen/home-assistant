@@ -35,3 +35,60 @@ Re-review of commit `2024949`. Both bugs from 2026-04-16 remain unfixed. Perform
 **Refined recommendation for Bug 2:** Changed fix from `"*"` to `"?*"`. Empirical testing revealed `fnmatch("", "*")` returns `True` — so `"*"` would incorrectly exclude entities with empty-string `battery_last_replaced` attribute. `"?*"` requires ≥1 character, correctly excluding only entities with actual date values. Always test glob patterns with `fnmatch` edge cases (empty string, None-as-string).
 
 Decision updated: `decisions/inbox/danny-battery-dashboard-review.md`.
+
+### 2026-07-20: iBlinds v2/v3 consistency analysis — RECOMMENDATION COMPLETE
+
+Synthesized Linus's Z-Wave research and Livingston's diagnostic findings into a comprehensive implementation plan for the mixed iBlinds v2/v3 environment. Key architectural decisions:
+
+**Root cause identified:** Missing `associations` section in `ib2_0.json` device config prevents Lifeline group setup, so v2 devices never send unsolicited position reports. This explains the "unknown" state in HA entities.
+
+**Contradiction resolved:** Owner reported "unknown" positions while Livingston found `currentValue` tracking. Both are correct — Z-Wave JS tracks *commanded* positions optimistically, but HA entities require *confirmed* reports from devices. Without Lifeline, devices never report back.
+
+**Recommended approach: Option C (Combination)**
+1. **Device config fix:** Add Lifeline association + Binary Switch CC removal compat flag to `ib2_0.json`. HIGH confidence this fixes position reporting.
+2. **Blueprint deployment:** Deploy existing `iblinds_device_handler.yaml` blueprint (currently unused with 0 automation instances). Intercepts `cover.open_cover` and redirects to configurable stop point (50% default).
+
+**Why both are needed:**
+- Device config fixes root cause (position reporting) but can't fix stop point (v2 firmware limitation — no Parameter 4)
+- Blueprint fixes stop point but can't fix position reporting
+- Combined: v2 behaves identically to v3 from user perspective
+
+**Key trade-offs documented:**
+- Re-interview required for all 6 v2 nodes (operational disruption ~10 minutes)
+- Blueprint adds event interception overhead (minimal — filters by entity ID)
+- Binary Switch CC removal copied from v3 config — defensive, not empirically required for v2
+- Nodes 67 and 106 not in device registry — may require troubleshooting or re-inclusion
+
+**Files to modify:**
+1. `zwave/.config-db/devices/0x0287/ib2_0.json` — add associations + compat sections
+2. `home-assistant/config/automations.yaml` — add blueprint-based automation
+
+Decision filed: `decisions/inbox/danny-iblinds-v2-implementation-plan.md`
+
+### 2026-07-20: iBlinds v2 — Template Cover architecture for firmware stop-point limitation
+
+**Correction to prior decision:** My 2026-07-20 plan (above) recommended deploying the `iblinds_device_handler.yaml` blueprint. That was wrong — Livingston confirmed the blueprint has been dead since HA 2022.4 when `call_service` events were removed from the event bus. Never fired once. Revised decision after full team synthesis:
+
+**Pattern: Template Covers as firmware-limitation workaround**
+
+When Z-Wave hardware lacks a configurable behavior that exists in newer firmware (v3 has Parameter 4 "Default ON Value"; v2 does not), the correct HA-layer fix is a **Template Cover** package — not an automation, not a blueprint, not script wrappers.
+
+Key insight: The state-change-correction automation approach (trigger on `opening` state, send `set_cover_position` to correct) has an inherent race condition. The physical device starts moving before the automation fires. Users see overshoot. Template Covers intercept at the command layer — the `_hw` entity never receives an `open_cover`; it receives `set_cover_position` directly.
+
+**Architecture pattern (iBlinds v2):**
+1. Rename physical Z-Wave entity to `*_hw` suffix in HA UI  
+2. Create template cover with original entity ID  
+3. Template intercepts `open_cover` → `set_cover_position` at configured stop point  
+4. `close_cover` and `set_cover_position` pass through to `_hw` unchanged  
+5. Global `input_number` helper controls stop point — UI adjustable, no YAML edits  
+6. Result: all callers (scripts, Alexa, Lovelace, automations) see no change — zero migration cost  
+
+**Blueprint deletion criteria:** A blueprint should be deleted (not archived) when:
+- It has zero automation instances (confirmed via YAML + `.storage/`)  
+- Its core mechanism is permanently broken (removed platform/event)  
+- The replacement approach is well-documented in an ADR  
+Dead code that looks functional is more dangerous than no code.
+
+**Files:** `packages/iblinds_v2_covers.yaml`, `docs/iblinds/ADR-001-iblinds-v2-stop-point.md`  
+Decision filed: `decisions/inbox/danny-iblinds-architecture.md`
+

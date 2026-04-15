@@ -1,0 +1,194 @@
+# iBlinds v2 — HA-layer open stop-point via Template Covers
+#
+# Problem: iBlinds v2 firmware 1.65 has NO "Default ON Value" parameter (unlike v3).
+# Calling cover.open_cover drives the blind fully open (100%). This package
+# intercepts open commands at the HA layer and substitutes a configurable stop point.
+#
+# v3 devices handle this natively via Z-Wave Parameter 4 — they do NOT use this package.
+#
+# Architecture: Template Cover pattern
+#   - Physical Z-Wave entities renamed to *_hw suffix (one-time UI step, see below)
+#   - Template covers take the original entity IDs — callers see no change
+#   - open_cover → translates to set_cover_position at the configured stop point
+#   - close_cover / set_cover_position → pass through to the _hw entity unchanged
+#   - Intercepts ALL callers: scripts, automations, Alexa, Lovelace — zero script changes
+#
+# ─── PREREQUISITE: Rename physical entities in HA UI (one-time) ────────────────
+# Settings → Entities → find each entity → Edit (pencil) → change Entity ID:
+#
+#   cover.window_blind_controller       → cover.window_blind_controller_hw
+#   cover.window_blind_controller_2     → cover.window_blind_controller_2_hw
+#   cover.window_blind_controller_3     → cover.window_blind_controller_3_hw
+#   cover.window_blind_controller_4     → cover.window_blind_controller_4_hw
+#
+# Nodes 67 and 106 have no cover entities (not in registry — likely need re-inclusion).
+# After Z-Wave re-interview identifies them, uncomment the stub entries at the bottom.
+# ──────────────────────────────────────────────────────────────────────────────────
+#
+# Phase 1 (Z-Wave layer, done by Linus):
+#   ib2_0.json updated with Lifeline association + treatSetAsReport + Binary Switch removal
+#   → Re-interview nodes 67, 71, 72, 103, 106, 107 in Z-Wave JS UI after restart
+#
+# Phase 2 (HA layer, this file):
+#   Template covers provide the stop-point behavior firmware cannot.
+
+input_number:
+  iblinds_v2_open_position:
+    name: "iBlinds v2 Open Position"
+    min: 10
+    max: 100
+    step: 5
+    unit_of_measurement: "%"
+    initial: 50
+    icon: mdi:blinds-open
+    mode: slider
+
+template:
+  - cover:
+      # ── Node 71: Right Blinds ───────────────────────────────────────────────────
+      - name: "Window Blind Controller"
+        unique_id: iblinds_v2_node71
+        device_class: blind
+        availability: >
+          {{ states('cover.window_blind_controller_hw') not in ['unavailable', 'unknown'] }}
+        position: >
+          {{ state_attr('cover.window_blind_controller_hw', 'current_position') | int(0) }}
+        open_cover:
+          action: cover.set_cover_position
+          target:
+            entity_id: cover.window_blind_controller_hw
+          data:
+            position: "{{ states('input_number.iblinds_v2_open_position') | int(50) }}"
+        close_cover:
+          action: cover.close_cover
+          target:
+            entity_id: cover.window_blind_controller_hw
+        stop_cover:
+          action: cover.stop_cover
+          target:
+            entity_id: cover.window_blind_controller_hw
+        set_cover_position:
+          action: cover.set_cover_position
+          target:
+            entity_id: cover.window_blind_controller_hw
+          data:
+            position: "{{ position }}"
+
+      # ── Node 107: Guest Blinds ──────────────────────────────────────────────────
+      - name: "Window Blind Controller 2"
+        unique_id: iblinds_v2_node107
+        device_class: blind
+        availability: >
+          {{ states('cover.window_blind_controller_2_hw') not in ['unavailable', 'unknown'] }}
+        position: >
+          {{ state_attr('cover.window_blind_controller_2_hw', 'current_position') | int(0) }}
+        open_cover:
+          action: cover.set_cover_position
+          target:
+            entity_id: cover.window_blind_controller_2_hw
+          data:
+            position: "{{ states('input_number.iblinds_v2_open_position') | int(50) }}"
+        close_cover:
+          action: cover.close_cover
+          target:
+            entity_id: cover.window_blind_controller_2_hw
+        stop_cover:
+          action: cover.stop_cover
+          target:
+            entity_id: cover.window_blind_controller_2_hw
+        set_cover_position:
+          action: cover.set_cover_position
+          target:
+            entity_id: cover.window_blind_controller_2_hw
+          data:
+            position: "{{ position }}"
+
+      # ── Node 72: Left Blinds ───────────────────────────────────────────────────
+      - name: "Window Blind Controller 3"
+        unique_id: iblinds_v2_node72
+        device_class: blind
+        availability: >
+          {{ states('cover.window_blind_controller_3_hw') not in ['unavailable', 'unknown'] }}
+        position: >
+          {{ state_attr('cover.window_blind_controller_3_hw', 'current_position') | int(0) }}
+        open_cover:
+          action: cover.set_cover_position
+          target:
+            entity_id: cover.window_blind_controller_3_hw
+          data:
+            position: "{{ states('input_number.iblinds_v2_open_position') | int(50) }}"
+        close_cover:
+          action: cover.close_cover
+          target:
+            entity_id: cover.window_blind_controller_3_hw
+        stop_cover:
+          action: cover.stop_cover
+          target:
+            entity_id: cover.window_blind_controller_3_hw
+        set_cover_position:
+          action: cover.set_cover_position
+          target:
+            entity_id: cover.window_blind_controller_3_hw
+          data:
+            position: "{{ position }}"
+
+      # ── Node 103: Bedroom Blinds ───────────────────────────────────────────────
+      - name: "Window Blind Controller 4"
+        unique_id: iblinds_v2_node103
+        device_class: blind
+        availability: >
+          {{ states('cover.window_blind_controller_4_hw') not in ['unavailable', 'unknown'] }}
+        position: >
+          {{ state_attr('cover.window_blind_controller_4_hw', 'current_position') | int(0) }}
+        open_cover:
+          action: cover.set_cover_position
+          target:
+            entity_id: cover.window_blind_controller_4_hw
+          data:
+            position: "{{ states('input_number.iblinds_v2_open_position') | int(50) }}"
+        close_cover:
+          action: cover.close_cover
+          target:
+            entity_id: cover.window_blind_controller_4_hw
+        stop_cover:
+          action: cover.stop_cover
+          target:
+            entity_id: cover.window_blind_controller_4_hw
+        set_cover_position:
+          action: cover.set_cover_position
+          target:
+            entity_id: cover.window_blind_controller_4_hw
+          data:
+            position: "{{ position }}"
+
+      # ── Node 67: (uncomment after Z-Wave re-interview identifies entity ID) ─────
+      # - name: "TODO: Node 67 Room Name"
+      #   unique_id: iblinds_v2_node67
+      #   device_class: blind
+      #   availability_template: >
+      #     {{ states('cover.TODO_node67_hw') not in ['unavailable', 'unknown'] }}
+      #   position_template: >
+      #     {{ state_attr('cover.TODO_node67_hw', 'current_position') | int(0) }}
+      #   open_cover:
+      #     action: cover.set_cover_position
+      #     target:
+      #       entity_id: cover.TODO_node67_hw
+      #     data:
+      #       position: "{{ states('input_number.iblinds_v2_open_position') | int(50) }}"
+      #   close_cover:
+      #     action: cover.close_cover
+      #     target:
+      #       entity_id: cover.TODO_node67_hw
+      #   stop_cover:
+      #     action: cover.stop_cover
+      #     target:
+      #       entity_id: cover.TODO_node67_hw
+      #   set_cover_position:
+      #     action: cover.set_cover_position
+      #     target:
+      #       entity_id: cover.TODO_node67_hw
+      #     data:
+      #       position: "{{ position }}"
+
+      # ── Node 106: (uncomment after Z-Wave re-interview identifies entity ID) ────
+      # (same stub pattern as Node 67 above)
