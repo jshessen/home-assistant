@@ -9,7 +9,7 @@ Ollama provides on-premise LLM capabilities for:
 - **Device control actions** — natural language commands for smart home control
 - **Dual-config pattern** — separate Ollama integration instances for chat vs. control
 
-This setup uses `llama3.2:3b` — a CPU-friendly model that works without GPU acceleration.
+This setup uses `qwen3:8b` — stronger reasoning and structured output quality compared to `llama3.2:3b`, at acceptable RAM usage (~5GB active). Previously used `llama3.2:3b` (still valid for very memory-constrained environments).
 
 ---
 
@@ -19,6 +19,12 @@ Use the Makefile target to start Home Assistant + Ollama:
 
 ```bash
 make ollama
+```
+
+Then pull the model:
+
+```bash
+make ollama-pull   # pulls qwen3:8b (configured in Makefile)
 ```
 
 This brings up:
@@ -41,10 +47,10 @@ abc123...      ollama/ollama:latest   ... 0.0.0.0:11434->11434/tcp   ollama
 
 ## 2. First-Run: Pull the Model
 
-On first startup, Ollama has no models downloaded. Pull `llama3.2:3b`:
+On first startup, Ollama has no models downloaded. Pull `qwen3:8b`:
 
 ```bash
-docker exec ollama ollama pull llama3.2:3b
+docker exec ollama ollama pull qwen3:8b
 ```
 
 **Expected output:**
@@ -63,8 +69,10 @@ docker exec ollama ollama list
 Expected output:
 ```
 NAME              ID              SIZE      MODIFIED
-llama3.2:3b       abc123...       2.0 GB    2 minutes ago
+qwen3:8b        abc123...       4.7 GB    2 minutes ago
 ```
+
+> **Note:** `qwen3:8b` requires ~5GB RAM when active (qwen3:8b; ~4GB for qwen3:4b fallback). Monitor with `docker stats ollama`. If memory-constrained, fall back to `llama3.2:3b` (~2GB).
 
 ---
 
@@ -77,7 +85,7 @@ llama3.2:3b       abc123...       2.0 GB    2 minutes ago
 3. **Configure:**
    - **Host:** `http://localhost:11434`
    - **Name:** `Ollama Chat`
-   - **Model:** `llama3.2:3b`
+   - **Model:** `qwen3:8b`
 4. **Submit** — integration added
 
 ### Add Second Ollama Integration
@@ -88,7 +96,7 @@ Repeat the process for a second instance:
 2. **Configure:**
    - **Host:** `http://localhost:11434`
    - **Name:** `Ollama Control`
-   - **Model:** `llama3.2:3b`
+   - **Model:** `qwen3:8b`
 3. **Submit**
 
 **Why two instances?**
@@ -191,10 +199,12 @@ To use a different model:
    - Save
 
 **Recommended models:**
-- `llama3.2:3b` — CPU-friendly, general-purpose (default)
-- `llama3.2:1b` — Ultra-lightweight for slower hardware
-- `mistral:7b` — Better reasoning, requires more RAM
-- `phi3:mini` — Fast, good for device control
+- `qwen3:8b` — **Default.** Strong reasoning + structured output, ~5GB RAM. Supports HA's "Think before responding" toggle for enhanced reasoning.
+- `qwen3:4b` — Lighter qwen3 variant, ~4GB RAM
+- `llama3.2:3b` — Lightweight fallback for memory-constrained environments (~2GB)
+- `llama3.2:1b` — Ultra-lightweight for slowest hardware
+- `mistral:7b` — Alternative 7B option; similar profile to qwen3:8b
+- `phi3:mini` — Fast, good for device control tasks
 
 ---
 
@@ -233,7 +243,7 @@ Expected output:
 
 ### Model Inference is Slow
 
-**Expected behavior:** `llama3.2:3b` on CPU takes 5-15 seconds for first response (model load), 1-3 seconds for subsequent responses.
+**Expected behavior:** `qwen3:8b` on CPU takes 10-20 seconds for first response (model load), 2-5 seconds for subsequent responses.
 
 **If slower than expected:**
 - Check CPU usage: `docker stats ollama`
@@ -251,7 +261,9 @@ docker exec ollama ollama list
 
 **If empty:**
 ```bash
-docker exec ollama ollama pull llama3.2:3b
+docker exec ollama ollama pull qwen3:8b
+# or
+make ollama-pull
 ```
 
 **Restart HA integration:**
@@ -276,8 +288,32 @@ make ollama
 Re-pull a model to get the latest version:
 
 ```bash
-docker exec ollama ollama pull llama3.2:3b
+docker exec ollama ollama pull qwen3:8b
 ```
+
+### Migrate from llama3.2:3b to qwen3:8b
+
+If you previously used `llama3.2:3b`, here's the upgrade path:
+
+1. Pull the new model:
+   ```bash
+   docker exec ollama ollama pull qwen3:8b
+   ```
+
+2. Update **both** HA integrations:
+   - Settings → Devices & Services → **Ollama Chat** → Configure → Model → `qwen3:8b` → Save
+   - Settings → Devices & Services → **Ollama Control** → Configure → Model → `qwen3:8b` → Save
+
+3. Test structured output (evening summary automation or Assist):
+   ```bash
+   # Verify qwen3:8b loads cleanly
+   docker exec ollama ollama run qwen3:8b "Respond with JSON: {\"status\": \"ok\"}"
+   ```
+
+4. Optionally remove old model to free disk:
+   ```bash
+   docker exec ollama ollama rm llama3.2:3b
+   ```
 
 ### Remove Unused Models
 

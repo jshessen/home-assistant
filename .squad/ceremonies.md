@@ -60,4 +60,30 @@
 3. Specific opportunities identified in this project (templates, automations, voice control)
 4. Recommended action items — only what moves the needle, no noise
 
+**Live Data Requirement:** Yen MUST use `web_fetch` to pull current release notes and changelogs before writing this briefing. No training-data-only analysis. See Yen charter for mandatory source list.
+
 **Output:** A concise briefing note in `.squad/log/` titled `yen-tech-briefing-{date}.md`. If a new pattern warrants a skill, Yen creates it in `.copilot/skills/` and notifies the coordinator.
+
+---
+
+## Tooling Pulse
+
+| Field | Value |
+|-------|-------|
+| **Trigger** | periodic |
+| **When** | monthly |
+| **Condition** | start of month, or when user invokes "yen tooling pulse" |
+| **Facilitator** | yen |
+| **Participants** | all-relevant |
+| **Time budget** | focused (~15 min) |
+| **Enabled** | ✅ yes |
+
+**Agenda:**
+1. VS Code release notes — new agent/Copilot features since last pulse
+2. GitHub Copilot changelog — new capabilities in the coding agent
+3. Ollama model updates — new releases relevant to this project's hardware profile
+4. HA AI-adjacent releases — any Ollama, Assist, or ai_task changes
+
+**Live Data Requirement:** Yen MUST fetch live changelogs (VS Code updates page, GitHub blog, Ollama releases) before writing. No training-data-only summaries.
+
+**Output:** Update to `.squad/agents/yen/history.md` with pulse date + key findings. High-signal items → `.squad/decisions/inbox/` for routing.
