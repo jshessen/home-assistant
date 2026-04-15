@@ -31,3 +31,16 @@ All files updated and config-check validated. Full context — including all dec
 - **Documentation:** Created `docs/setup/labs-features.md` with full research findings and modern trigger pattern examples
 - **Decision Inbox:** Filed `.squad/decisions/inbox/rusty-purpose-specific-triggers.md` with battery monitoring implementation proposal
 - **Key Insight:** Modern HA patterns (labels + templates + device_class) achieve semantic trigger goals without new features
+
+### 2026-04-15: Battery Monitoring Automation Implementation
+- **Implementation:** Created `automations/battery_monitoring.yaml` - self-maintaining battery level monitor
+- **Trigger Pattern:** Dual trigger approach:
+  1. Daily time trigger at 09:00:00 for routine check
+  2. Template trigger with `value_template` watching ALL battery sensors via device_class filter - fires when any battery crosses below 20%
+- **Auto-Discovery:** Uses `states.sensor | selectattr('attributes.device_class', 'eq', 'battery')` pattern - no hardcoded entity list required
+- **Notification:** Sends alerts to both `notify.mobile_app_jeff` and `notify.mobile_app_patricia` with formatted list of device names and current battery levels
+- **Condition Guard:** Template condition ensures notification only fires when low batteries actually exist (prevents empty alerts)
+- **Message Template:** Uses Jinja2 `zip()` function to pair device names with battery levels for clean bullet-list output
+- **Maintenance Benefit:** Zero-touch when adding new battery-powered devices - automation discovers them automatically via device_class attribute
+- **Config Validation:** Passed HA config check before commit
+- **Commit:** `08d391c` - feat(automations): Add battery monitoring automation
