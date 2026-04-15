@@ -193,7 +193,7 @@ views:
             - state: unavailable
             - state: unknown
             - attributes:
-                battery_last_replaced: "?*"
+                battery_last_replaced: "*"
         sort:
           method: state
           numeric: true
