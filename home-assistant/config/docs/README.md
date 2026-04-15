@@ -77,7 +77,7 @@ Modes configuration:
 
 ### 🪟 iBlinds Covers (`docs/iblinds/`)
 
-- **ADR-001-iblinds-v2-stop-point.md** - Architecture Decision Record: two-layer fix for v2 stop-point behavior (Z-Wave config + Template Cover package). Includes migration steps and open items.
+- **[ADR-001-iblinds-v2-stop-point.md](iblinds/ADR-001-iblinds-v2-stop-point.md)** - Architecture Decision Record: two-layer fix for v2 stop-point behavior (Z-Wave config + Template Cover package). Includes migration steps and open items.
 
 ### 📦 Setup & Configuration (`docs/setup/`)
 
