@@ -41,3 +41,9 @@ lovelace:
       title: "Battery Status"
       icon: mdi:battery-alert
       show_in_sidebar: true
+    iblinds-v2:
+      mode: yaml
+      filename: lovelace/iblinds.yaml
+      title: "Blinds"
+      icon: mdi:blinds
+      show_in_sidebar: true

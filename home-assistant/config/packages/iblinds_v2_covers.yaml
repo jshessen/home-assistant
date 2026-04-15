@@ -41,7 +41,7 @@ input_number:
   # ── Global stop point ──────────────────────────────────────────────────────────
   # Used by any device whose per-device helper is set to 0 (default).
   iblinds_v2_open_position:
-    name: "iBlinds v2 Open Position"
+    name: "iBlinds v2 — Default Open Position"
     min: 10
     max: 100
     step: 5
@@ -54,7 +54,7 @@ input_number:
   # Setting a value here (5–100) overrides the global for that specific blind.
   # Leave at 0 (default) to inherit from iblinds_v2_open_position above.
   iblinds_v2_node71_open_position:
-    name: "iBlinds v2 Node 71 Open Position (Right Blinds)"
+    name: "Right Blinds — Open Stop Point"
     min: 0
     max: 100
     step: 5
@@ -64,7 +64,7 @@ input_number:
     mode: slider
 
   iblinds_v2_node107_open_position:
-    name: "iBlinds v2 Node 107 Open Position (Guest Blinds)"
+    name: "Guest Blinds — Open Stop Point"
     min: 0
     max: 100
     step: 5
@@ -74,7 +74,7 @@ input_number:
     mode: slider
 
   iblinds_v2_node72_open_position:
-    name: "iBlinds v2 Node 72 Open Position (Left Blinds)"
+    name: "Left Blinds — Open Stop Point"
     min: 0
     max: 100
     step: 5
@@ -84,7 +84,7 @@ input_number:
     mode: slider
 
   iblinds_v2_node103_open_position:
-    name: "iBlinds v2 Node 103 Open Position (Bedroom Blinds)"
+    name: "Bedroom Blinds — Open Stop Point"
     min: 0
     max: 100
     step: 5

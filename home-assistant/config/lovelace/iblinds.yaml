@@ -1,0 +1,72 @@
+# iBlinds v2 Stop Point Dashboard
+# Each blind gets its cover tile + stop-point slider co-located so users can
+# adjust open stop positions without navigating to Settings → Helpers.
+#
+# Uses template cover entities (not _hw hardware entities).
+# Stop-point sliders map to input_number helpers in packages/iblinds_v2_covers.yaml.
+
+views:
+  - title: Blinds
+    path: blinds
+    icon: mdi:blinds
+    cards:
+      - type: vertical-stack
+        title: Right Blinds (Living Room)
+        cards:
+          - type: tile
+            entity: cover.window_blind_controller
+            name: Right Blinds
+            features:
+              - type: cover-open-close
+              - type: cover-position
+          - type: tile
+            entity: input_number.iblinds_v2_node71_open_position
+            name: Open Stop Point
+            icon: mdi:blinds-open
+
+      - type: vertical-stack
+        title: Left Blinds (Living Room)
+        cards:
+          - type: tile
+            entity: cover.window_blind_controller_3
+            name: Left Blinds
+            features:
+              - type: cover-open-close
+              - type: cover-position
+          - type: tile
+            entity: input_number.iblinds_v2_node72_open_position
+            name: Open Stop Point
+            icon: mdi:blinds-open
+
+      - type: vertical-stack
+        title: Guest Blinds
+        cards:
+          - type: tile
+            entity: cover.window_blind_controller_2
+            name: Guest Blinds
+            features:
+              - type: cover-open-close
+              - type: cover-position
+          - type: tile
+            entity: input_number.iblinds_v2_node107_open_position
+            name: Open Stop Point
+            icon: mdi:blinds-open
+
+      - type: vertical-stack
+        title: Bedroom Blinds
+        cards:
+          - type: tile
+            entity: cover.window_blind_controller_4
+            name: Bedroom Blinds
+            features:
+              - type: cover-open-close
+              - type: cover-position
+          - type: tile
+            entity: input_number.iblinds_v2_node103_open_position
+            name: Open Stop Point
+            icon: mdi:blinds-open
+
+      - type: tile
+        entity: input_number.iblinds_v2_open_position
+        name: Default Open Stop Point (fallback for all blinds)
+        icon: mdi:blinds-open

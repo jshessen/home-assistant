@@ -1,0 +1,67 @@
+blueprint:
+  name: iBlinds v2 — Open Stop Point
+  description: >
+    Stops an iBlinds v2 blind at a configured position when "Open" is called.
+    Requires the physical Z-Wave cover entity (the _hw entity if you are using
+    the Template Cover package; the direct Z-Wave entity otherwise).
+
+    HOW IT WORKS: When the blind starts opening, this automation immediately
+    commands it to stop at your configured position. For a blind starting from
+    fully closed, the correction fires so fast (< 1 second) that no overshoot
+    is visible. For a blind already near the stop point, a brief overshoot of
+    2–5% is possible before the blind corrects.
+
+    If you are using the Template Cover package (iblinds_v2_covers.yaml), this
+    blueprint is redundant but harmless — the template cover already intercepts
+    the open command before it reaches the hardware.
+
+    LIMITATION: This automation cannot distinguish between "open_cover" and
+    "set_cover_position to a high value." If you manually set the blind to a
+    position above the stop point, this automation will try to pull it back.
+    Use set_cover_position values ≤ stop_point to avoid this.
+  domain: automation
+  source_url: https://github.com/jshessen/home-assistant/blob/main/home-assistant/config/blueprints/automation/jshessen/iblinds_v2_stop_point.yaml
+  input:
+    cover_entity:
+      name: iBlinds v2 Cover Entity
+      description: >
+        The physical cover entity for this blind. If using Template Covers,
+        select the _hw entity (e.g., cover.window_blind_controller_hw).
+        Otherwise, select the Z-Wave entity directly.
+      selector:
+        entity:
+          domain: cover
+          device_class: blind
+    stop_point:
+      name: Open Stop Point (%)
+      description: >
+        Position (10–100%) where the blind stops when opened.
+        50% = half-open (default).
+      default: 50
+      selector:
+        number:
+          min: 10
+          max: 100
+          step: 5
+          unit_of_measurement: "%"
+          mode: slider
+
+trigger:
+  - platform: state
+    entity_id: !input cover_entity
+    to: "opening"
+
+condition:
+  - condition: template
+    value_template: >
+      {{ trigger.from_state.state not in ['opening', 'unavailable', 'unknown'] }}
+
+action:
+  - action: cover.set_cover_position
+    target:
+      entity_id: !input cover_entity
+    data:
+      position: !input stop_point
+
+mode: single
+max_exceeded: silent
