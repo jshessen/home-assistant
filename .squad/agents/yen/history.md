@@ -19,3 +19,47 @@
 
 ## Learnings
 
+### 2026-04-15: `ai_task.generate_data` Structure Parameter Pattern
+
+**What:** Designed evening AI summary automation using HA 2026.x's `structure` parameter for typed LLM output.
+
+**Key Pattern:**
+```yaml
+action: ai_task.generate_data
+data:
+  task_name: "evening_summary"
+  instructions: "{{ dynamic_state_data }} ... prompt text"
+  structure:
+    field_name:
+      type: string  # or number, boolean, object, array
+      description: "What the LLM should generate for this field"
+  response_variable: result
+# Access via: result.data.field_name
+```
+
+**Critical Insights:**
+- **Structure format:** JSON Schema-like — each field has `type` and `description`
+- **Description matters:** LLM uses it to understand intent, not just type constraint
+- **Access pattern:** `response_variable.data.{field}` — typed, deterministic
+- **Failure mode:** If LLM can't generate valid structure, action fails (no partial output)
+- **Best practice:** Keep structures flat (3-5 string fields) for LLM reliability
+
+**Why This Matters:**
+- Replaces free-text parsing with typed field access
+- Makes automation conditionals deterministic (can branch on specific fields)
+- LLM is constrained to return only requested structure
+- Eliminates "parse the markdown response" anti-pattern
+
+**Use Cases:**
+- Daily summaries with typed sections (status, security, tomorrow)
+- Decision-making automations (should_water_plants: boolean)
+- Multi-field analysis (battery_warnings, maintenance_items)
+- Any automation that needs **predictable LLM output structure**
+
+**Trade-offs:**
+- More rigid than free-text (but that's the point!)
+- Requires HA 2026.x+ (not available in older versions)
+- LLM must understand schema format (works well with llama3.2:3b+)
+
+**Deployed Example:** `automations/evening_ai_summary.yaml` — 3-field structure (summary, security_note, tomorrow_note) with weather/lock/mode context injection via Jinja2 template in `instructions`.
+

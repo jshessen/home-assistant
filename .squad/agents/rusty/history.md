@@ -44,3 +44,17 @@ All files updated and config-check validated. Full context — including all dec
 - **Maintenance Benefit:** Zero-touch when adding new battery-powered devices - automation discovers them automatically via device_class attribute
 - **Config Validation:** Passed HA config check before commit
 - **Commit:** `08d391c` - feat(automations): Add battery monitoring automation
+
+### 2026-04-15: Evening AI Summary Automation with Structured Output
+- **Implementation:** Created `automations/evening_ai_summary.yaml` from Yen's design specification
+- **New Pattern:** Uses `ai_task.generate_data` with `structure` parameter (HA 2026.x feature) for typed LLM output
+- **Key Advantage:** Structured output returns typed fields accessible via `response_variable.data.field_name` - eliminates free-text parsing brittleness
+- **Structure Definition:** 3 string fields: `summary` (2-sentence home status), `security_note` (lock status), `tomorrow_note` (mode-based future context)
+- **LLM Integration:** Uses Ollama (llama3.2:3b) via "Ollama Control" integration at localhost:11434
+- **Context Inputs:** Person states (jeff/patricia), presence_mode, time_of_day, guest_mode, work_from_home_mode, weather, 3 lock entities
+- **Trigger:** Time trigger at 21:00:00 with condition requiring `input_select.presence_mode = Home`
+- **Notifications:** Dual delivery to `notify.mobile_app_jeff` and `notify.mobile_app_patricia` with structured emoji-prefixed sections
+- **Benefits Over Traditional:** No markdown/JSON parsing needed, deterministic automation logic, LLM output constrained to requested schema
+- **Schema Design:** Kept flat (3 string fields) for optimal LLM reliability - Yen recommends 3-5 fields max
+- **Config Validation:** Passed HA config check before commit
+- **Commit:** `9c53749` - feat: Add evening AI summary automation with structured output

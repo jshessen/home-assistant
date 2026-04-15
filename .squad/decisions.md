@@ -277,6 +277,120 @@ variable_name: >-
 
 ---
 
+### 2026-04-15: Battery Monitoring Automation — Implemented
+**Date:** 2026-04-15  
+**Author:** Rusty (Automation Engineer)  
+**Status:** ✅ Implemented  
+**Related:** Purpose-Specific Triggers Investigation (2026-04-15)
+
+**Decision:** Implement self-maintaining battery monitoring automation using device_class auto-discovery pattern.
+
+**What:** Dual-trigger automation (daily time + template state-change) that auto-discovers all battery-powered devices and sends alerts when any device drops below 20%.
+
+**Technical Approach:**
+- Template trigger filters all sensors with `device_class: battery`
+- Automatic discovery — no hardcoded entity IDs
+- Daily check at 09:00 AM + immediate notification on state change
+- Notifications sent to `notify.mobile_app_jeff`, `notify.mobile_app_patricia`
+
+**File:** `home-assistant/config/automations/battery_monitoring.yaml`
+
+**Key Benefits:**
+- Zero maintenance when new battery devices added
+- Proactive failure prevention
+- Works across all current and future battery devices
+- Validated: Config check passed, template logic verified
+
+**Deferred Enhancements:**
+- Configurable threshold (input_number helper)
+- Critical alert at 5% threshold
+- Battery replacement tracking
+- Actionable iOS notifications
+
+**Commit:** `08d391c` (feat(automations): Add battery monitoring automation)
+
+**Recommendation:** Promote device_class + template trigger pattern as squad standard for cross-device automations.
+
+---
+
+### 2026-04-15: Evening AI Summary Automation — Structured Output Design
+**Date:** 2026-04-15  
+**Author:** Yen (AI & Emerging Tech Specialist)  
+**For Implementation:** Rusty (pending Sprint 3)  
+**Status:** Ready for implementation  
+**Related:** Ollama Local LLM Deployment (2026-04-15)
+
+**Decision:** Use structured output pattern (`ai_task.generate_data` with `structure` parameter) for deterministic LLM automation responses.
+
+**What:** Daily 21:00 automation that generates typed, reliable output instead of free-text parsing.
+
+**Technical Innovation:**
+- Structured LLM output with three fields: `summary`, `security_note`, `tomorrow_note`
+- LLM constrained to return exactly the requested JSON schema
+- Fields accessible as `result.data.field_name` (no markdown parsing)
+- Deterministic automation logic possible
+
+**Architecture:**
+- Ollama backend: `llama3.2:3b` model (2GB, CPU-friendly)
+- Trigger: Time-based (21:00) + presence condition (Home mode only)
+- Data sources: weather, lock states, presence mode, guest/WFH flags
+- Notifications: Sent to both residents with emoji-formatted sections
+
+**File:** `home-assistant/config/automations/evening_ai_summary.yaml`
+
+**Benefits Over Free-Text Approach:**
+- No parsing failures
+- Predictable automation branching
+- Type-safe field access
+- Easier testing and iteration
+
+**Deferred Enhancements:**
+- Fallback mode for Ollama unavailability (optional choose pattern documented)
+- Conditional security alerts
+- Additional fields (battery warnings, maintenance items)
+
+**Commit:** `9c53749` (feat: Add evening AI summary automation with structured output)
+
+**Next Steps:** Implementation pending; monitor first run for execution time and LLM output quality.
+
+---
+
+### 2026-04-15: Template Audit for HA 2026.4 Functions
+**Date:** 2026-04-15  
+**Auditor:** Basher (Template Dev)  
+**HA Version:** 2026.4.2  
+**Status:** Complete — No changes required
+
+**Decision:** Audit all templates for opportunities to use new HA 2026.4 functions (`entity_name()`, `state_attr_translated()`).
+
+**Scope:** 32 YAML files across 4 directories
+- `templates/` — 10 files
+- `packages/` — 6 files
+- `scripts/` — 12 files
+- `automations/` — 4 files
+
+**Key Finding:** ✅ No template changes required — deployment already uses idiomatic HA patterns.
+
+**Patterns Analyzed:**
+- ❌ `state_attr(entity, 'friendly_name')` — 0 instances in scope
+- ✅ `map(attribute='name')` in battery_monitoring.yaml — Correct idiom for pipelines (no change)
+- ❌ HVAC/climate translations — No climate entities in deployment
+- ⚠️ Custom icon mappings (seasonal templates) — Domain-specific logic, not state translations
+
+**Out of Scope:**
+- Blueprints: 7 instances found but excluded (separate backward-compatibility task if needed)
+
+**Recommendations:**
+1. Monitor for future climate/HVAC additions
+2. Blueprint audit as separate task
+3. Document new functions for team reference
+
+**Commit:** `3ce5807` (chore(basher): HA 2026.4 template function audit complete)
+
+**Conclusion:** Modern, idiomatic patterns require no migration. Recommend adopting functions in new code as applicable.
+
+---
+
 ### 2026-04-14: CRITICAL — scripts include pattern in configuration.yaml
 **By:** Jeff (via Copilot)
 **What:** `configuration.yaml` line 10 MUST use `script: !include_dir_merge_named scripts/` — NOT `script: !include scripts.yaml`. The `scripts/` directory contains multiple YAML files; there is no `scripts.yaml` flat file. Using the wrong form puts HA into recovery mode immediately on startup.
