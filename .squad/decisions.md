@@ -3044,3 +3044,42 @@ This represents a complete resolution of v5 architectural uncertainty. All three
 Deployment can proceed with post-deploy visual verification as documented in checklist above.
 
 **Status: Ready for production.**
+
+---
+
+### 2026-04-16: Battery Dashboard v6 — ADR & Root Cause Fixes
+
+**Date:** 2026-04-16  
+**Authors:** Danny (Lead/Architect), Basher (Template Dev), Rusty (Lovelace)  
+**Status:** Implemented & Approved  
+**Tags:** lovelace, battery-state-card, battery-notes, jinja2  
+**Log:** `.squad/log/2026-04-16-battery-dashboard-v6.md`
+
+**Context:** v5 carried three architectural bugs — wrong fleet count source (binary sensors), invalid area grouping parameter, and invalid collapse bucket syntax. All fixed in v6.
+
+**Root Causes Fixed:**
+
+| v5 Bug | Root Cause | Fix |
+|--------|-----------|-----|
+| Fleet count showed 0 Low | `*_battery_low` binary sensors use ≈10% threshold, not 40% | Direct `float` comparison over `*_battery_plus` sensors |
+| Area grouping broken | `group_by: area` — invalid in battery-state-card v4.2.0 | `group: [{by: "device.area_name"}]` |
+| Needs Attention buckets wrong | `collapse: from/to` — undocumented/ignored | `group: [{max: 19}, {min: 20, max: 39}]` |
+
+**Binding Decisions (ADR-2026-04):**
+
+1. `default_config_base: false` mandatory on every `battery-state-card` instance (prevents shallow-merge collisions)
+2. Fleet count via `*_battery_plus` sensor float comparison (not binary sensors)
+3. `computed.state` for numeric exclude filters (triggers `Number(t)` coercion in card's `gt()`)
+4. Dynamic `group: [{by: "device.area_name"}]` with explicit per-area fallback documented
+5. Two views retained: Monitor (operational) and Manage (replacement workflow)
+6. `secondary_info`: `"{attributes.battery_type_and_quantity} · {attributes.battery_last_replaced|reltime()}"`
+
+**Basher Jinja2 Template Fix:**
+- Added `rejectattr('entity_id', 'search', '_low')` guard — defence-in-depth against hypothetical `sensor.*_battery_plus_low` entities
+- `| float(100)` default confirmed (100 → OK bucket on parse failure, prevents false counts)
+
+**Implementation:** `home-assistant/config/lovelace/battery_dashboard.yaml` — Monitor view rewritten; Manage view unchanged.
+
+**Review:** Danny approved (7/7 checklist items pass). Non-blocking: All Batteries card color step `value: 20` should be `value: 19` in next patch.
+
+**Config validation:** ✅ Passed
