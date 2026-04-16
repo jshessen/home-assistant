@@ -172,10 +172,133 @@ After Z-Wave re-interview, if these nodes gain cover entities:
 
 ---
 
+## UX Accessibility
+
+**Date of reassessment:** 2026-07-20  
+**Trigger:** jshessen feedback — stop-point configuration is not discoverable or editable without YAML expertise. The original blueprint approach was chosen precisely to avoid this; the template cover approach is correct but creates a UX gap.
+
+### The Problem
+
+The Template Cover + `input_number` architecture is technically correct but UX-inaccessible. A user who wants to change the bedroom blind's stop point must:
+1. Know that Settings → Helpers exists
+2. Know that `iblinds_v2_node103_open_position` means "Bedroom Blinds"
+3. Find and drag the right slider
+
+This is a YAML-adjacent experience even though no YAML is edited. The original blueprint intent was to let users configure per-device behavior from the HA UI wizard (like creating an automation from a template) — no YAML, device picker, number slider, done.
+
+### Why Blueprint Intercept Still Doesn't Work
+
+Investigated all HA 2024+ mechanisms:
+
+- **`cover_command` trigger:** Does not exist. No pre-command trigger is available to blueprints.
+- **`zwave_js_value_notification`:** Hub-receives-report direction, not hub-sends-command direction. Cannot intercept.
+- **`state: opening` + correction:** Functions, but has two problems: (1) race condition — blind moves 2–6% before correction fires; (2) `set_cover_position` disambiguation — the automation can't distinguish `open_cover` from `set_cover_position(80)` and would incorrectly intercept explicit position commands above the stop point.
+- **Script wrapper:** Changes calling convention; misses Alexa, dashboards, other automations.
+
+**Conclusion:** Template Covers remain the only clean intercept mechanism. Blueprints cannot replicate this without accepting documented limitations.
+
+### Chosen Approach: Template Covers + UX Layer
+
+**Keep the Template Cover package.** Add the UX layer that makes the stop-point configuration feel native:
+
+#### 1. Helper name improvements (YAML, `packages/iblinds_v2_covers.yaml`)
+
+Rename `name:` fields to use room context (entity IDs unchanged — no downstream breakage):
+
+| Entity ID | Old Name | New Name |
+|-----------|----------|----------|
+| `iblinds_v2_open_position` | "iBlinds v2 Open Position" | "iBlinds v2 — Default Open Position" |
+| `iblinds_v2_node71_open_position` | "iBlinds v2 Node 71 Open Position (Right Blinds)" | "Right Blinds — Open Stop Point" |
+| `iblinds_v2_node107_open_position` | "iBlinds v2 Node 107 Open Position (Guest Blinds)" | "Guest Blinds — Open Stop Point" |
+| `iblinds_v2_node72_open_position` | "iBlinds v2 Node 72 Open Position (Left Blinds)" | "Left Blinds — Open Stop Point" |
+| `iblinds_v2_node103_open_position` | "iBlinds v2 Node 103 Open Position (Bedroom Blinds)" | "Bedroom Blinds — Open Stop Point" |
+
+#### 2. Lovelace co-location (`lovelace/iblinds.yaml`, new file)
+
+Each blind gets a cover tile + stop-point slider directly below it in the same card stack. User sees the blind control and can adjust its stop point in one view — no Helper navigation required. This is the primary discoverability solution.
+
+#### 3. Area assignment (one-time UI step, no YAML)
+
+After helper rename: Settings → Entities → assign each `*_open_position` helper to its correct area. Helpers then appear alongside cover entities in area overviews.
+
+#### 4. Community blueprint (`blueprints/automation/jshessen/iblinds_v2_stop_point.yaml`)
+
+For users deploying on their own systems without the Template Cover package: a blueprint using `state: opening` + `set_cover_position` correction. Zero YAML to configure. Trade-offs documented in blueprint description:
+- 2–6% overshoot possible when blind is near stop point at command time
+- Will intercept `set_cover_position` calls above stop point (disambiguation limitation)
+- Coexists harmlessly with Template Covers when both are deployed
+
+### Trade-off Accepted
+
+Device card co-location (stop-point slider appearing on the Z-Wave device page alongside the cover entity) is **not achievable** without a custom Python integration. Template entities and `input_number` helpers created in YAML have no `device_id` binding and cannot share a device page with the Z-Wave entity. The cost of a custom integration (Python HACS package, HA version compatibility burden, weeks of development) is disproportionate to a 4-blind deployment. Area grouping + Lovelace co-location achieves equivalent discoverability with hours of work.
+
+---
+
+---
+
+## ADR-002 Amendment: v3 "Unknown" Position Diagnosis (2026-04-16)
+
+**Authors:** Livingston (Diagnostics), Linus (Z-Wave)
+
+### Root Cause
+
+All iBlinds v3 entities showed persistent "Unknown" position state. Investigation revealed a three-layer chain:
+
+1. **Z-Wave layer**: v3 uses **Window Covering CC (CC 106)** instead of Multilevel Switch CC (CC 38). The entity unique IDs follow the pattern `{node}-106-0-currentValue-23` (property 23 = Horizontal Slats Angle — this IS the blind position for iBlinds).
+
+2. **State chain**: All named blinds (Patricia's, Stella's, Hadley's, Bay, North/West/South Sunroom) are **Cover Groups** (platform: `group`) created via Settings → Helpers. They aggregate the `_horizontal_slats_angle` Z-Wave entities. Unknown cascades upward: `_horizontal_slats_angle` Unknown → cover group Unknown.
+
+3. **No state persistence**: HA's `core.restore_state` contains no cover entity states (ZWave JS entities are not in the restore state store). After every restart, all Window Covering CC entities start as Unknown until the device sends a report.
+
+4. **Suspected cause**: Like v2 (which sends Multilevel Switch Set instead of Report on lifeline), v3 likely sends Window Covering **Set** commands instead of Window Covering **Reports** on the lifeline, so ZWave JS discards them as commands rather than updating the value cache.
+
+### Fix Applied
+
+**File:** `zwave/.config-db/devices/0x0287/iblindsv3.json` (gitignored — on disk only)
+
+Added to `compat` section:
+```json
+"treatSetAsReport": ["Window Covering"]
+```
+
+This mirrors the v2 fix (`treatSetAsReport: ["Multilevel Switch"]`). When v3 sends a Window Covering Set on the lifeline after movement, ZWave JS now treats it as a Report and updates the position value.
+
+**Required action:** `docker restart zwave-js-ui` — then command each v3 blind once. After the first movement, position should resolve from Unknown to actual value.
+
+### Entity Map (v3 cover groups → member entities → ZWave nodes)
+
+| Named Group | Member Entities | ZWave Nodes |
+|-------------|----------------|-------------|
+| North Sunroom Blinds | SR: Blinds 9, SR: Blinds 10 | 80, 79 |
+| West Sunroom Blinds | SR: Blinds 4, SR: Blinds 8, Bay Blinds | 82, 81, (group) |
+| South Sunroom Blinds | SR: Blinds 1, SR: Blinds 3, SR: Blinds 2 | 102, 87, 109 |
+| Sunroom Blinds | All sunroom groups above | — |
+| Patricia's Blinds | SR: Blinds 3, SR: Blinds 4 | 87, 82 |
+| Stella's Blinds | SR: Blinds 8, SR: Blinds 9 | 81, 80 |
+| Hadley's Blinds | SR: Blinds 10 | 79 |
+| Bay Blinds | SR: Blinds 6, SR: Blinds 5, SR: Blinds 7 | 108, 113, 125 |
+
+### Bluetooth Docker Fix (2026-04-16)
+
+**Symptom:** `habluetooth.manager` error: "Missing NET_ADMIN/NET_RAW capabilities for Bluetooth management."
+
+**Finding:** `docker-compose.yml` already had `cap_add: [NET_ADMIN, NET_RAW]`, but `/run/dbus` was mounted **read-only** (`:ro`). HA's Bluetooth adapter management requires write access to D-Bus.
+
+**Fix applied:** `docker-compose.yml` — changed `/run/dbus:/run/dbus:ro` → `/run/dbus:/run/dbus:rw`.
+
+**Required action:** `make restart` (or `docker compose up -d`) to recreate the HA container with the new dbus mount mode.
+
+---
+
 ## Open Items
 
 - [ ] Re-interview v2 nodes (jshessen — requires physical hub access, Z-Wave JS UI)
 - [ ] Rename 4 v2 entities in HA UI (jshessen — Settings → Entities)
 - [ ] Identify and handle Nodes 67 and 106 (may need re-inclusion)
-- [ ] Optional: Add Lovelace slider for `iblinds_v2_open_position` to mode dashboard
-- [ ] Optional: Per-device stop points if bedroom/living-room need different values
+- [ ] **Rename `input_number` helper `name:` fields** in `packages/iblinds_v2_covers.yaml` (Rusty)
+- [ ] **Create `lovelace/iblinds.yaml`** — blinds dashboard with co-located sliders (Rusty)
+- [ ] **Register iblinds dashboard** in `lovelace.yaml` or `configuration.yaml` (Rusty)
+- [ ] **Create `blueprints/automation/jshessen/iblinds_v2_stop_point.yaml`** — community blueprint (Rusty)
+- [ ] **Assign helpers to areas** in HA UI after above deploy (jshessen — Settings → Entities)
+- [x] Add `treatSetAsReport: ["Window Covering"]` to iblindsv3.json (Linus — 2026-04-16)
+- [x] Fix Bluetooth dbus mount in docker-compose.yml (2026-04-16)
