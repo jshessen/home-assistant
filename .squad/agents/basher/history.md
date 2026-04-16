@@ -96,3 +96,95 @@ Deployment uses modern, idiomatic HA patterns — no changes required. Full repo
 **Fix:** Use `"*"` to match any value (including empty), or `"?*"` to match one-or-more characters. For "has any replacement date set", `"*"` is the correct choice per Danny's spec.
 
 **Rule:** Never use regex patterns in auto-entities filter attribute values. Glob only: `*` (any), `?` (single char), `[abc]` (char class).
+
+---
+
+## 2026-04-16: Battery Dashboard v6 Implementation
+
+**Task:** Rewrite Monitor view using correct battery-state-card v4.2.0 API
+
+**What Was Written:**
+- Complete v6 rewrite of `/home-assistant/config/lovelace/battery_dashboard.yaml`
+- Monitor view: 3 cards (fleet summary + full fleet by room + needs attention)
+- Manage view: Unchanged from v5 (uses auto-entities, no battery-state-card bugs)
+
+**Key Design Decisions:**
+
+1. **`default_config_base: false` on all cards**
+   - Prevents shallow-merge of unwanted defaults
+   - Card must explicitly define all properties
+
+2. **Fleet Summary (markdown)**
+   - Jinja2 namespace loop over `*_battery_plus` sensors
+   - Direct state counting: critical (<20%), low (20-39%), OK (≥40%)
+   - Replaced v5's binary_sensor approach (wrong threshold logic)
+
+3. **Full Fleet by Room (Card 2)**
+   - `group: [{by: "device.area_name"}]` — dynamic area grouping
+   - Uses device.area_name resolution (entities have area_id=None, device has area)
+   - `sort: [{by: "state"}]` — replaces deprecated `sort_by_level`
+   - secondary_info: `"{attributes.battery_type_and_quantity} · {attributes.battery_last_replaced|reltime()}"`
+   - Note: Patricia's phone (no area) will appear ungrouped — acceptable
+
+4. **Needs Attention (Card 3)**
+   - `exclude: computed.state >= 40` removes OK devices BEFORE grouping
+   - `group: [{max: 19}, {min: 20, max: 39}]` — correct bucket assignment
+   - Garage Entry Lock (32%) now correctly appears in Low group (not Critical)
+   - Replaced v5's invalid `collapse: [{from: 0, to: 19}]` syntax
+
+5. **Colors**
+   - HA CSS variables: `var(--label-badge-red/yellow/green)`
+   - Thresholds: 20%, 39%, 100%
+
+6. **bulk_rename**
+   - Strips " Battery+" suffix added by Battery Notes
+   - Pattern: `{from: " Battery+", to: ""}`
+
+**Caveats:**
+
+1. **reltime() parsing** — `battery_last_replaced|reltime()` converts ISO dates to relative time ("3 months ago"). If Date.parse() fails, it renders raw attribute (graceful degradation). Post-deploy verification needed.
+
+2. **Area grouping fallback** — If `device.area_name` doesn't resolve in `by:` property, fallback to explicit per-area filter groups is available (entity→area map documented in plan).
+
+3. **Frontend-only validation** — Config check will warn about custom integrations (battery-state-card, auto-entities), but HA can't validate frontend-only cards. Browser console monitoring required post-deploy.
+
+**Validation:**
+- ✅ Config check passed: `docker exec home-assistant python -m homeassistant --script check_config -c /config`
+- No errors related to YAML structure
+- Custom card warnings expected and ignorable
+
+**Files Modified:**
+- `/home-assistant/config/lovelace/battery_dashboard.yaml` — full rewrite
+
+**Status:** Ready for testing. Requires HA restart and visual verification:
+- Fleet summary counts match actual device count
+- Room groups appear correctly
+- Garage Entry Lock shows in Low group
+- reltime() renders as relative string (not raw ISO)
+
+### 2026-04-16: Battery Dashboard v6 — Implementation Complete
+
+Implemented complete Monitor view rewrite with correct battery-state-card v4.2.0 API patterns. All v5 bugs fixed:
+
+**Design Decisions:**
+
+1. **Fleet Summary (Markdown):** Jinja2 namespace loop over *_battery_plus sensors (not binary_sensor) with direct state bucketing (critical <20%, low 20-39%, OK ≥40%). Replaced v5's incorrect binary sensor threshold logic.
+
+2. **Full Fleet by Room:** Dynamic `group: [{by: "device.area_name"}]` with explicit per-area fallback groups. `sort: [{by: "state"}]` sorts low→high. `secondary_info` displays battery type + reltime() for replacement date.
+
+3. **Needs Attention:** `exclude: computed.state >= 40` removes OK devices (dynamic, real-time filtering). `group: [{max: 19}, {min: 20, max: 39}]` corrects bucket assignment. Garage Entry Lock (32%) now appears in Low group (not Critical).
+
+4. **Config:** `default_config_base: false` on all cards disables shallow-merge collisions. Verbose YAML but eliminates hidden interactions.
+
+5. **Styling:** HA CSS variables (red/yellow/green) with thresholds 20%/39%/100%. `bulk_rename` strips " Battery+" suffix.
+
+**Validation:**
+- ✅ Config check passed
+- ✅ YAML structure verified
+- ⏳ Post-deploy visual verification needed (reltime() rendering, area grouping, Garage Entry Lock placement)
+
+**Key Learning:** YAML block scalars matter in HA Lovelace. `>-` (folded) collapses markdown tables into garbage; `|-` (literal) required for `content:` blocks. For Jinja2 templates, `>-` is correct. Choose based on output type, not preference.
+
+**Caveat — reltime() Parsing:** If Date.parse() fails on `battery_last_replaced` ISO strings, card gracefully degrades to raw attribute. Visual verification required post-deploy. Fallback: remove `|reltime()` if raw ISO strings appear instead of relative time.
+
+Manage view unchanged (uses auto-entities, no battery-state-card bugs). Dashboard ready for HA restart.

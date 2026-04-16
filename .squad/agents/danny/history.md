@@ -92,3 +92,19 @@ Dead code that looks functional is more dangerous than no code.
 **Files:** `packages/iblinds_v2_covers.yaml`, `docs/iblinds/ADR-001-iblinds-v2-stop-point.md`  
 Decision filed: `decisions/inbox/danny-iblinds-architecture.md`
 
+
+### 2026-04-16: Battery Dashboard v6 — Source-Level API Review
+
+Conducted comprehensive minified source review of battery-state-card v4.2.0 to validate v6 rewrite plan. All three open architectural questions resolved via empirical source analysis:
+
+**Q1 — Dynamic Area Grouping:** Confirmed `by: "device.area_name"` works via accessor.resolve() (lines 111+) — same mechanism as filter resolution. Fallback strategy with explicit per-area groups is solid defensive coding.
+
+**Q2 — Numeric State Coercion:** Confirmed `computed.state >= 40` correctly coerces string states to numbers via gt() function (line 29: `Number(t)`). Garage Entry Lock (32%) will correctly exclude from Needs Attention card.
+
+**Q3 — Relative Time Parsing:** Confirmed `reltime()` uses Date.parse() for ISO 8601 support (lines 29+). Graceful degradation: if parse fails, renders raw attribute. Battery Notes emits ISO dates correctly.
+
+**Q4 — Default Config:** Confirmed shallow-merge behavior (line 111) causes collisions if `default_config_base: false` omitted. Default config adds unwanted include filter, wrong secondary_info, wrong bulk_rename — all three must be overridden.
+
+**Approved v6 implementation with validation checklist flagged for post-deploy verification.**
+
+Key architectural learning: Battery-state-card's accessor.resolve() pattern (for dynamic property binding) is identical to filter resolution — this means any `device.*` path that works in filters will work in groups. Use this pattern for future dynamic config.

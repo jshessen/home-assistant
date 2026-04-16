@@ -10,6 +10,52 @@
 
 <!-- Append learnings below -->
 
+### 2026-04-15: battery-state-card v4.2.0 full feature audit
+
+**Latest version:** v4.2.0 (released 2026-04-02). Our dashboard uses the card but with several deprecated/legacy properties.
+
+**Key deprecated items in current dashboard:**
+- `sort_by_level: true` — deprecated since v3.0.0; correct form is `sort: "state"` (or `sort: [{by: "state"}]`)
+- `from`/`to` in collapse groups — docs specify `min`/`max` for Group objects; `from`/`to` may be legacy aliases that still work but are undocumented
+- `filter.exclude` on raw `state` — v4.1.0 recommends `computed.state` for post-transformation filtering
+
+**Major features we're NOT using:**
+1. **Dynamic grouping (`by` property)** — `by: "area.name"` or `by: "attributes.battery_type"` auto-creates groups, no manual definition needed
+2. **Group keywords** — `{count}`, `{min}`, `{max}`, `{avg}`, `{range}` in group `name`/`secondary_info`
+3. **Composite filters** (`and`/`or`/`not`) — fine-grained entity inclusion/exclusion logic
+4. **`tap_action` with KString** — tap row → navigate to device page, call service, trigger replacement script. `navigation_path: "/config/devices/device/{attributes.device_id}"` works.
+5. **`reltime()` KString function** — `"{last_changed|reltime()}"` shows "3 days ago" instead of ISO timestamp
+6. **`charging_state`** — detect and indicate charging from entity state or attribute
+7. **Gradient colors with `colors.steps`** — explicit gradient instead of implicit defaults; `steps: ['#ff0000','#ffff00','#00ff00'], gradient: true`
+8. **`device.labels` filtering** — tag devices in HA and filter by label (`operator: contains, value: "my_label"`)
+9. **`secondary_info` with piped functions** — e.g. `"{attributes.battery_type_and_quantity} · changed {last_changed|reltime()}"`
+10. **`battery_notes_dedup`** — enabled by default; de-dupes battery_plus vs raw battery entities
+11. **`default_config_base: false`** — needed when managing entities externally (e.g. auto-entities)
+12. **`style`** — inject custom CSS into shadow DOM per-entity or card-level
+13. **`value_override`** — override displayed battery level via KString
+14. **`debug`** — per-entity or global; shows full entity data object in card for troubleshooting
+15. **`unpack`** — unpack sensor group `entity_id` arrays into individual batteries
+
+**Filter fields available:**
+- `entity_id`, `state`, `computed.state`, `attributes.*`, `entity.*`, `device.*`, `area.*`, `device.labels`
+- Operators: `=`, `>`, `>=`, `<`, `<=`, `contains`, `matches` (wildcard `*` or regex `/pattern/`), `exists`, `not_exists`
+- Dynamic value references: `{input_number.threshold}` in filter `value` field
+- Composite: `and`, `or`, `not` wrappers
+
+**Sort options:**
+- By: `"state"` or `"name"` (display values) or `entity.*` raw paths e.g. `entity.last_changed`, `entity.attributes.battery_level`
+- `desc: true` for descending
+- Multi-level: list of sort objects
+
+**Limitations confirmed:**
+- Include filters processed once at page load (no dynamic include by changing state)
+- No integration-based discovery natively (no `integration_entities()`)
+- Gradient colors require hex colors only
+- Can't put a standalone button inside a row (whole row is the tap target)
+- No Jinja2 templating in config values (KString is the only dynamic system)
+
+**Full decision doc:** `.squad/decisions/inbox/linus-battery-state-card-features.md`
+
 ### 2026-04-14: Mode system UI layer update
 - Lovelace mode_dashboard.yaml: 10x house_mode→presence_mode, 2x night_mode→time_of_day (select not boolean), Guest button→guest_mode toggle, added guest_mode + work_from_home_mode cards to Primary Mode entities list
 - Alexa mode_controls.yaml: house_mode→presence_mode, night_mode→guest_mode, added work_from_home_mode; time_of_day NOT exposed to Alexa (managed by scripts)
