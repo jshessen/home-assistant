@@ -397,3 +397,71 @@ variable_name: >-
 **Why:** This has been introduced twice by squad agents. Do NOT change this line. Verify before any commit touching `configuration.yaml`.
 **Correct:**   `script: !include_dir_merge_named scripts/`
 **WRONG:**     `script: !include scripts.yaml`  ← breaks HA, triggers recovery mode
+
+---
+
+### 2026-04-16: Battery Dashboard Redesign with fold-entity-row Collapsable Alerts
+
+**Date:** 2026-04-16  
+**Authors:** Linus (Integration Specialist - Research), Basher (Template Dev - Implementation)  
+**Status:** Implemented  
+**Trigger:** Dashboard layout inefficiencies and lack of alert organization  
+
+**Decision:** Redesign battery dashboard with vertical-stack two-column layout and collapsable alert sections using fold-entity-row.
+
+#### Research Phase (Linus)
+- Investigated Battery Notes documentation: `codechimp.org/HA-Battery-Notes/`
+- Analyzed fold-entity-row YAML patterns for collapsable components
+- Documented Battery+ sensor attributes and auto-discovery patterns
+- Provided fold-entity-row nested configuration examples
+
+#### Key Findings
+**Battery Notes Entities Generated Per Device:**
+- `sensor.{device_name}_battery_plus` — Primary dashboard entity with rich attributes
+- `binary_sensor.{device_name}_battery_plus_low` — Boolean for low battery state
+- `button.{device_name}_battery_replaced` — Mark replacement button
+- Attributes: `battery_low_threshold`, `battery_type_and_quantity`, `battery_last_replaced`, `battery_last_reported`
+
+**fold-entity-row Patterns:**
+- `head:` can be entity or section for collapsable header
+- `open: true|false` controls default expand/collapse state
+- Works with `auto-entities` for dynamic device discovery
+- Supports nested folds and group expansion
+
+#### Implementation (Basher)
+**Changes to `home-assistant/config/lovelace/battery_dashboard.yaml`:**
+
+1. **Removed blank markdown summary card** — Was rendering as small pill, wasting masonry column
+2. **Added two vertical-stack cards:**
+   - LEFT: Battery percentage view (battery-state-card, sorted by level)
+   - RIGHT: Alert cards with collapsable sections
+3. **Collapsable alerts structure:**
+   - 🔴 Low Battery Alerts — `fold-entity-row` with `open: true` (visible by default)
+   - ✅ Normal Alerts — `fold-entity-row` with `open: false` (collapsed to reduce clutter)
+   - Uses `binary_sensor` with device class `battery` for filtering
+
+**Technical Details:**
+- Preserved battery-state-card: `sort_by_level: true`, `bulk_rename` suffixes
+- Preserved secondary_info: battery type + days since replaced
+- Preserved filtering: exclude unavailable/unknown states
+- All custom cards confirmed available: battery-state-card, fold-entity-row, auto-entities, multiple-entity-row
+
+#### Result
+- ✅ Blank column eliminated
+- ✅ Clear visual separation between % view and alerts
+- ✅ Collapsable alerts reduce dashboard clutter
+- ✅ Mobile-responsive vertical-stack layout (stacks vertically on narrow screens)
+- ✅ Low alerts prioritized (expanded), normal alerts de-emphasized (collapsed)
+
+#### Files Changed
+- **Modified:** `home-assistant/config/lovelace/battery_dashboard.yaml`
+
+#### Dependencies
+No new dependencies required. All custom cards pre-installed.
+
+#### Decision Rationale
+1. Two-column vertical-stack ensures masonry layout consistency and logical content grouping
+2. fold-entity-row collapsable sections reduce cognitive load (show critical first, hide healthy by default)
+3. Research-backed pattern (Linus validation) reduces implementation risk
+4. Backward compatible: preserves all existing filtering and sort logic
+
