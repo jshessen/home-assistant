@@ -1,48 +1,46 @@
 # ============================================================================
-# Battery Status Dashboard — v3 (Fixed)
+# Battery Status Dashboard — v4 (Full Redesign)
 # ============================================================================
 # Comprehensive battery monitoring using Battery Notes v3.4.3 + custom cards.
 # Dynamic entity discovery — no hard-coded entity IDs.
 #
 # Tabs:
-#   1. Overview     — Attention-needed batteries (filter by battery_low attribute)
-#   2. All Devices  — Full fleet sorted by level (Good tier collapsed)
-#   3. Maintenance  — Never replaced + replace button log + history
-#   4. Details      — Rich per-device data table with replacement dates
+#   1. Status  — battery-state-card hero + fleet summary + binary sensor alerts
+#   2. Manage  — replacement history + never replaced + replace buttons
 #
-# Fix log (v3):
-#   - battery_last_replaced_days removed (not a real attribute in v3.4.3);
-#     using battery_last_replaced with format: relative in multiple-entity-row
-#   - Overview filter changed to community-recommended battery_low attribute approach
-#     (not state threshold — prevents blank left column)
-#   - Binary sensor alerts section: removed broken fold+auto-entities nesting;
-#     now uses two plain auto-entities cards stacked vertically
-#   - All Devices: collapse reduced to ONE group (Good 40%+, hidden);
-#     items below 40% show sorted/ungrouped above it
-#   - secondary_info simplified to type only (no days) per community example
+# Fix log (v4):
+#   - Reduced from 4 tabs to 2 for clarity and usability
+#   - Fixed collapse bug: all 3 tiers defined (Critical/Low/Good) so items bucket
+#     correctly. One-group collapse caused ALL items to land in that group.
+#   - Fixed fleet count Jinja2: (sensors | count) - (low | count) with parens
+#     (operator precedence — bare `sensors | count - low | count` was wrong)
+#   - Fixed Overview filter: state < 40 threshold replaces battery_low attr so
+#     devices like 32% Garage Entry Lock (10% threshold) now show as "needing
+#     attention" regardless of per-device Battery Notes threshold setting
+#   - battery_last_replaced_days removed (not a real attribute in v3.4.3)
 # ============================================================================
 
 views:
 
   # ==========================================================================
-  # VIEW 1: OVERVIEW
-  # Left: battery-state-card showing ONLY low batteries (community pattern)
-  # Right: binary sensor alert cards + fleet summary
+  # VIEW 1: STATUS
+  # Left: battery-state-card hero (3-tier collapse, group-by-level)
+  # Right: fleet summary markdown + binary sensor alert cards
   # ==========================================================================
-  - title: Overview
-    path: battery-overview
+  - title: Status
+    path: battery-status
     icon: mdi:battery-alert
+
     cards:
 
-      # ---- Left column: Low-only battery-state-card -------------------------
-      # Uses battery_low attribute filter (community-recommended approach).
-      # Shows only devices Battery Notes considers "low" per their threshold.
-      # Empty card = nothing low = good news.
+      # ---- Left column: battery-state-card with 3-tier collapse -------------
+      # All 3 tiers defined so items bucket correctly by actual level.
+      # Critical + Low expanded by default; Good collapsed to reduce noise.
       - type: vertical-stack
         cards:
 
           - type: custom:battery-state-card
-            title: "🚨 Batteries Requiring Attention"
+            title: "🔋 Battery Fleet — Group by Level"
             sort_by_level: true
             secondary_info: "{attributes.battery_type_and_quantity}"
             filter:
@@ -50,21 +48,30 @@ views:
                 - name: entity_id
                   value: "*_battery_plus"
               exclude:
-                - name: attributes.battery_low
-                  value: false
                 - name: state
                   value: unavailable
                 - name: state
                   value: unknown
+            collapse:
+              - name: "🔴 Critical — Below 20%"
+                from: 0
+                to: 19
+              - name: "🟡 Low — 20–39%"
+                from: 20
+                to: 39
+              - name: "✅ Good — 40%+"
+                from: 40
+                to: 100
+                default_hide: true
             bulk_rename:
               - from: " Battery+"
                 to: ""
 
-      # ---- Right column: Binary alerts + fleet summary ----------------------
+      # ---- Right column: fleet summary + binary sensor alerts ---------------
       - type: vertical-stack
         cards:
 
-          # Fleet summary — Jinja2 template counts monitored vs low devices
+          # Fleet summary — fixed Jinja2 operator precedence with explicit parens
           - type: markdown
             content: >
               {% set sensors = states.binary_sensor
@@ -73,9 +80,9 @@ views:
               {% set low = sensors | selectattr('state', 'eq', 'on') | list %}
               📊 **Battery Fleet:** {{ sensors | count }} monitored
               · 🔴 **{{ low | count }}** low
-              · ✅ **{{ sensors | count - low | count }}** normal
+              · ✅ **{{ (sensors | count) - (low | count) }}** normal
 
-          # Low battery binary sensors — devices actively reporting low
+          # Devices Battery Notes considers actively low (binary sensor on)
           - type: custom:auto-entities
             card:
               type: entities
@@ -95,7 +102,7 @@ views:
               method: name
             show_empty: false
 
-          # Normal binary sensors — healthy devices; collapsed for visual clarity
+          # Healthy devices — binary sensor off
           - type: custom:auto-entities
             card:
               type: entities
@@ -116,50 +123,57 @@ views:
             show_empty: false
 
   # ==========================================================================
-  # VIEW 2: ALL DEVICES
-  # Full fleet sorted lowest-first. Good tier (40%+) collapses to reduce noise.
-  # Items below 40% show ungrouped and sorted — no Critical/Low tier confusion.
+  # VIEW 2: MANAGE
+  # Left: replacement history (oldest first) + never replaced
+  # Right: replace buttons
   # ==========================================================================
-  - title: All Devices
-    path: battery-all
-    icon: mdi:battery-check
-    cards:
-
-      - type: custom:battery-state-card
-        title: "📋 All Battery Devices — Sorted by Level"
-        sort_by_level: true
-        secondary_info: "{attributes.battery_type_and_quantity}"
-        filter:
-          include:
-            - name: entity_id
-              value: "*_battery_plus"
-          exclude:
-            - name: state
-              value: unavailable
-            - name: state
-              value: unknown
-        collapse:
-          - name: "✅ Good — 40%+"
-            from: 40
-            to: 100
-            default_hide: true
-        bulk_rename:
-          - from: " Battery+"
-            to: ""
-
-  # ==========================================================================
-  # VIEW 3: MAINTENANCE
-  # Left: never-replaced devices  |  Right: replace buttons + history
-  # ==========================================================================
-  - title: Maintenance
-    path: battery-maintenance
+  - title: Manage
+    path: battery-manage
     icon: mdi:battery-sync
+
     cards:
 
-      # ---- Left column: Devices with no replacement date recorded -----------
+      # ---- Left column: history + never replaced ----------------------------
       - type: vertical-stack
         cards:
 
+          # Replacement history — oldest first so long-overdue devices surface at top.
+          # format: relative converts ISO timestamp → "3 months ago".
+          # ISO dates sort alphabetically = chronologically, so string sort works.
+          - type: custom:auto-entities
+            card:
+              type: entities
+              title: "🗓️ Replacement History (Oldest First)"
+              show_header_toggle: false
+              state_color: true
+            filter:
+              include:
+                - entity_id: "*_battery_plus"
+                  attributes:
+                    battery_last_replaced: "*"
+                  options:
+                    type: custom:multiple-entity-row
+                    secondary_info:
+                      attribute: battery_type_and_quantity
+                      name: Type
+                    entities:
+                      - attribute: battery_last_replaced
+                        name: Replaced
+                        format: relative
+                      - attribute: battery_low_threshold
+                        name: Threshold
+                        unit: "%"
+              exclude:
+                - state: unavailable
+                - state: unknown
+            sort:
+              method: attribute
+              attribute: battery_last_replaced
+              numeric: false
+              reverse: false
+            show_empty: false
+
+          # Devices with no replacement date — highest priority candidates
           - type: custom:auto-entities
             card:
               type: entities
@@ -187,7 +201,7 @@ views:
               numeric: true
             show_empty: false
 
-      # ---- Right column: Replace button access + history --------------------
+      # ---- Right column: replace buttons ------------------------------------
       - type: vertical-stack
         cards:
 
@@ -204,78 +218,3 @@ views:
             sort:
               method: name
             show_empty: false
-
-          # History sorted by replacement date ascending (oldest first).
-          # format: relative converts ISO timestamp → "3 months ago".
-          # Sorted by battery_last_replaced string (ISO is alphabetically sortable).
-          - type: custom:auto-entities
-            card:
-              type: entities
-              title: "🗓️ Replacement History (Oldest First)"
-              show_header_toggle: false
-              state_color: true
-            filter:
-              include:
-                - entity_id: "*_battery_plus"
-                  attributes:
-                    battery_last_replaced: "*"
-                  options:
-                    type: custom:multiple-entity-row
-                    secondary_info:
-                      attribute: battery_last_replaced
-                      name: Replaced
-                      format: relative
-                    entities:
-                      - attribute: battery_type_and_quantity
-                        name: Type
-                      - attribute: battery_low_threshold
-                        name: Threshold
-                        unit: "%"
-              exclude:
-                - state: unavailable
-                - state: unknown
-            sort:
-              method: attribute
-              attribute: battery_last_replaced
-              numeric: false
-              reverse: false
-            show_empty: false
-
-  # ==========================================================================
-  # VIEW 4: DETAILS
-  # Rich per-device inline data — level, type, threshold, replaced date
-  # format: relative on battery_last_replaced converts ISO → "3 months ago"
-  # ==========================================================================
-  - title: Details
-    path: battery-details
-    icon: mdi:battery-clock
-    cards:
-
-      - type: custom:auto-entities
-        card:
-          type: entities
-          title: "🔍 Battery Details — All Devices"
-          show_header_toggle: false
-          state_color: true
-        filter:
-          include:
-            - entity_id: "*_battery_plus"
-              options:
-                type: custom:multiple-entity-row
-                secondary_info:
-                  attribute: battery_type_and_quantity
-                  name: Type
-                entities:
-                  - attribute: battery_last_replaced
-                    name: Replaced
-                    format: relative
-                  - attribute: battery_low_threshold
-                    name: Threshold
-                    unit: "%"
-          exclude:
-            - state: unavailable
-            - state: unknown
-        sort:
-          method: state
-          numeric: true
-        show_empty: false
