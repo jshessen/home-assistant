@@ -1,15 +1,29 @@
-# iBlinds v2 Stop Point Dashboard
-# Each blind gets its cover tile + stop-point slider co-located so users can
-# adjust open stop positions without navigating to Settings → Helpers.
+# iBlinds Dashboard — v2 and v3 Stop Point Controls
 #
-# Uses template cover entities (not _hw hardware entities).
-# Stop-point sliders map to input_number helpers in packages/iblinds_v2_covers.yaml.
+# Each blind shows its cover tile + stop-point slider so users can adjust the
+# open stop position without navigating to Settings.
+#
+# v2: Uses template cover entities + input_number helpers (packages/iblinds_v2_covers.yaml)
+# v3: Uses native Z-Wave cover entities + Z-Wave Parameter 4 "Default ON Value" number entities
+#
+# ⚠️  v3 Parameter 4 sliders: The number.* entities below are disabled by the
+#     Z-Wave JS integration by default. Enable each one in HA before the slider
+#     will respond: Settings → Devices & Services → Z-Wave JS → [device] →
+#     enable "Default ON Value".
 
 views:
   - title: Blinds
     path: blinds
     icon: mdi:blinds
     cards:
+
+      # ═══════════════════════════════════════════════════════
+      # iBlinds v2 — Room Blinds
+      # Stop points controlled via input_number helpers
+      # ═══════════════════════════════════════════════════════
+      - type: markdown
+        content: "## iBlinds v2 — Room Blinds"
+
       - type: vertical-stack
         title: Right Blinds (Living Room)
         cards:
@@ -70,3 +84,171 @@ views:
         entity: input_number.iblinds_v2_open_position
         name: Default Open Stop Point (fallback for all blinds)
         icon: mdi:blinds-open
+
+      # ═══════════════════════════════════════════════════════
+      # iBlinds v3 — Sunroom (10 blinds, nodes 79–125)
+      # Stop points via Z-Wave Parameter 4 (Default ON Value)
+      # ⚠️  Enable number entities in HA before sliders work
+      # ═══════════════════════════════════════════════════════
+      - type: markdown
+        content: "## iBlinds v3 — Sunroom"
+
+      - type: vertical-stack
+        title: Sunroom Blind 1 (Node 102)
+        cards:
+          - type: tile
+            entity: cover.window_blind_controller_1_horizontal_slats_angle
+            name: Sunroom Blind 1
+            features:
+              - type: cover-open-close
+              - type: cover-position
+          - type: tile
+            entity: number.window_blind_controller_1_default_on_value
+            name: Open Stop Point (Param 4)
+            icon: mdi:blinds-open
+
+      - type: vertical-stack
+        title: Sunroom Blind 2 (Node 109)
+        cards:
+          - type: tile
+            entity: cover.window_blind_controller_2_horizontal_slats_angle
+            name: Sunroom Blind 2
+            features:
+              - type: cover-open-close
+              - type: cover-position
+          - type: tile
+            entity: number.window_blind_controller_2_default_on_value
+            name: Open Stop Point (Param 4)
+            icon: mdi:blinds-open
+
+      - type: vertical-stack
+        title: Sunroom Blind 3 (Node 87)
+        cards:
+          - type: tile
+            entity: cover.window_blind_controller_3_horizontal_slats_angle
+            name: Sunroom Blind 3
+            features:
+              - type: cover-open-close
+              - type: cover-position
+          - type: tile
+            entity: number.window_blind_controller_3_default_on_value
+            name: Open Stop Point (Param 4)
+            icon: mdi:blinds-open
+
+      - type: vertical-stack
+        title: Sunroom Blind 4 (Node 82)
+        cards:
+          - type: tile
+            entity: cover.window_blind_controller_horizontal_slats_angle_3
+            name: Sunroom Blind 4
+            features:
+              - type: cover-open-close
+              - type: cover-position
+          - type: tile
+            entity: number.window_blind_controller_default_on_value_3
+            name: Open Stop Point (Param 4)
+            icon: mdi:blinds-open
+
+      - type: vertical-stack
+        title: Sunroom Blind 5 (Node 113)
+        cards:
+          - type: tile
+            entity: cover.window_blind_controller_5_horizontal_slats_angle
+            name: Sunroom Blind 5
+            features:
+              - type: cover-open-close
+              - type: cover-position
+          - type: tile
+            entity: number.window_blind_controller_5_default_on_value
+            name: Open Stop Point (Param 4)
+            icon: mdi:blinds-open
+
+      - type: vertical-stack
+        title: Sunroom Blind 6 (Node 108)
+        cards:
+          - type: tile
+            entity: cover.window_blind_controller_6_horizontal_slats_angle
+            name: Sunroom Blind 6
+            features:
+              - type: cover-open-close
+              - type: cover-position
+          - type: tile
+            entity: number.window_blind_controller_6_default_on_value
+            name: Open Stop Point (Param 4)
+            icon: mdi:blinds-open
+
+      - type: vertical-stack
+        title: Sunroom Blind 7 (Node 125)
+        cards:
+          - type: tile
+            entity: cover.window_blind_controller_horizontal_slats_angle_4
+            name: Sunroom Blind 7
+            features:
+              - type: cover-open-close
+              - type: cover-position
+          - type: tile
+            entity: number.window_blind_controller_default_on_value_4
+            name: Open Stop Point (Param 4)
+            icon: mdi:blinds-open
+
+      - type: vertical-stack
+        title: Sunroom Blind 8 (Node 81)
+        cards:
+          - type: tile
+            entity: cover.window_blind_controller_horizontal_slats_angle_2
+            name: Sunroom Blind 8
+            features:
+              - type: cover-open-close
+              - type: cover-position
+          - type: tile
+            entity: number.window_blind_controller_default_on_value_2
+            name: Open Stop Point (Param 4)
+            icon: mdi:blinds-open
+
+      - type: vertical-stack
+        title: Sunroom Blind 9 (Node 80)
+        cards:
+          - type: tile
+            entity: cover.window_blind_controller_9_horizontal_slats_angle
+            name: Sunroom Blind 9
+            features:
+              - type: cover-open-close
+              - type: cover-position
+          - type: tile
+            entity: number.window_blind_controller_9_default_on_value
+            name: Open Stop Point (Param 4)
+            icon: mdi:blinds-open
+
+      - type: vertical-stack
+        title: Sunroom Blind 10 (Node 79)
+        cards:
+          - type: tile
+            entity: cover.window_blind_controller_horizontal_slats_angle
+            name: Sunroom Blind 10
+            features:
+              - type: cover-open-close
+              - type: cover-position
+          - type: tile
+            entity: number.window_blind_controller_default_on_value
+            name: Open Stop Point (Param 4)
+            icon: mdi:blinds-open
+
+      # ═══════════════════════════════════════════════════════
+      # iBlinds v3 — Kids' Bedroom (Node 105)
+      # ═══════════════════════════════════════════════════════
+      - type: markdown
+        content: "## iBlinds v3 — Kids' Bedroom"
+
+      - type: vertical-stack
+        title: Kids' Bedroom Blinds (Node 105)
+        cards:
+          - type: tile
+            entity: cover.window_blind_controller_1_horizontal_slats_angle_2
+            name: Kids' Bedroom Blinds
+            features:
+              - type: cover-open-close
+              - type: cover-position
+          - type: tile
+            entity: number.window_blind_controller_1_default_on_value_2
+            name: Open Stop Point (Param 4)
+            icon: mdi:blinds-open
