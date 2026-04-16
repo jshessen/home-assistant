@@ -1,48 +1,59 @@
 # ============================================================================
-# Battery Status Dashboard
+# Battery Status Dashboard — Full Redesign (4-tab layout)
 # ============================================================================
-# Consolidated single-view showing battery level, type, and days since replaced
-# for all Battery Notes tracked devices (*_battery_plus). Sorted lowest first.
+# Comprehensive battery monitoring using all Battery Notes v3.4.3 features.
+# Dynamic entity discovery via *_battery_plus naming convention (35 devices).
 #
-# Layout: Two-column visual structure using vertical-stack cards:
-#   LEFT COLUMN (% View):
-#     1. Critical & Low — battery-state-card filtered to <40%, split by tier
-#     2. All Devices — battery-state-card full fleet, Good tier collapsed
-#   RIGHT COLUMN (Alerts View):
-#     3. Binary Alerts — collapsable sections for Low/Normal binary sensors
-#     4. Never Replaced — auto-entities filtering for missing battery_last_replaced
+# Tabs:
+#   1. Overview     (battery-overview)     — Critical/Low tier card + binary alerts
+#   2. All Devices  (battery-all)          — Complete fleet, tiered collapse
+#   3. Maintenance  (battery-maintenance)  — Never replaced + replace button log
+#   4. Details      (battery-details)      — Rich per-device inline data table
 #
-# Tap any battery-state-card row → HA more-info popup (Battery Notes attributes).
+# Custom cards required (installed in www/community/):
+#   - battery-state-card     (maxwroc)     — tier collapse, secondary_info, bulk_rename
+#   - lovelace-fold-entity-row             — collapsable section rows
+#   - lovelace-auto-entities               — dynamic entity population + filtering
+#   - lovelace-multiple-entity-row         — inline multi-attribute display
+#   - lovelace-card-tools                  — utility extensions
 #
-# Requires:
-#   - battery-state-card (HACS, maxwroc) — installed at www/community/battery-state-card/
-#   - fold-entity-row (HACS) — installed at www/community/lovelace-fold-entity-row/
-#   - auto-entities (HACS) — already installed
-#   - battery_notes (custom_component) — already installed v3.4.3
-#   - multiple-entity-row (HACS) — already installed
+# Battery Notes entity patterns per device:
+#   sensor.{device}_battery_plus           — Primary numeric % entity (key attrs below)
+#   binary_sensor.{device}_battery_plus_low — Threshold-based low alert (on = low)
+#   button.{device}_battery_replaced       — Tap to log a replacement event
+#
+# Key attributes on sensor.*_battery_plus:
+#   battery_type_and_quantity    — e.g. "4×AA"
+#   battery_low_threshold        — configured threshold %
+#   battery_low                  — bool
+#   battery_last_replaced        — ISO date string
+#   battery_last_replaced_days   — integer days since replacement (null if never)
+#   battery_last_reported        — datetime of last reading
+#   device_name                  — friendly name
 # ============================================================================
 
 views:
-  - title: Battery Monitor
-    path: battery
+
+  # ==========================================================================
+  # VIEW 1: OVERVIEW
+  # Quick-glance status: critical/low tier card (left) + binary alerts (right)
+  # ==========================================================================
+  - title: Overview
+    path: battery-overview
     icon: mdi:battery-alert
     cards:
 
-      # ========================================================================
-      # LEFT COLUMN: % View — battery-state-card showing Battery Notes entities
-      # ========================================================================
+      # ---- Left column: Critical & Low battery-state-card -------------------
       - type: vertical-stack
         cards:
 
-          # ---- Critical & Low — battery-state-card ----------------------------
-          # Targets only Battery Notes entities (*_battery_plus), filtered to state < 40.
-          # Uses collapse to split Critical (<20%) and Low (20–40%) into labeled sections.
-          # secondary_info shows battery type + days since last replacement on each row.
-          # Note: if battery_last_replaced_days is null (never replaced), it renders "nulld" —
-          #   those devices are also surfaced in the "Never Replaced" card below.
-          # bulk_rename strips " Battery+" suffix: "Living Room Battery+" → "Living Room".
+          # Filters to <40% devices only; splits into Critical and Low tiers.
+          # Both tiers start expanded — these all require attention.
+          # secondary_info: battery type + days since last replacement.
+          #   (null battery_last_replaced_days renders as "nulld" — see Maintenance tab)
+          # bulk_rename strips " Battery+" for readable names.
           - type: custom:battery-state-card
-            title: "🚨 Critical & Low"
+            title: "🚨 Critical & Low Batteries"
             sort_by_level: true
             secondary_info: "{attributes.battery_type_and_quantity} · {attributes.battery_last_replaced_days}d"
             filter:
@@ -68,53 +79,24 @@ views:
               - from: " Battery+"
                 to: ""
 
-          # ---- All Devices — battery-state-card --------------------------------
-          # Full fleet sorted lowest first. Good tier (≥40%) is collapsed by default
-          # so the page stays scannable — expand to review healthy devices.
-          # secondary_info shows battery type + days since last replacement on each row.
-          - type: custom:battery-state-card
-            title: "📋 All Devices"
-            sort_by_level: true
-            secondary_info: "{attributes.battery_type_and_quantity} · {attributes.battery_last_replaced_days}d"
-            filter:
-              include:
-                - name: entity_id
-                  value: "*_battery_plus"
-              exclude:
-                - name: state
-                  value: "unavailable"
-                - name: state
-                  value: "unknown"
-            collapse:
-              - name: "✅ Good — 40%+"
-                from: 40
-                default_hide: true
-            bulk_rename:
-              - from: " Battery+"
-                to: ""
-
-      # ========================================================================
-      # RIGHT COLUMN: Alerts View — Binary sensors + Never Replaced tracking
-      # ========================================================================
+      # ---- Right column: Binary sensor low/normal alerts --------------------
       - type: vertical-stack
         cards:
 
-          # ---- Battery Low Alerts (collapsable sections) ---------------------
-          # battery-state-card only handles numeric sensors; binary_sensor entities
-          # with device_class: battery are surfaced here instead.
-          # Uses fold-entity-row for collapsable Low/Normal sections.
-          # auto-entities dynamically populates each fold with matching binary sensors.
+          # Two collapsable fold-entity-row sections driven by auto-entities.
+          # Low (state: on) starts expanded — immediate action needed.
+          # Normal (state: off) starts collapsed — healthy, reduce visual noise.
           - type: entities
             title: "⚠️ Battery Low Alerts"
             show_header_toggle: false
             state_color: true
             entities:
 
-              # Section 1: Low (state: on) — Start expanded by default
+              # Low section — open by default for immediate visibility
               - type: custom:fold-entity-row
                 head:
                   type: section
-                  label: "🔴 Low"
+                  label: "🔴 Low — Action Required"
                 open: true
                 padding: 0
                 entities:
@@ -135,11 +117,11 @@ views:
                       type: custom:fold-entity-row
                       padding: 0
 
-              # Section 2: Normal (state: off) — Start collapsed by default
+              # Normal section — collapsed by default
               - type: custom:fold-entity-row
                 head:
                   type: section
-                  label: "✅ Normal"
+                  label: "✅ Normal — All Good"
                 open: false
                 padding: 0
                 entities:
@@ -160,16 +142,71 @@ views:
                       type: custom:fold-entity-row
                       padding: 0
 
-          # ---- Devices Never Replaced (no recorded replacement) ----------------
-          # Filters Battery Notes entities that have no battery_last_replaced attribute.
-          # Useful prompt to open Battery Notes and log the initial replacement date.
-          # multiple-entity-row shows type + current level inline.
+  # ==========================================================================
+  # VIEW 2: ALL DEVICES
+  # Single full-width card — complete fleet sorted by level with tier collapse
+  # ==========================================================================
+  - title: All Devices
+    path: battery-all
+    icon: mdi:battery-check
+    cards:
+
+      # Complete fleet sorted lowest-first.
+      # Critical (<20%) and Low (20–40%) tiers start expanded — need attention.
+      # Good (40%+) tier starts collapsed — healthy devices, expand to audit.
+      # secondary_info: battery type + days since last replacement.
+      # bulk_rename strips " Battery+" suffix for clean display names.
+      - type: custom:battery-state-card
+        title: "📋 All Battery Devices — Sorted by Level"
+        sort_by_level: true
+        secondary_info: "{attributes.battery_type_and_quantity} · {attributes.battery_last_replaced_days}d"
+        filter:
+          include:
+            - name: entity_id
+              value: "*_battery_plus"
+          exclude:
+            - name: state
+              value: "unavailable"
+            - name: state
+              value: "unknown"
+        collapse:
+          - name: "🔴 Critical — Below 20%"
+            from: 0
+            to: 19
+          - name: "🟡 Low — 20–40%"
+            from: 20
+            to: 39
+          - name: "✅ Good — 40%+"
+            from: 40
+            to: 100
+            default_hide: true
+        bulk_rename:
+          - from: " Battery+"
+            to: ""
+
+  # ==========================================================================
+  # VIEW 3: MAINTENANCE
+  # Two-column: never-replaced devices (left) + replace button log (right)
+  # ==========================================================================
+  - title: Maintenance
+    path: battery-maintenance
+    icon: mdi:battery-sync
+    cards:
+
+      # ---- Left column: Devices with no replacement date recorded -----------
+      - type: vertical-stack
+        cards:
+
+          # Entities where battery_last_replaced is absent (never logged).
+          # Sorted by level ascending — lowest first for prioritization.
+          # multiple-entity-row shows battery type + threshold inline.
+          # Open Battery Notes UI to log initial replacement dates for these.
           - type: custom:auto-entities
             card:
               type: entities
-              title: "❓ No Replacement Date Recorded"
-              state_color: true
+              title: "❓ Never Replaced — No Date Recorded"
               show_header_toggle: false
+              state_color: true
             filter:
               include:
                 - entity_id: "*_battery_plus"
@@ -179,8 +216,8 @@ views:
                     entities:
                       - attribute: battery_type_and_quantity
                         name: Type
-                      - attribute: battery_level
-                        name: Level
+                      - attribute: battery_low_threshold
+                        name: Threshold
               exclude:
                 - state: unavailable
                 - state: unknown
@@ -190,3 +227,98 @@ views:
               method: state
               numeric: true
             show_empty: false
+
+      # ---- Right column: Replace button access + recent history -------------
+      - type: vertical-stack
+        cards:
+
+          # button.{device}_battery_replaced — tap after physically swapping batteries
+          # to record the event in Battery Notes and reset the days counter.
+          - type: custom:auto-entities
+            card:
+              type: entities
+              title: "🔋 Log Battery Replacement"
+              show_header_toggle: false
+            filter:
+              include:
+                - entity_id: "button.*_battery_replaced"
+              exclude:
+                - state: unavailable
+            sort:
+              method: name
+            show_empty: false
+
+          # Replacement history sorted by recency — devices replaced longest ago
+          # appear at the top (largest battery_last_replaced_days value).
+          # Only shows devices that have a recorded replacement date.
+          - type: custom:auto-entities
+            card:
+              type: entities
+              title: "🗓️ Replacement History (Oldest First)"
+              show_header_toggle: false
+              state_color: true
+            filter:
+              include:
+                - entity_id: "*_battery_plus"
+                  attributes:
+                    battery_last_replaced: "*"
+                  options:
+                    type: custom:multiple-entity-row
+                    secondary_info:
+                      attribute: battery_last_replaced
+                      name: Replaced
+                    entities:
+                      - attribute: battery_last_replaced_days
+                        name: Days Ago
+                        unit: d
+              exclude:
+                - state: unavailable
+                - state: unknown
+            sort:
+              method: attribute
+              attribute: battery_last_replaced_days
+              numeric: true
+              reverse: true
+            show_empty: false
+
+  # ==========================================================================
+  # VIEW 4: DETAILS
+  # Full per-device inline data — level, type, threshold, days since replaced
+  # ==========================================================================
+  - title: Details
+    path: battery-details
+    icon: mdi:battery-clock
+    cards:
+
+      # Rich inline detail table using multiple-entity-row.
+      # Each row: device name + % level (state), battery type (secondary_info),
+      #           days since replaced, and configured low threshold.
+      # Sorted by state (% level) ascending — lowest batteries surface first.
+      - type: custom:auto-entities
+        card:
+          type: entities
+          title: "🔍 Battery Details — All Devices"
+          show_header_toggle: false
+          state_color: true
+        filter:
+          include:
+            - entity_id: "*_battery_plus"
+              options:
+                type: custom:multiple-entity-row
+                secondary_info:
+                  attribute: battery_type_and_quantity
+                  name: Type
+                entities:
+                  - attribute: battery_last_replaced_days
+                    name: Days
+                    unit: d
+                  - attribute: battery_low_threshold
+                    name: Threshold
+                    unit: "%"
+          exclude:
+            - state: unavailable
+            - state: unknown
+        sort:
+          method: state
+          numeric: true
+        show_empty: false
