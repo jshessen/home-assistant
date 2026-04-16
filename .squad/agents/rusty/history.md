@@ -9,6 +9,7 @@
 ## Learnings
 
 <!-- Append learnings below -->
+- battery-state-card refactor pattern: filter on `*_battery_plus`, `bulk_rename` strips " Battery+" suffix → clean display names, `secondary_info` shows type+days as `{attributes.battery_type_and_quantity} · {attributes.battery_last_replaced_days}d`, `collapse` with `default_hide: true` folds Good tier (≥40%) so page stays scannable; binary_sensor and "never replaced" rows still need auto-entities as battery-state-card only handles numeric sensors
 - Mode system renamed: house_mode→presence_mode, night_mode→time_of_day (input_select), guest_mode (boolean), work_from_home_mode (boolean)
 - New input_datetime.yaml at CONFIG ROOT — add `input_datetime: !include input_datetime.yaml` to configuration.yaml
 - Automation triggers now use `at: input_datetime.schedule_NAME` entity form (not hardcoded times)
@@ -58,3 +59,33 @@ All files updated and config-check validated. Full context — including all dec
 - **Schema Design:** Kept flat (3 string fields) for optimal LLM reliability - Yen recommends 3-5 fields max
 - **Config Validation:** Passed HA config check before commit
 - **Commit:** `9c53749` - feat: Add evening AI summary automation with structured output
+
+### 2026-07-20: iBlinds v2 Stop-Point Automation Design
+
+- **Problem:** iBlinds v2 (fw 1.65) lacks Parameter 4 (Default ON Value), which v3 uses natively for stop-point on open. v2 `open_cover` always goes to 100%.
+- **Blueprint is dead:** The existing blueprint (`iblinds_device_handler.yaml`) uses `call_service` events that were removed from HA's event bus in 2022.4. It has never fired, ever. Cannot be fixed — architecture is incompatible with modern HA.
+- **Danny's plan B1 (blueprint) is wrong:** Danny's implementation plan recommends deploying the blueprint for Phase 2. That won't work. Replaced with Template Covers approach.
+- **Chosen pattern: Template Cover Package** (`packages/iblinds_v2_covers.yaml`)
+  - Physical Z-Wave entities renamed to `*_hw` suffix in entity registry (UI step)
+  - Template covers take original entity IDs — all existing scripts work unchanged
+  - `cover.open_cover` → intercepted by template → `cover.set_cover_position` at stop point
+  - `cover.close_cover` → passes through to physical entity unchanged
+  - `cover.set_cover_position` → passes through to physical entity unchanged
+  - Global `input_number.iblinds_v2_open_position` (default 50%) for configurable stop point
+- **Entity ID map:**
+  - Node 71 (Right): `cover.window_blind_controller` → `cover.window_blind_controller_hw`
+  - Node 72 (Left): `cover.window_blind_controller_3` → `cover.window_blind_controller_3_hw`
+  - Node 103 (Bedroom): `cover.window_blind_controller_4` → `cover.window_blind_controller_4_hw`
+  - Node 107 (Guest): `cover.window_blind_controller_2` → `cover.window_blind_controller_2_hw`
+  - Nodes 67, 106: TBD — need Z-Wave re-interview first
+- **Key constraint:** HA template covers require `name:` to exactly match the original friendly name so slugified entity_id is identical (e.g., "Window Blind Controller 4" → `cover.window_blind_controller_4`)
+- Per-device `input_number` with 0-sentinel fallback pattern: use `min: 0, initial: 0` and resolve in Jinja as `{% set per = states('input_number.device_specific') | int(0) %}{{ per if per > 0 else states('input_number.global') | int(default) }}`. Value 0 acts as sentinel meaning "inherit from global." This avoids duplicate state and keeps a single source of truth while allowing per-device overrides.
+- iblinds dashboard layout fix: room sections (markdown header + content cards) must be wrapped in a single `type: vertical-stack` to prevent masonry layout scatter. Without wrapping, HA's masonry engine treats the header and content as independent grid items and can place them in different columns. All 11 room sections across v2 and v3 views were fixed with this pattern.
+
+### 2026-07-20: Battery Dashboard v4 — 2-Tab Redesign
+
+- **Collapse bug root cause:** battery-state-card with only ONE `collapse` group defined causes ALL items to land in that group regardless of actual level. Fix: define all tiers exhaustively (Critical 0-19, Low 20-39, Good 40-100) so the card can bucket correctly.
+- **Jinja2 operator precedence:** `sensors | count - low | count` is wrong — `|` is high precedence so this computes `sensors | (count - low) | count`. Always use explicit parens: `(sensors | count) - (low | count)`.
+- **Battery Notes threshold trap:** `exclude: attributes.battery_low: false` only shows devices Battery Notes itself considers low (below their configured threshold). A device at 32% with a 10% threshold = NOT flagged. For "visually concerning" devices, filter on `state < 40` instead of the `battery_low` attribute.
+- **4→2 tabs:** Overview + All Devices + Maintenance + Details collapsed to Status + Manage. battery-state-card's collapse feature replaces the need for separate "overview" and "all devices" tabs — 3-tier collapse handles both roles in one card.
+- **Never write to decisions/inbox without also appending to history.md** — the two are always paired.
