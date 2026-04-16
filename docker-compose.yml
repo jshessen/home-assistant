@@ -50,7 +50,10 @@ services:
     #networks:
     #  - default
     security_opt:
-      - no-new-privileges:true    
+      - no-new-privileges:true
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
     ports:
       - ${HACS_PORT:-8123}:8123/tcp
     volumes:
