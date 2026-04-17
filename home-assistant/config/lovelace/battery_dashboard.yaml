@@ -1,131 +1,176 @@
 # ============================================================================
-# Battery Status Dashboard — v6 (API-Correct Implementation)
+# Battery Status Dashboard — v7
 # ============================================================================
-# Fixed battery-state-card v4.2.0 API usage based on source code analysis.
-#
 # Views:
-#   1. Monitor — Fleet summary + Full fleet by room + Needs attention
+#   1. Monitor — Fleet summary + All Batteries by Room + Needs Attention
 #   2. Manage  — Replacement history (oldest first) + never replaced + buttons
 #
+# Changes in v7:
+#   - Charging state indicators for rechargeable devices (Sparky, Galaxy Watch,
+#     Patricia's phone) using per-entity explicit listing + filter exclusion.
+#   - charging_state.entity_id does NOT support KString templating — must be
+#     a static string. Rechargeable devices are explicitly listed with their
+#     corresponding is_charging / battery_state sensors, then excluded from the
+#     filter to prevent duplicates.
+#   - YAML anchors: &rechargeable-entities / &rechargeable-excl-*
+#
 # Changes in v6:
-#   - Fixed: group: [{by: "device.area_name"}] replaces invalid group_by: area
-#   - Fixed: group: [{max: 19}, {min: 20, max: 39}] replaces collapse from/to
-#   - Fixed: sort: [{by: "state"}] replaces deprecated sort_by_level
-#   - Fixed: default_config_base: false prevents shallow-merge of unwanted defaults
-#   - Added: Fleet summary counts directly from *_battery_plus sensors (not binary)
-#   - Added: secondary_info shows battery type + replacement date with reltime()
-#   - Fixed: Garage Entry Lock (32%) now correctly appears in Low group (not Critical)
-#   - Fixed: computed.state >= 40 exclude filter removes OK devices before grouping
+#   - Fleet summary: float(100) precision + rejectattr _low guard (Basher)
+#   - All Batteries / Needs Attention: exclude *_battery_plus_low entities
+#   - All Batteries group secondary_info simplified to "{count} devices"
+#   - Needs Attention colors: added 100% green step
 # ============================================================================
 
 views:
 
   # ==========================================================================
   # VIEW 1: MONITOR
-  # Fleet summary header + full fleet by area + attention view by level
+  # type: sections uses HA's CSS grid — avoids horizontal-stack 50/50 splits
   # ==========================================================================
   - title: Monitor
     path: battery-monitor
     icon: mdi:battery-heart
+    type: sections
+    max_columns: 2
 
-    cards:
+    sections:
 
-      # Fleet summary — counts using Jinja2 namespace loop over battery sensors
-      - type: markdown
-        content: >
-          {% set ns = namespace(total=0, crit=0, low=0) %}
-          {% for s in states.sensor
-              | selectattr('entity_id', 'search', '_battery_plus')
-              | rejectattr('state', 'in', ['unavailable', 'unknown']) %}
-            {%- set v = s.state | int(100) -%}
-            {%- set ns.total = ns.total + 1 -%}
-            {%- if v < 20 -%}{%- set ns.crit = ns.crit + 1 -%}
-            {%- elif v < 40 -%}{%- set ns.low = ns.low + 1 -%}{%- endif -%}
-          {% endfor %}
-          📊 **Battery Fleet:** {{ ns.total }} monitored
-          · 🔴 **{{ ns.crit }}** critical (<20%)
-          · 🟡 **{{ ns.low }}** low (20–39%)
-          · ✅ **{{ ns.total - ns.crit - ns.low }}** OK
+      # ── LEFT section: Fleet summary + Needs Attention ──────────────────────
+      - type: grid
+        title: ""
+        cards:
 
-      # -----------------------------------------------------------------------
-      # CARD 2: Full fleet — grouped dynamically by device's Home Assistant area
-      # Uses device.area_name resolution (entities have area_id=None, but device has area)
-      # secondary_info: battery type + replacement date (reltime() converts ISO → "3 months ago")
-      # Note: reltime() may render raw string if date parse fails — verified acceptable fallback
-      # bulk_rename: strips " Battery+" suffix added by Battery Notes integration
-      # -----------------------------------------------------------------------
-      - type: custom:battery-state-card
-        title: "🏠 All Batteries — by Room"
-        default_config_base: false
-        sort:
-          - by: state
-        filter:
-          include:
-            - name: entity_id
-              value: "*_battery_plus"
-          exclude:
-            - name: state
-              value: unavailable
-            - name: state
-              value: unknown
-        group:
-          - by: "device.area_name"
-            icon: "mdi:home-outline"
-            secondary_info: "{count} devices · {min}–{max}%"
-        secondary_info: "{attributes.battery_type_and_quantity} · {attributes.battery_last_replaced|reltime()}"
-        bulk_rename:
-          - from: " Battery+"
-            to: ""
-        colors:
-          steps:
-            - value: 20
-              color: "var(--label-badge-red)"
-            - value: 39
-              color: "var(--label-badge-yellow)"
-            - value: 100
-              color: "var(--label-badge-green)"
+          - type: markdown
+            content: |
+              {% set ns = namespace(total=0, crit=0, low=0) %}
+              {% for s in states.sensor
+                  | selectattr('entity_id', 'search', '_battery_plus')
+                  | rejectattr('entity_id', 'search', '_low')
+                  | rejectattr('state', 'in', ['unavailable', 'unknown']) %}
+                {%- set v = s.state | float(100) -%}
+                {%- set ns.total = ns.total + 1 -%}
+                {%- if v < 20 -%}{%- set ns.crit = ns.crit + 1 -%}
+                {%- elif v < 40 -%}{%- set ns.low = ns.low + 1 -%}{%- endif -%}
+              {% endfor %}
+              📊 **Battery Fleet:** {{ ns.total }} monitored
+              - 🔴 **{{ ns.crit }}** Critical (<20%)
+              - 🟡 **{{ ns.low }}** Low (20–39%)
+              - ✅ **{{ ns.total - ns.crit - ns.low }}** OK
 
-      # -----------------------------------------------------------------------
-      # CARD 3: Attention view — only devices below 40% (absolute threshold)
-      # computed.state >= 40 exclude removes OK devices BEFORE grouping
-      # Critical (≤19%) and Low (20–39%) use min/max for correct assignment
-      # This ensures Garage Entry Lock (32%) appears in Low, not Critical
-      # -----------------------------------------------------------------------
-      - type: custom:battery-state-card
-        title: "⚠️ Needs Attention — Below 40%"
-        default_config_base: false
-        sort:
-          - by: state
-        filter:
-          include:
-            - name: entity_id
-              value: "*_battery_plus"
-          exclude:
-            - name: state
-              value: unavailable
-            - name: state
-              value: unknown
-            - name: computed.state
-              operator: ">="
-              value: 40
-        group:
-          - name: "🔴 Critical — Below 20% ({count})"
-            max: 19
-            icon: mdi:battery-alert
-          - name: "🟡 Low — 20–39% ({count})"
-            min: 20
-            max: 39
-            icon: mdi:battery-low
-        bulk_rename:
-          - from: " Battery+"
-            to: ""
-        secondary_info: "{attributes.battery_type_and_quantity} · {attributes.battery_last_replaced|reltime()}"
-        colors:
-          steps:
-            - value: 19
-              color: "var(--label-badge-red)"
-            - value: 39
-              color: "var(--label-badge-yellow)"
+          - type: custom:battery-state-card
+            title: "⚠️ Needs Attention — Below 40%"
+            default_config_base: false
+            sort: &battery-sort
+              - by: state
+            # Rechargeable devices listed explicitly so charging_state.entity_id
+            # (a static string — NOT KString) can reference each device's sensor.
+            # They are also excluded from the filter below to prevent duplicates.
+            entities: &rechargeable-entities
+              - entity: sensor.sparky_battery_plus
+                charging_state:
+                  entity_id: binary_sensor.sparky_is_charging
+                  state: "on"
+                  icon: mdi:lightning-bolt
+              - entity: sensor.galaxy_watch_ultra_a61f_battery_plus
+                charging_state:
+                  entity_id: binary_sensor.galaxy_watch_ultra_a61f_is_charging
+                  state: "on"
+                  icon: mdi:lightning-bolt
+              - entity: sensor.patricia_s_phone_battery_plus
+                # No is_charging binary sensor — use companion-app battery_state sensor.
+                # iOS Companion reports "Charging" / "Full" when plugged in.
+                charging_state:
+                  entity_id: sensor.patricia_s_phone_battery_state
+                  state:
+                    - "Charging"
+                    - "Full"
+                    - "charging"
+                    - "full"
+                  icon: mdi:lightning-bolt
+            filter:
+              include: &battery-include
+                - name: entity_id
+                  value: "*_battery_plus*"
+              exclude:
+                - name: state
+                  value: unavailable
+                - name: state
+                  value: unknown
+                - name: entity_id
+                  value: "*_battery_plus_low*"
+                - name: computed.state
+                  operator: ">="
+                  value: 40
+                # Exclude rechargeable devices from filter — they are in `entities` above.
+                - &rechargeable-excl-sparky
+                  name: entity_id
+                  value: "sensor.sparky_battery_plus"
+                - &rechargeable-excl-watch
+                  name: entity_id
+                  value: "sensor.galaxy_watch_ultra_a61f_battery_plus"
+                - &rechargeable-excl-patricia
+                  name: entity_id
+                  value: "sensor.patricia_s_phone_battery_plus"
+            group:
+              - name: "🔴 Critical — Below 20% ({count})"
+                max: 19
+                icon: mdi:battery-alert
+              - name: "🟡 Low — 20–39% ({count})"
+                min: 20
+                max: 39
+                icon: mdi:battery-low
+            bulk_rename: &battery-bulk-rename
+              - from: " Battery+"
+                to: ""
+            secondary_info: &battery-secondary-info "{attributes.battery_type_and_quantity} · {attributes.battery_last_replaced|reltime()}"
+            colors: &battery-colors
+              steps:
+                - value: 20
+                  color: "var(--label-badge-red)"
+                - value: 39
+                  color: "var(--label-badge-yellow)"
+                - value: 100
+                  color: "var(--label-badge-green)"
+            style: &battery-style |
+              battery-state-entity {
+                padding-left: 16px;
+                border-left: 2px solid var(--divider-color);
+                margin-left: 8px;
+              }
+
+      # ── RIGHT section: All batteries grouped by area ────────────────────────
+      - type: grid
+        title: ""
+        cards:
+
+          - type: custom:battery-state-card
+            title: "🏠 All Batteries — by Area"
+            default_config_base: false
+            sort: *battery-sort
+            entities: *rechargeable-entities
+            filter:
+              include: *battery-include
+              exclude:
+                - name: state
+                  value: unavailable
+                - name: state
+                  value: unknown
+                - name: entity_id
+                  value: "*_battery_plus_low*"
+                # Exclude rechargeable devices from filter — they are in `entities` above.
+                - *rechargeable-excl-sparky
+                - *rechargeable-excl-watch
+                - *rechargeable-excl-patricia
+            group:
+              - by: "area.name"
+                collapse: false
+                icon: "{area.icon}"
+                icon_color: "first"
+                secondary_info: "{count} devices · {min}–{max}%"
+            secondary_info: *battery-secondary-info
+            bulk_rename: *battery-bulk-rename
+            colors: *battery-colors
+            style: *battery-style
 
   # ==========================================================================
   # VIEW 2: MANAGE
