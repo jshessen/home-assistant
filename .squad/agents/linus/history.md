@@ -148,3 +148,24 @@ All UI layer files updated and config-check validated. Full context — includin
 **"Open goes to 100%" issue:** NO Z-Wave config fix possible. v2 has only 1 parameter (torque); there is no "Default ON Value" equivalent. Fix must live in HA — always send explicit position value (e.g., 99) instead of binary Cover Open service.
 
 **No compat flag for position mapping exists** in the current zwave-js CompatConfig schema. The `disableStatefulGet`, `manualValueRefreshDelayMs`, and similar flags don't address the no-report problem; only Lifeline + `treatSetAsReport` does.
+
+### 2026-04-15: battery-state-card entities+filter exclude interaction (v8 fix)
+
+**Problem:** 3 rechargeable devices (Sparky, Galaxy Watch, Patricia's phone) were explicitly listed in `entities:` blocks with `charging_state` config, then also excluded from `filter.exclude` via `name: entity_id` rules to prevent duplicates. Result: all 3 were invisible; fleet counter showed 35 instead of 38.
+
+**Root cause (source-confirmed):**
+In battery-state-card v4.2.2, `processExcludes()` iterates over **all** batteries — both explicit entities AND filter-discovered ones. It does NOT check whether an entity came from the explicit `entities:` block. The `explicitEntities` Set is only used in `processBatteryNotesDedup()`, not in `processExcludes()`.
+
+The `is_permanent` getter: `return "state" != this.config.name && !this.config.name.startsWith("computed.")` — so `entity_id` filters are **permanent**, meaning matched entities are pushed to a delete list and removed from the batteries map entirely.
+
+**Execution order:**
+1. Constructor: `processExplicitEntities()` → adds entities, sets `explicitEntities`
+2. `update()` (first run): `processGroupEntities()` → `processIncludes()` → `processExcludes()`
+3. `processIncludes()` does `if(this.batteries[e]) return` — explicit entities skip the include pass ✓
+4. `processExcludes()` with `entity_id` exclude → permanent deletion overwrites step 1 ✗
+
+**Fix:** Removed the 3 `entity_id` exclude entries and their YAML anchors (`&rechargeable-excl-*`). The include filter naturally skips explicit entities already in the batteries map. No duplicates. `charging_state` config on explicit entities is preserved.
+
+**Key insight:** `entity_id` excludes are for removing unwanted filter-discovered entities, NOT for deduplication with explicit entities. Explicit entities self-deduplicate via the `processIncludes` early-return guard.
+
+**Confidence:** HIGH — confirmed from minified JS source, not guessed.

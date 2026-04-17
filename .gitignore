@@ -84,6 +84,13 @@ coverage.xml
 # Keep .code-workspace (shared config); ignore user-local settings
 .vscode/
 
+# ─── Ollama: container runtime artifacts ─────────────────────────────────────
+# Ollama models are large binaries and NOT source-controlled.
+# The container also generates SSH keypairs (id_ed25519, id_ed25519.pub) under
+# ollama/models/ — these MUST NOT be committed. Exclude the entire directory.
+# The bind mount configuration is documented in docker-compose.ollama.yml.
+ollama/
+
 # ─── NOTE: .squad/ is intentional team state — do NOT add it here ─────────────
 
 # ─── config.d: files with credentials ────────────────────────────────────────

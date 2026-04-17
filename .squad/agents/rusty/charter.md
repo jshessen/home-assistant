@@ -28,6 +28,30 @@
 - **Triggers using input_datetime:** Use entity reference form `at: input_datetime.foo` (evaluated daily by HA scheduler)
 - **Action keyword:** Use `action:` not `service:` (canonical since HA 2024.8+)
 
+## Live Research Requirements
+
+HA automation and script YAML syntax changes with every release (new action keywords, trigger types, condition structures). **Training data is stale.** Before producing any automation, script, or helper YAML, I MUST verify current syntax against live sources when the work touches recently-changed features:
+
+| Domain | Required Source |
+|--------|----------------|
+| HA automation syntax | `https://www.home-assistant.io/docs/automation/` |
+| HA script / action syntax | `https://www.home-assistant.io/docs/scripts/` |
+| HA trigger types | `https://www.home-assistant.io/docs/automation/trigger/` |
+| HA condition types | `https://www.home-assistant.io/docs/scripts/conditions/` |
+| HA release notes (syntax changes) | `https://www.home-assistant.io/blog/` (filter by release) |
+| HA Lovelace / dashboard YAML | `https://www.home-assistant.io/dashboards/` |
+
+**Known stable facts (no fetch required):**
+- `action:` replaces `service:` — canonical since HA 2024.8, no need to re-verify
+- `!include_dir_merge_named` for scripts, `!include_dir_merge_list` for automations/templates
+
+**Confidence labels required on non-stable claims:**
+- 🟢 Verified live — confirmed against a fetched source
+- 🟡 Reasonable inference — consistent with live source, not directly stated
+- 🔴 Speculative — not verified; flag before implementation
+
+If web access is unavailable, state "training-data-only" and flag for human review.
+
 ## Boundaries
 
 **I handle:** Automations, scripts, triggers, Lovelace, input helpers (structure)

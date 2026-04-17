@@ -3083,3 +3083,177 @@ Deployment can proceed with post-deploy visual verification as documented in che
 **Review:** Danny approved (7/7 checklist items pass). Non-blocking: All Batteries card color step `value: 20` should be `value: 19` in next patch.
 
 **Config validation:** ✅ Passed
+
+---
+
+### 2026-04-15: Battery Notes Event-Driven Automations — Implemented
+
+**Date:** 2026-04-15
+**Author:** Rusty (Automation Engineer)
+**Status:** ✅ Implemented
+**Commit:** 049665b
+
+**Decision:** Add event-driven battery automation layer alongside existing template-based `battery_monitoring.yaml`. Three automations in `automations/battery_notes.yaml` use Battery Notes integration events for richer metadata and auto-discovery.
+
+**Automations created:**
+1. **Battery Replaced on Charge** — `battery_notes_battery_increased` event → auto-calls `battery_notes.set_battery_replaced` for rechargeables
+2. **Low Battery Notification** — `battery_notes_battery_threshold` events → persistent notification + mobile push with battery type/quantity; auto-dismiss on recovery
+3. **Daily Check** — 09:00 daily → `battery_notes.check_battery_low` + `check_battery_last_reported` (7 days) for stale detection
+
+**Technical decisions:**
+- Event-driven (not template triggers) — richer metadata per Battery Notes integration
+- Notification key: `battery_notes_{device_id}_{source_entity_id}` (persistent) / `battery_notes_{device_id}` (mobile) — per-device dismissibility
+- Both `battery_monitoring.yaml` and `battery_notes.yaml` coexist — different mechanisms, different thresholds, different use cases
+- `action:` keyword used (canonical since HA 2024.8+)
+- Target: `notify.mobile_app_jeff` (Patricia opted out)
+
+**Integration requirements:** Battery Notes installed, `sensor.*_battery_plus` entities present, `notify.mobile_app_jeff` configured.
+
+---
+
+### 2026-04-15: battery-state-card entity_id Exclude Interaction (is_permanent Bug)
+
+**Date:** 2026-04-15
+**Author:** Linus (Integration Specialist)
+**Status:** Implemented (dashboard v8)
+
+**Finding:** When combining `entities:` (explicit) and `filter:` in battery-state-card, adding explicit entities to `filter.exclude` with `name: entity_id` permanently deletes them from the card. This is because `name: entity_id` filters are flagged `is_permanent: true` in card source and run `processExcludes()` over ALL batteries — explicit and filter-discovered — before deduplication protection applies.
+
+**Root cause (from battery-state-card v4.2.2 source):**
+```js
+get is_permanent() {
+  return "state" != this.config.name && !this.config.name.startsWith("computed.")
+}
+```
+`entity_id` is not `state` and doesn't start with `computed.` → permanent delete.
+
+**Correct pattern:**
+- ✅ List entities in `entities:` with per-entity config (e.g., `charging_state`)
+- ✅ Define `filter.include` normally
+- ❌ Never add explicit entities to `filter.exclude` with `name: entity_id` — they are already deduplicated by `processIncludes()` which skips already-added entities
+
+**Fix applied:** Removed all `name: entity_id` exclude rules for the three rechargeable devices (Sparky, Galaxy Watch, Patricia's phone) from both All Batteries and Needs Attention cards.
+
+---
+
+### 2026-04-15: Battery Count Discrepancy — Glob Anchoring Root Cause
+
+**Date:** 2026-04-15
+**Investigator:** Livingston (Troubleshooter)
+**Status:** ✅ Fixed
+
+**Root cause:** battery-state-card converts glob patterns to anchored regexes: `*_battery_plus` → `/^.*_battery_plus$/`. This requires entity IDs to END with `_battery_plus`. Numbered variants (`_plus_2`, `_plus_3`) fail the anchor and are excluded. The Jinja2 fleet counter uses `selectattr('entity_id', 'search', '_battery_plus')` (substring) — producing a 3 vs 1 discrepancy.
+
+**All three 32% entities have distinct `device_id`s** — battery_notes_dedup was not the cause.
+
+**Fix:** Changed both `battery-state-card` include/exclude filters to trailing-wildcard patterns:
+- `*_battery_plus` → `*_battery_plus*` (includes `_plus_2`, `_plus_3` variants)
+- `*_battery_plus_low` → `*_battery_plus_low*` (consistent exclude)
+
+Applied to both "All Batteries — by Room" and "Needs Attention — Below 40%" cards.
+
+---
+
+### 2026-04-17: Coordinator Routing Discipline — Standing Rule
+
+**Date:** 2026-04-17
+**By:** jshessen (via conversation)
+**Status:** Standing Rule — enforced in `copilot-instructions.md`
+
+**Rule:** The Squad coordinator must not work inline. It routes work to squad members — it does not produce implementation artifacts. Even meta-work about the Squad itself (charter edits, copilot-instructions.md changes, skill files) must be routed.
+
+**Correct routing:**
+- `copilot-instructions.md` edits → Yen + Danny
+- Charter edits (any member) → Danny
+- Skill file creation/edits → Yen
+- `.squad/` structural changes → Saul
+
+**Enforcement:** If the coordinator catches itself writing YAML, Markdown config, or any file that belongs to a squad member's domain — stop, delete the draft, spawn the correct member.
+
+**No exceptions for "small" or "obvious" changes.**
+
+---
+
+### 2026-04-17: Squad Governance Reassessment — Findings and Action Queue
+
+**Date:** 2026-04-17
+**Author:** Danny (Lead / Architect)
+**Triggered by:** Coordinator inline-work violation
+
+**Key findings:**
+
+| Finding | Severity | Action |
+|---------|----------|--------|
+| No coordinator charter exists | HIGH | Create `.squad/agents/coordinator/charter.md` → Saul |
+| Danny's charter missing charter ownership clause | MEDIUM | Danny to self-apply |
+| Scribe charter too thin (no merge protocol, no trigger conditions) | MEDIUM | Flesh out → Saul |
+| routing.md missing Rule 0 (coordinator must not implement) | MEDIUM | Add → Saul |
+| Linus charter missing stable-domain exemption | LOW | Add → Linus |
+| Basher charter missing `integrations/template/` source | LOW | Add → Basher |
+| Yen not asked to formally adopt `live-research` SKILL.md | LOW | → Yen |
+| Yen's charter confidence-label format inconsistent with standard | LOW | → Yen (cosmetic) |
+
+**Charter quality notes:**
+- Rusty's "Known stable facts" pattern is the template for all members
+- Basher needs `https://www.home-assistant.io/integrations/template/` in source table
+- `live-research` SKILL.md needs Step 5a: stop and surface conflicts found mid-implementation
+
+**Trade-offs named:**
+- Coordinator charter is for documentation completeness, not primary enforcement — `copilot-instructions.md` injection is higher leverage
+- `stable-domain exemption` pattern in charters prevents unnecessary fetches degrading throughput
+
+---
+
+### 2026-04-17: Live Research Coverage and Quality Gaps
+
+**Date:** 2026-04-17
+**Author:** Yen (AI & Emerging Tech Specialist)
+**Sources:** VS Code 1.116 release notes (🟢), GitHub Copilot blog index (🟢)
+
+**Coverage gaps found:**
+- **Livingston** has no Live Research Requirements section — needed for Z-Wave/Zigbee log diagnosis (error message formats change with releases)
+- **Danny** has no Live Research Requirements section — needed for ADRs evaluating current integrations
+
+**`copilot-instructions.md` quality gaps (priority ordered):**
+1. **(HIGH)** Squad Agent Requirements section is at the bottom of ~400 lines — LLMs weight early context more heavily; move to after "Project Architecture" section
+2. **(HIGH)** No model enforcement instruction — coordinator should pass `model:` parameter when charter specifies non-auto model
+3. **(MEDIUM)** Routing table duplicated from `routing.md` — creates divergence risk; replace with reference to `routing.md`
+4. **(MEDIUM)** Spawning instruction doesn't specify that charter goes in `prompt` parameter or that `TEAM ROOT` must be included
+5. **(MEDIUM)** Live Research Mandate missing Owner column mapping domains to members
+6. **(LOW)** Confidence label destination unclear — clarify labels appear in both artifact and decisions/inbox entry
+
+**`live-research` SKILL.md gaps:**
+- Step 1 breaks for members without charter sections (Livingston, Danny) — add fallback instruction
+- No sprint-level reuse guidance — add "don't re-fetch same domain within same sprint session"
+- Step 4 decision template format doesn't match actual inbox format in use
+- `{name}` placeholder in Step 5 fallback filename is undefined
+
+**Model enforcement gap (structural):** `runSubagent` accepts optional `model` parameter; no mechanism currently instructs coordinator to use it. Yen's `claude-sonnet-4.6` preference is advisory only. All members defaulting to `auto` means model quality is uncontrolled.
+🟡 Model name format needs live verification before updating charters.
+
+**VS Code 1.116 confirmation:** `runSubagent` subagents are first-class; Copilot now built-in to VS Code; gem-* anti-pattern appears still accurate.
+
+---
+
+### 2026-04-17: Repository Structure and Git Hygiene Assessment
+
+**Date:** 2026-04-17
+**Author:** Saul (Project Steward)
+**Status:** One critical action taken; remainder queued
+
+**Critical action taken:** Added `ollama/` to `.gitignore` — `ollama/models/id_ed25519` is a real OpenSSH private key (container-generated, root-owned) that was untracked and at risk of accidental `git add .` commit.
+
+**`.gitattributes`:** No changes needed. `merge=union` on `.squad/skills/**` would be wrong (edited documents, not append-only logs); normal three-way merge is correct.
+
+**Workspace config:** No changes needed. Root folder already covers `.squad/`. Adding `.squad/` to `search.exclude` would hurt squad member file access more than it helps.
+
+**Recommended commit sequence:**
+- Group A (squad infrastructure): `.github/copilot-instructions.md`, charter files, `.copilot/skills/`, `.squad/skills/live-research/SKILL.md`
+- Group B (battery dashboard): `lovelace/battery_dashboard.yaml`, `resources.yaml`
+- Group C (iBlinds): `lovelace/iblinds.yaml`, `iblinds-v2-research-report.md`
+- Group D (Z-Wave): `zwave/settings.json`
+
+**Open questions routed:**
+- Linus: is `zwave/nodes_dump.json` a runtime artifact or maintained inventory? (determines gitignore vs. commit)
+- Scribe: process `coordinator-inline-work-directive.md` → done (this entry)
+- Team: execute commit groups A–D; Group A highest priority

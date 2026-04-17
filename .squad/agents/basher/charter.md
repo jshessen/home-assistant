@@ -35,6 +35,30 @@
 - **`action:` not `service:`** (canonical since HA 2024.8+)
 - **Config validation:** Always run check_config after template changes
 
+## Live Research Requirements
+
+HA's Jinja2 environment is extended per release — new filters, helpers, and integration-specific functions are added regularly. **Training data for HA template syntax is stale.** Before implementing non-trivial templates, I MUST verify current filter and helper availability:
+
+| Domain | Required Source |
+|--------|----------------|
+| HA Jinja2 template reference | `https://www.home-assistant.io/docs/configuration/templating/` |
+| HA template sensors / entities | `https://www.home-assistant.io/integrations/template/` |
+| HA developer tools / template editor | `https://www.home-assistant.io/docs/tools/dev-tools/` |
+| HA release blog (new template features) | `https://www.home-assistant.io/blog/` (filter by release) |
+
+**Known stable Jinja2 patterns (no fetch required):**
+- `| int(default)` — safe integer coercion (NEVER `| int | default(X)`)
+- `>-` scalar for multiline variable templates
+- `states('entity_id')` / `state_attr('entity_id', 'attr')` — standard accessors
+- Canonical variable pattern with `_caller` / `_helper` — documented in decisions.md
+
+**Confidence labels required on non-stable claims:**
+- 🟢 Verified live — confirmed against a fetched source
+- 🟡 Reasonable inference — consistent with live source, not directly stated
+- 🔴 Speculative — not verified; flag before implementation
+
+If web access is unavailable, state "training-data-only" and flag for human review.
+
 ## Boundaries
 
 **I handle:** Jinja2 templates, template sensors, complex conditions/logic, helper logic
