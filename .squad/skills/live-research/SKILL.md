@@ -29,7 +29,7 @@ If your charter does NOT have a `## Live Research Requirements` section (or the 
 Use `fetch_webpage` to retrieve the relevant source URL. Target the most specific page (e.g., the triggers reference page, not the HA homepage). If the page has a "What's new" or changelog section, read it first.
 
 ```
-fetch_webpage(url="https://www.home-assistant.io/docs/automation/trigger/", 
+fetch_webpage(url="https://www.home-assistant.io/docs/automation/trigger/",
               query="trigger syntax current release")
 ```
 
@@ -37,11 +37,11 @@ fetch_webpage(url="https://www.home-assistant.io/docs/automation/trigger/",
 
 After reviewing the fetched source, label every non-trivial claim before implementation:
 
-| Label | Meaning | Action |
-|-------|---------|--------|
-| 🟢 Verified live | Confirmed against fetched source | Proceed |
-| 🟡 Reasonable inference | Consistent with source, not explicitly stated | Proceed with note |
-| 🔴 Speculative | Not found in fetched source | **Stop — flag for human review** |
+| Label                   | Meaning                                       | Action                           |
+| ----------------------- | --------------------------------------------- | -------------------------------- |
+| 🟢 Verified live        | Confirmed against fetched source              | Proceed                          |
+| 🟡 Reasonable inference | Consistent with source, not explicitly stated | Proceed with note                |
+| 🔴 Speculative          | Not found in fetched source                   | **Stop — flag for human review** |
 
 ### Step 4 — Document the source
 
@@ -65,18 +65,18 @@ If `fetch_webpage` fails or web access is unavailable:
 
 ## Domain → Source Quick Reference
 
-| Domain | Primary Source | Release Notes |
-|--------|---------------|---------------|
-| Z-Wave JS API | `https://zwave-js.github.io/node-zwave-js/` | `https://github.com/zwave-js/zwave-js-ui/releases` |
-| HA automation syntax | `https://www.home-assistant.io/docs/automation/` | `https://www.home-assistant.io/blog/` |
-| HA script/action syntax | `https://www.home-assistant.io/docs/scripts/` | `https://www.home-assistant.io/blog/` |
-| HA Jinja2 templates | `https://www.home-assistant.io/docs/configuration/templating/` | `https://developers.home-assistant.io/blog/` |
-| HA template integration | `https://www.home-assistant.io/integrations/template/` | — |
-| Zigbee2MQTT config | `https://www.zigbee2mqtt.io/guide/configuration/` | `https://github.com/Koenkk/zigbee2mqtt/releases` |
-| Mosquitto MQTT | `https://mosquitto.org/documentation/` | `https://mosquitto.org/blog/` |
-| Ollama API | `https://github.com/ollama/ollama/blob/main/docs/api.md` | `https://github.com/ollama/ollama/releases` |
-| VS Code Copilot agents | `https://code.visualstudio.com/updates/` | `https://github.blog/tag/github-copilot/` |
-| HA HACS integrations | Upstream GitHub repo README | Upstream releases page |
+| Domain                  | Primary Source                                                 | Release Notes                                      |
+| ----------------------- | -------------------------------------------------------------- | -------------------------------------------------- |
+| Z-Wave JS API           | `https://zwave-js.github.io/node-zwave-js/`                    | `https://github.com/zwave-js/zwave-js-ui/releases` |
+| HA automation syntax    | `https://www.home-assistant.io/docs/automation/`               | `https://www.home-assistant.io/blog/`              |
+| HA script/action syntax | `https://www.home-assistant.io/docs/scripts/`                  | `https://www.home-assistant.io/blog/`              |
+| HA Jinja2 templates     | `https://www.home-assistant.io/docs/configuration/templating/` | `https://developers.home-assistant.io/blog/`       |
+| HA template integration | `https://www.home-assistant.io/integrations/template/`         | —                                                  |
+| Zigbee2MQTT config      | `https://www.zigbee2mqtt.io/guide/configuration/`              | `https://github.com/Koenkk/zigbee2mqtt/releases`   |
+| Mosquitto MQTT          | `https://mosquitto.org/documentation/`                         | `https://mosquitto.org/blog/`                      |
+| Ollama API              | `https://github.com/ollama/ollama/blob/main/docs/api.md`       | `https://github.com/ollama/ollama/releases`        |
+| VS Code Copilot agents  | `https://code.visualstudio.com/updates/`                       | `https://github.blog/tag/github-copilot/`          |
+| HA HACS integrations    | Upstream GitHub repo README                                    | Upstream releases page                             |
 
 ---
 

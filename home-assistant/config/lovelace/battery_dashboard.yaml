@@ -1,17 +1,31 @@
 # ============================================================================
-# Battery Status Dashboard — v7
+# Battery Status Dashboard — v9
 # ============================================================================
 # Views:
-#   1. Monitor — Fleet summary + All Batteries by Room + Needs Attention
-#   2. Manage  — Replacement history (oldest first) + never replaced + buttons
+#   1. Monitor — Fleet summary + Needs Attention + All Batteries by Area
+#              (Manage view removed — hold any battery row to log replacement)
+#
+# Changes in v9:
+#   - Manage view removed. Hold (long-press) any battery row in either card to
+#     call button.press on the corresponding *_battery_replaced button entity.
+#     Entity ID is derived via KString:
+#       sensor.*_battery_plus → button.*_battery_replaced
+#   - YAML anchors: &battery-tap, &battery-hold added
+#
+# Changes in v8:
+#   - FIX: Rechargeable devices (Sparky, Galaxy Watch, Patricia's phone) were
+#     invisible because battery-state-card v4.2.2 processExcludes() runs over
+#     ALL batteries (explicit AND filter-discovered) and entity_id filters have
+#     is_permanent=true, causing permanent deletion from the batteries map.
+#     Removed the entity_id excludes for the 3 devices — they are NOT needed:
+#     processIncludes() already does `if(this.batteries[e]) return`, so explicit
+#     entities are skipped on the include pass and no duplicates appear.
+#   - charging_state.entity_id is still a static string (no KString support).
+#   - YAML anchors: &rechargeable-entities (excl-* anchors removed)
 #
 # Changes in v7:
-#   - Charging state indicators for rechargeable devices (Sparky, Galaxy Watch,
-#     Patricia's phone) using per-entity explicit listing + filter exclusion.
-#   - charging_state.entity_id does NOT support KString templating — must be
-#     a static string. Rechargeable devices are explicitly listed with their
-#     corresponding is_charging / battery_state sensors, then excluded from the
-#     filter to prevent duplicates.
+#   - Charging state indicators for rechargeable devices using per-entity
+#     explicit listing. (entity_id exclusion was wrong — see v8 fix above.)
 #   - YAML anchors: &rechargeable-entities / &rechargeable-excl-*
 #
 # Changes in v6:
@@ -62,21 +76,46 @@ views:
             default_config_base: false
             sort: &battery-sort
               - by: state
+            tap_action: &battery-tap
+              action: more-info
+            # Hold (long-press) any row to log a battery replacement.
+            # KString derives the button entity from the sensor entity:
+            #   sensor.*_battery_plus → button.*_battery_replaced
+            hold_action: &battery-hold
+              action: call-service
+              service: button.press
+              target:
+                entity_id: "{entity_id|replace(sensor.,button.)|replace(_battery_plus,_battery_replaced)}"
             # Rechargeable devices listed explicitly so charging_state.entity_id
             # (a static string — NOT KString) can reference each device's sensor.
-            # They are also excluded from the filter below to prevent duplicates.
+            # No entity_id excludes needed: processIncludes() already skips
+            # entities already present in the batteries map (from explicit listing).
             entities: &rechargeable-entities
               - entity: sensor.sparky_battery_plus
+                # "attribute.icon" reads the entity's icon attribute set by Battery Notes
+                # (e.g. mdi:battery-charging-wireless-70). charging_state.icon must NOT
+                # be set — it would override this and prevent the attribute from being used.
+                icon: "attribute.icon"
+                # When charging: shows "⚡ Charging". When not charging: shows "Rechargeable · Hold to Replace 🔋"
+                secondary_info: &rechargeable-secondary "{charging.text|equals(,Rechargeable · Hold to Replace 🔋)}"
                 charging_state:
-                  entity_id: binary_sensor.sparky_is_charging
-                  state: "on"
-                  icon: mdi:lightning-bolt
+                  entity_id: sensor.sparky_battery_state
+                  state: &samsung-charging-states
+                    - "charging"
+                    - "Charging"
+                    - "full"
+                    - "Full"
+                  secondary_info_text: &charging-text "⚡ Charging"
               - entity: sensor.galaxy_watch_ultra_a61f_battery_plus
+                icon: "attribute.icon"
+                secondary_info: *rechargeable-secondary
                 charging_state:
-                  entity_id: binary_sensor.galaxy_watch_ultra_a61f_is_charging
-                  state: "on"
-                  icon: mdi:lightning-bolt
+                  entity_id: sensor.galaxy_watch_ultra_a61f_battery_state
+                  state: *samsung-charging-states
+                  secondary_info_text: *charging-text
               - entity: sensor.patricia_s_phone_battery_plus
+                icon: "attribute.icon"
+                secondary_info: *rechargeable-secondary
                 # No is_charging binary sensor — use companion-app battery_state sensor.
                 # iOS Companion reports "Charging" / "Full" when plugged in.
                 charging_state:
@@ -86,7 +125,7 @@ views:
                     - "Full"
                     - "charging"
                     - "full"
-                  icon: mdi:lightning-bolt
+                  secondary_info_text: *charging-text
             filter:
               include: &battery-include
                 - name: entity_id
@@ -101,16 +140,6 @@ views:
                 - name: computed.state
                   operator: ">="
                   value: 40
-                # Exclude rechargeable devices from filter — they are in `entities` above.
-                - &rechargeable-excl-sparky
-                  name: entity_id
-                  value: "sensor.sparky_battery_plus"
-                - &rechargeable-excl-watch
-                  name: entity_id
-                  value: "sensor.galaxy_watch_ultra_a61f_battery_plus"
-                - &rechargeable-excl-patricia
-                  name: entity_id
-                  value: "sensor.patricia_s_phone_battery_plus"
             group:
               - name: "🔴 Critical — Below 20% ({count})"
                 max: 19
@@ -122,7 +151,7 @@ views:
             bulk_rename: &battery-bulk-rename
               - from: " Battery+"
                 to: ""
-            secondary_info: &battery-secondary-info "{attributes.battery_type_and_quantity} · {attributes.battery_last_replaced|reltime()}"
+            secondary_info: &battery-secondary-info "{attributes.battery_type_and_quantity} · {attributes.battery_last_replaced|reltime()} · Hold to Replace 🔋"
             colors: &battery-colors
               steps:
                 - value: 20
@@ -147,6 +176,8 @@ views:
             title: "🏠 All Batteries — by Area"
             default_config_base: false
             sort: *battery-sort
+            tap_action: *battery-tap
+            hold_action: *battery-hold
             entities: *rechargeable-entities
             filter:
               include: *battery-include
@@ -157,10 +188,6 @@ views:
                   value: unknown
                 - name: entity_id
                   value: "*_battery_plus_low*"
-                # Exclude rechargeable devices from filter — they are in `entities` above.
-                - *rechargeable-excl-sparky
-                - *rechargeable-excl-watch
-                - *rechargeable-excl-patricia
             group:
               - by: "area.name"
                 collapse: false
@@ -173,90 +200,133 @@ views:
             style: *battery-style
 
   # ==========================================================================
-  # VIEW 2: MANAGE
-  # Replacement history (oldest first) + never replaced + log buttons
+  # VIEW 2: CENSUS
+  # Fleet-wide statistics — battery type breakdown, brand analysis, lifespan
   # ==========================================================================
-  - title: Manage
-    path: battery-manage
-    icon: mdi:battery-sync
+  - title: Census
+    path: battery-census
+    icon: mdi:chart-bar
+    type: sections
+    max_columns: 2
 
-    cards:
+    sections:
 
-      # Replacement history — oldest first so long-overdue devices surface first.
-      # format: relative converts ISO timestamp → "3 months ago".
-      # ISO dates sort alphabetically = chronologically, so string sort works.
-      - type: custom:auto-entities
-        card:
-          type: entities
-          title: "🗓️ Replacement History (Oldest First)"
-          show_header_toggle: false
-          state_color: true
-        filter:
-          include:
-            - entity_id: "*_battery_plus"
-              attributes:
-                battery_last_replaced: "*"
-              options:
-                type: custom:multiple-entity-row
-                secondary_info:
-                  attribute: battery_type_and_quantity
-                  name: Type
-                entities:
-                  - attribute: battery_last_replaced
-                    name: Replaced
-                    format: relative
-                  - attribute: battery_low_threshold
-                    name: Threshold
-                    unit: "%"
-          exclude:
-            - state: unavailable
-            - state: unknown
-        sort:
-          method: attribute
-          attribute: battery_last_replaced
-          numeric: false
-          reverse: false
-        show_empty: false
+      # ── LEFT section: Summary + Type Breakdown ──────────────────────────────
+      - type: grid
+        title: ""
+        cards:
 
-      # Devices with no replacement date — highest priority candidates
-      - type: custom:auto-entities
-        card:
-          type: entities
-          title: "❓ Never Replaced — No Date Recorded"
-          show_header_toggle: false
-          state_color: true
-        filter:
-          include:
-            - entity_id: "*_battery_plus"
-              options:
-                type: custom:multiple-entity-row
-                secondary_info: last-updated
-                entities:
-                  - attribute: battery_type_and_quantity
-                    name: Type
-                  - attribute: battery_low_threshold
-                    name: Threshold
-          exclude:
-            - state: unavailable
-            - state: unknown
-            - attributes:
-                battery_last_replaced: "*"
-        sort:
-          method: state
-          numeric: true
-        show_empty: false
+          # Fleet Summary Header
+          - type: markdown
+            content: |
+              {% set ns = namespace(total=0, types={}) %}
+              {% for s in states.sensor
+                  | selectattr('entity_id', 'search', '_battery_plus')
+                  | rejectattr('entity_id', 'search', '_low')
+                  | rejectattr('state', 'in', ['unavailable', 'unknown']) %}
+                {%- set ns.total = ns.total + 1 -%}
+                {%- set btype = state_attr(s.entity_id, 'battery_type') -%}
+                {%- if btype != none and btype != '' -%}
+                  {%- if btype not in ns.types -%}
+                    {%- set ns.types = dict(ns.types, **{btype: 0}) -%}
+                  {%- endif -%}
+                  {%- set ns.types = dict(ns.types, **{btype: ns.types[btype] + 1}) -%}
+                {%- endif -%}
+              {% endfor %}
+              📊 **Battery Fleet Census**
+              - **{{ ns.total }}** devices monitored
+              - **{{ ns.types | length }}** distinct battery types
 
-      # Log replacement buttons — sorted alphabetically
-      - type: custom:auto-entities
-        card:
-          type: entities
-          title: "🔋 Log Battery Replacement"
-          show_header_toggle: false
-        filter:
-          include:
-            - entity_id: "button.*_battery_replaced"
-          exclude:
-            - state: unavailable
-        sort:
-          method: name
-        show_empty: false
+          # Type Breakdown Card
+          - type: markdown
+            content: |
+              {% set ns = namespace(types={}) %}
+              {% for s in states.sensor
+                  | selectattr('entity_id', 'search', '_battery_plus')
+                  | rejectattr('entity_id', 'search', '_low')
+                  | rejectattr('state', 'in', ['unavailable', 'unknown']) %}
+                {%- set btype = state_attr(s.entity_id, 'battery_type') -%}
+                {%- set bqty = state_attr(s.entity_id, 'battery_quantity') | int(default=1) -%}
+                {%- if btype != none and btype != '' -%}
+                  {%- if btype not in ns.types -%}
+                    {%- set ns.types = dict(ns.types, **{btype: {'count': 0, 'units': 0}}) -%}
+                  {%- endif -%}
+                  {%- set current = ns.types[btype] -%}
+                  {%- set ns.types = dict(ns.types, **{btype: {'count': current.count + 1, 'units': current.units + bqty}}) -%}
+                {%- endif -%}
+              {% endfor %}
+              🔋 **Battery Type Breakdown**
+              {% if ns.types | length == 0 %}
+              _No battery type data available_
+              {% else %}
+              {%- for btype, data in ns.types.items() | sort(attribute='1.count', reverse=true) %}
+              - **{{ btype }}**: {{ data.count }} devices ({{ data.units }} units total)
+              {%- endfor %}
+              {% endif %}
+
+      # ── RIGHT section: Brand/Model + Lifespan Stats ────────────────────────
+      - type: grid
+        title: ""
+        cards:
+
+          # Brand/Model Breakdown Card (note-based)
+          - type: markdown
+            content: |
+              {% set ns = namespace(notes={}) %}
+              {% for s in states.sensor
+                  | selectattr('entity_id', 'search', '_battery_plus')
+                  | rejectattr('entity_id', 'search', '_low')
+                  | rejectattr('state', 'in', ['unavailable', 'unknown']) %}
+                {%- set note = state_attr(s.entity_id, 'note') -%}
+                {%- set btype = state_attr(s.entity_id, 'battery_type') -%}
+                {%- if note != none and note != '' -%}
+                  {%- if note not in ns.notes -%}
+                    {%- set ns.notes = dict(ns.notes, **{note: {'count': 0, 'types': []}}) -%}
+                  {%- endif -%}
+                  {%- set current = ns.notes[note] -%}
+                  {%- set types_list = current.types if btype in current.types or btype == none or btype == '' else current.types + [btype] -%}
+                  {%- set ns.notes = dict(ns.notes, **{note: {'count': current.count + 1, 'types': types_list}}) -%}
+                {%- endif -%}
+              {% endfor %}
+              🏷️ **Brand/Model Breakdown**
+              {% if ns.notes | length == 0 %}
+              _No brand/model data yet — long-press any battery in Monitor view to log replacements and add notes in Battery Notes_
+              {% else %}
+              {%- for note, data in ns.notes.items() | sort(attribute='1.count', reverse=true) %}
+              - **{{ note }}**: {{ data.count }} devices{% if data.types | length > 0 %} ({{ data.types | join(', ') }}){% endif %}
+              {%- endfor %}
+              {% endif %}
+
+          # Lifespan Stats Card
+          - type: markdown
+            content: |
+              {% set ns = namespace(lifespan={}) %}
+              {% for s in states.sensor
+                  | selectattr('entity_id', 'search', '_battery_plus')
+                  | rejectattr('entity_id', 'search', '_low')
+                  | rejectattr('state', 'in', ['unavailable', 'unknown']) %}
+                {%- set last_replaced = state_attr(s.entity_id, 'battery_last_replaced') -%}
+                {%- set btype = state_attr(s.entity_id, 'battery_type') -%}
+                {%- if last_replaced != none and last_replaced != '' and btype != none and btype != '' -%}
+                  {%- set replaced_dt = as_datetime(last_replaced) -%}
+                  {%- if replaced_dt != none -%}
+                    {%- set days_old = (now() - replaced_dt).days -%}
+                    {%- if btype not in ns.lifespan -%}
+                      {%- set ns.lifespan = dict(ns.lifespan, **{btype: {'ages': [], 'count': 0}}) -%}
+                    {%- endif -%}
+                    {%- set current = ns.lifespan[btype] -%}
+                    {%- set ns.lifespan = dict(ns.lifespan, **{btype: {'ages': current.ages + [days_old], 'count': current.count + 1}}) -%}
+                  {%- endif -%}
+                {%- endif -%}
+              {% endfor %}
+              📅 **Battery Lifespan Statistics**
+              {% if ns.lifespan | length == 0 %}
+              _No replacement history yet_
+              {% else %}
+              {%- for btype, data in ns.lifespan.items() | sort %}
+              {%- set avg_days = (data.ages | sum / data.count) | int(default=0) -%}
+              {%- set min_days = data.ages | min -%}
+              {%- set max_days = data.ages | max -%}
+              - **{{ btype }}**: {{ avg_days }} days avg ({{ min_days }}–{{ max_days }} days, {{ data.count }} devices)
+              {%- endfor %}
+              {% endif %}

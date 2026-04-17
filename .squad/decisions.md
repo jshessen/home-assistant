@@ -3301,3 +3301,122 @@ Applied to both "All Batteries — by Room" and "Needs Attention — Below 40%" 
 4. **live-research SKILL.md Step 1 rewritten** — Removed "escalate to Yen" fallback for unlisted domains. Now directs members to the Domain → Source Quick Reference table at the bottom of the skill file. Eliminates blocking dependency on Yen availability.
 
 5. **live-research SKILL.md Step 5 placeholder fixed** — Path `.squad/decisions/inbox/{name}-web-access-unavailable.md` changed to `.squad/decisions/inbox/{your-name}-web-access-unavailable.md` to clarify it is an instruction to the reader, not an unresolved template variable.
+
+---
+
+### 2026-04-17: Squad Governance Hardening — Charter & Routing Audit
+**Date:** 2026-04-17  
+**Author:** Danny (Lead / Architect)  
+**Status:** Verified Complete  
+**Context:** Governance worklog for Items 1–7 from Danny's work list (2026-04-17 session)
+
+**Summary:**
+All seven governance hardening items were audited. All items were found to be already complete in the current files — implemented in prior sessions. No new changes required. This entry documents the audit findings.
+
+---
+
+**Item 1 — `.squad/agents/coordinator/charter.md`**
+Status: ✅ Already complete
+File exists with full identity, hard rule (⚠️ HARD RULE section), How I Work, VS Code spawning table, Routing Failures table, and Boundaries. No changes needed.
+
+**Item 2 — Rule 0 in `.squad/routing.md`**
+Status: ✅ Already complete
+Rule 0 exists verbatim: "The coordinator routes — it does not implement." Rules are numbered 0–8. No changes needed.
+
+**Item 3 — Scribe charter expansion**
+Status: ✅ Already complete
+`.squad/agents/scribe/charter.md` contains: Decision Inbox Merge Protocol, Session Log Format, Orchestration Log Format, Git Commit Convention, and Triggering Conditions — all with correct formats. No changes needed.
+
+**Item 4 — Live Research Requirements in Livingston's charter**
+Status: ✅ Already complete
+`.squad/agents/livingston/charter.md` has `## Live Research Requirements` section with all four required sources (zwave-js-ui, node-zwave-js, Zigbee2MQTT, HA blog), known-stable exemptions, and confidence labels. No changes needed.
+
+**Item 5 — Live Research Requirements in Danny's own charter**
+Status: ✅ Already complete
+`.squad/agents/danny/charter.md` has `## Live Research Requirements` section with HA integration docs, HACS upstream repo, HA developer blog sources, known-stable exemptions, and confidence labels. No changes needed.
+
+**Item 6 — Stable-domain exemption in Linus's charter**
+Status: ✅ Already complete
+`.squad/agents/linus/charter.md` contains: "**Known stable (no fetch required):** Docker Compose v3 base spec, Makefile syntax, git commands, shell scripting, Linux file permissions." No changes needed.
+
+**Item 7 — Missing template integration source in Basher's charter**
+Status: ✅ Already complete
+`.squad/agents/basher/charter.md` already contains the row `| HA template integration (sensor/binary_sensor) | https://www.home-assistant.io/integrations/template/ |` immediately after the Jinja2 template reference row. No changes needed.
+
+---
+
+**Conclusion:** Squad governance infrastructure for charter completeness and routing enforcement is fully in place. No structural gaps identified. Recommend Scribe merge this entry and commit.
+
+---
+
+### 2026-04-17: Prompt Surface Hardening — Verification Complete
+**Date:** 2026-04-17  
+**Author:** Yen (AI & Emerging Tech Specialist)  
+**Status:** Complete  
+
+---
+
+## Summary
+
+All five prompt surface hardening items were verified. Items 1–5 were already in the desired state on disk when this session started — a prior session had applied the changes. No file edits were required; this log records what was confirmed.
+
+---
+
+## Item 1 — `## Squad Agent Requirements` moved to top of `copilot-instructions.md`
+
+**File:** `.github/copilot-instructions.md`  
+**Status:** ✅ Already correct  
+**Verified:** The `## Squad Agent Requirements` section (with both subsections) is positioned immediately after `## Project Architecture` and before `## Critical Configuration Pattern: YAML Includes`. LLMs reading the file will see squad rules before any domain-specific content.
+
+---
+
+## Item 2 — Routing table replaced with reference in `copilot-instructions.md`
+
+**File:** `.github/copilot-instructions.md`  
+**Status:** ✅ Already correct  
+**Verified:** The embedded routing table and its preamble sentence have been replaced with the canonical reference:
+
+> **Routing is absolute — follow `.squad/routing.md`.** The authoritative routing table lives there. Do not maintain a copy here.
+
+No divergence risk — single source of truth is `.squad/routing.md`.
+
+---
+
+## Item 3 — Model enforcement instruction added to `copilot-instructions.md`
+
+**File:** `.github/copilot-instructions.md`  
+**Status:** ✅ Already correct  
+**Verified:** The model selection paragraph is present in the `### Member Spawning` subsection, immediately after the VS Code spawning rule paragraph:
+
+> **Model selection:** Before spawning a member, read the `## Model` section of their charter. Pass the `model` parameter to `runSubagent` when the charter specifies a non-auto preference. If the charter says `auto`, use the session default. Yen's charter specifies `claude-sonnet-4.6` — always pass that explicitly when spawning Yen.
+
+---
+
+## Item 4 — Step 1 of `live-research/SKILL.md` fixed
+
+**File:** `.squad/skills/live-research/SKILL.md`  
+**Status:** ✅ Already correct  
+**Verified:** Step 1 reads:
+
+> Check your charter for a `## Live Research Requirements` section. If your charter has one, use the source table there.  
+> If your charter does NOT have a `## Live Research Requirements` section (or the domain isn't listed), use the **Domain → Source Quick Reference** table at the bottom of this skill directly. Do not escalate — pick the closest matching domain and fetch it.
+
+The blocking "escalate to Yen" dependency is gone. Members can unblock themselves from the quick reference table.
+
+---
+
+## Item 5 — `{name}` placeholder in SKILL.md Step 5 fixed
+
+**File:** `.squad/skills/live-research/SKILL.md`  
+**Status:** ✅ Already correct  
+**Verified:** Step 5 fallback file path reads:
+
+> `.squad/decisions/inbox/{your-name}-web-access-unavailable.md`
+
+The opaque `{name}` placeholder has been replaced with the self-explanatory `{your-name}`.
+
+---
+
+## Confidence
+
+All verification is 🟢 direct file inspection — no inference required. No live web fetch was needed for this session.
