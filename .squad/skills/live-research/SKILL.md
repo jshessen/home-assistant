@@ -20,7 +20,9 @@ Apply this skill **before producing any implementation work** in a domain whose 
 
 ### Step 1 — Identify required sources
 
-Match the work domain to the sources table in your charter (each relevant charter has a `## Live Research Requirements` section). If your charter doesn't list the domain, escalate to Yen before proceeding.
+Check your charter for a `## Live Research Requirements` section. If your charter has one, use the source table there.
+
+If your charter does NOT have a `## Live Research Requirements` section (or the domain isn't listed), use the **Domain → Source Quick Reference** table at the bottom of this skill directly. Do not escalate — pick the closest matching domain and fetch it.
 
 ### Step 2 — Fetch current documentation
 
@@ -57,7 +59,7 @@ If `fetch_webpage` fails or web access is unavailable:
 1. State explicitly: **"training-data-only — web access unavailable"**
 2. Label the entire output as 🔴 Speculative
 3. Flag the output for human review before applying to production config
-4. Write a note to `.squad/decisions/inbox/{name}-web-access-unavailable.md` so the team knows a fetch was needed
+4. Write a note to `.squad/decisions/inbox/{your-name}-web-access-unavailable.md` so the team knows a fetch was needed
 
 ---
 

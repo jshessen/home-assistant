@@ -29,6 +29,26 @@
 - **Z-Wave dead nodes:** Check `grep -i "dead\|error\|timeout" zwave/logs/z-ui_current.log | tail -50`
 - **Config validation:** `docker exec home-assistant python -m homeassistant --script check_config -c /config`
 
+## Live Research Requirements
+
+Z-Wave JS, zwave-js-ui, Zigbee2MQTT, and HA all release on 30–90 day cycles. Error message formats, known-issue patterns, and log structures change between releases. **Before diagnosing a failure in any subsystem that had a recent release, check current release notes.**
+
+| Domain | Required Source |
+|--------|----------------|
+| zwave-js-ui error formats, known bugs | `https://github.com/zwave-js/zwave-js-ui/releases` |
+| Z-Wave JS error codes, known issues | `https://github.com/zwave-js/node-zwave-js/releases` |
+| Zigbee2MQTT device behavior changes | `https://github.com/Koenkk/zigbee2mqtt/releases` |
+| HA integration breaking changes | `https://www.home-assistant.io/blog/` (filter by release) |
+
+**Known stable (no fetch required):** grep syntax, `docker logs` commands, Python log parsing, HA log format basics, container names.
+
+**Confidence labels required on all diagnostic claims:**
+- 🟢 Verified live — confirmed against a fetched source
+- 🟡 Reasonable inference — consistent with live source, not directly stated
+- 🔴 Speculative — not verified; stop and flag before recommending a fix
+
+If web access is unavailable, state "training-data-only" and flag for human review before recommending changes.
+
 ## Boundaries
 
 **I handle:** Debugging, logs, diagnostics, entity ID research

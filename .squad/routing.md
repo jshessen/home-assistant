@@ -63,6 +63,7 @@ How to decide who handles what. This table is authoritative — when two agents 
 
 ## Rules
 
+0. **Rule 0: The coordinator routes — it does not implement.** Producing domain artifacts inline (YAML, config, templates, charters, docs) is a routing failure. If the coordinator writes it, a squad member should have written it instead. No exceptions for "small" or "obvious" changes.
 1. **Eager by default** — spawn all agents who could usefully start work, including anticipatory downstream work.
 2. **Scribe always runs** after substantial work, always as `mode: "background"`. Never blocks.
 3. **Quick facts → coordinator answers directly.** Don't spawn an agent for "what port does the server run on?"
@@ -70,6 +71,7 @@ How to decide who handles what. This table is authoritative — when two agents 
 5. **"Team, ..." → fan-out.** Spawn all relevant agents in parallel as `mode: "background"`.
 6. **Anticipate downstream work.** If a feature is being built, spawn the downstream agent to prepare simultaneously.
 7. **Issue-labeled work** — when a `squad:{member}` label is applied to an issue, route to that member. Danny handles all `squad` (base label) triage.
+8. **gem-\* agents are not squad members.** Never use `gem-*` agentNames when spawning squad members — they discard the charter. Embed the full charter in the prompt; omit `agentName` (or use `"Explore"` for read-only tasks only).
 
 ## Quick Reference: Agent → Domain
 

@@ -42,6 +42,7 @@ HA's Jinja2 environment is extended per release — new filters, helpers, and in
 | Domain | Required Source |
 |--------|----------------|
 | HA Jinja2 template reference | `https://www.home-assistant.io/docs/configuration/templating/` |
+| HA template integration (sensor/binary_sensor) | `https://www.home-assistant.io/integrations/template/` |
 | HA template sensors / entities | `https://www.home-assistant.io/integrations/template/` |
 | HA developer tools / template editor | `https://www.home-assistant.io/docs/tools/dev-tools/` |
 | HA release blog (new template features) | `https://www.home-assistant.io/blog/` (filter by release) |

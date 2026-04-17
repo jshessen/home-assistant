@@ -41,6 +41,8 @@ My domains evolve on 30–90 day cycles. **Training data is not acceptable as th
 | HA Z-Wave integration docs | `https://www.home-assistant.io/integrations/zwave_js/` |
 | HA MQTT integration docs | `https://www.home-assistant.io/integrations/mqtt/` |
 
+**Known stable (no fetch required):** Docker Compose v3 base spec, Makefile syntax, git commands, shell scripting, Linux file permissions.
+
 **Confidence labels required on all technical claims:**
 - 🟢 Verified live — confirmed against a fetched source
 - 🟡 Reasonable inference — consistent with live source, not directly stated

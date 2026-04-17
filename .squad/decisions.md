@@ -3257,3 +3257,47 @@ Applied to both "All Batteries — by Room" and "Needs Attention — Below 40%" 
 - Linus: is `zwave/nodes_dump.json` a runtime artifact or maintained inventory? (determines gitignore vs. commit)
 - Scribe: process `coordinator-inline-work-directive.md` → done (this entry)
 - Team: execute commit groups A–D; Group A highest priority
+
+---
+
+### 2026-04-17: Governance Hardening — Coordinator Charter and Charter Updates
+**Date:** 2026-04-17
+**Author:** Danny (Lead / Architect)
+**Status:** Implemented
+
+**Decisions made:**
+
+1. **Coordinator charter created** — `.squad/agents/coordinator/charter.md` establishes the coordinator as a session orchestrator that routes work exclusively. Hard rule: coordinator MUST NOT write YAML, docs, charters, code, or any domain artifact. Routing failure pattern table included.
+
+2. **Rule 0 added to routing.md** — Prepended before existing rules: *"The coordinator routes — it does not implement. Producing domain artifacts inline is a routing failure."* Existing Rules 1–7 renumbered to 1–8. Rule 8 added: prohibition on `gem-*` agentNames for squad members.
+
+3. **Scribe charter expanded** — `.squad/agents/scribe/charter.md` now includes full operational protocol: decision inbox merge protocol, session log format (`.squad/log/{ISO8601}-{topic}.md`), orchestration log format, git commit convention, and triggering conditions.
+
+4. **Livingston charter — live research section added** — Required live sources for Z-Wave JS UI, Z-Wave JS, Zigbee2MQTT, and HA releases. Stable exemptions: grep syntax, docker log commands, Python log parsing, HA log format basics.
+
+5. **Danny charter — live research section added** — Required live sources: HA integration docs, HACS/upstream repos, HA developer blog. Stable exemptions: architecture patterns, Docker Compose structure, git workflows.
+
+6. **Linus charter — stable-domain exemption added** — Appended to existing live research section: Docker Compose v3 base spec, Makefile syntax, git commands, shell scripting, Linux file permissions are known stable (no fetch required).
+
+7. **Basher charter — missing source row added** — Added `HA template integration (sensor/binary_sensor)` → `https://www.home-assistant.io/integrations/template/` to the live research source table.
+
+**Rationale:** Permissive coordinator causes drift after 2–3 sessions; hard rules prevent regression. Cross-charter alignment on confidence labels (🟢/🟡/🔴) and "training-data-only" fallback language is intentional.
+
+---
+
+### 2026-04-17: Prompt Surface Fixes — copilot-instructions.md and live-research SKILL.md
+**Date:** 2026-04-17
+**Author:** Yen (AI & Emerging Tech Specialist)
+**Status:** Implemented
+
+**Decisions made:**
+
+1. **Squad Agent Requirements moved to near top of copilot-instructions.md** — Relocated from after `## Common Pitfalls` to immediately after `## Project Architecture`, before `## Critical Configuration Pattern`. Rationale: LLMs weight early context more heavily; governance rules must precede domain content.
+
+2. **Inline routing table replaced with reference** — The 7-row inline routing table in `### Member Spawning` was removed. Replaced with: *"Routing is absolute — follow `.squad/routing.md`. The authoritative routing table lives there. Do not maintain a copy here."* Prevents divergence between the two copies.
+
+3. **Model selection instruction added** — Inserted after VS Code spawning rule paragraph: directs coordinator to read each charter's `## Model` section before spawning, pass `model` parameter when charter specifies a non-auto preference, always pass `claude-sonnet-4.6` explicitly when spawning Yen.
+
+4. **live-research SKILL.md Step 1 rewritten** — Removed "escalate to Yen" fallback for unlisted domains. Now directs members to the Domain → Source Quick Reference table at the bottom of the skill file. Eliminates blocking dependency on Yen availability.
+
+5. **live-research SKILL.md Step 5 placeholder fixed** — Path `.squad/decisions/inbox/{name}-web-access-unavailable.md` changed to `.squad/decisions/inbox/{your-name}-web-access-unavailable.md` to clarify it is an instruction to the reader, not an unresolved template variable.
