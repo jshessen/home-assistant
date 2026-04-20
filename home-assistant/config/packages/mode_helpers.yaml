@@ -6,6 +6,27 @@
 # entities that have no other include path.
 # ============================================================================
 
+input_boolean:
+  guest_mode:
+    name: Guest Mode
+    icon: mdi:account-multiple
+    initial: off
+
+  work_from_home_mode:
+    name: Work From Home Mode
+    icon: mdi:desk
+    initial: off
+
+  holiday_decorations_inside:
+    name: Holiday Decorations Inside
+    icon: mdi:string-lights
+    initial: off
+
+  holiday_decorations_outside:
+    name: Holiday Decorations Outside
+    icon: mdi:pine-tree
+    initial: off
+
 input_select:
   presence_mode:
     name: Presence Mode
