@@ -24,3 +24,24 @@ automation:
         data:
           message: "MO American Water rate check completed"
           level: info
+
+input_number:
+  amwater_mo_stl_monthly_fixed:
+    name: "MO American Water STL Monthly Customer Charge"
+    unit_of_measurement: "USD"
+    min: 0.00
+    max: 100.00
+    step: 0.01
+    icon: mdi:currency-usd
+    mode: box
+    initial: 11.00
+
+  amwater_mo_stl_rate_per_100_gal:
+    name: "MO American Water STL Commodity Rate (per 100 gal)"
+    unit_of_measurement: "USD/100gal"
+    min: 0.00
+    max: 10.00
+    step: 0.00001
+    icon: mdi:water
+    mode: box
+    initial: 1.03749

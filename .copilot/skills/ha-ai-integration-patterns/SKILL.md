@@ -9,6 +9,7 @@ Home Assistant has matured significantly in the AI space. This skill covers what
 ## Current HA AI Stack (2024+)
 
 ### Native: Assist Pipeline
+
 The built-in voice assistant pipeline: **STT → Intent Recognition → Response → TTS**
 
 - Fully local when using Whisper (STT) + Piper (TTS)
@@ -16,19 +17,21 @@ The built-in voice assistant pipeline: **STT → Intent Recognition → Response
 - Can be replaced with an LLM backend (OpenAI, Ollama) for natural-language understanding beyond the built-in intent parser
 
 ### Native: AI Task (HA 2024.x+)
+
 Allows automations to call an LLM for tasks like:
+
 - Summarization: `{{ ai_task.generate_data('summarize_sensor_data', ...) }}`
 - Decision support in automations
 - Text processing in Jinja2 templates (via `ai_task` template helper)
 
 ### Custom Components (HACS)
 
-| Component | Purpose | Status in this repo |
-|-----------|---------|---------------------|
-| `extended_openai_conversation` | LLM-powered conversation agent (OpenAI/Ollama/LocalAI) | Not installed |
-| `ollama` (native since HA 2024.3) | Local LLM via Ollama | Not installed |
-| `whisper` (native) | Local STT | Not installed |
-| `piper` (native) | Local TTS | Not installed |
+| Component                         | Purpose                                                | Status in this repo |
+| --------------------------------- | ------------------------------------------------------ | ------------------- |
+| `extended_openai_conversation`    | LLM-powered conversation agent (OpenAI/Ollama/LocalAI) | Not installed       |
+| `ollama` (native since HA 2024.3) | Local LLM via Ollama                                   | Not installed       |
+| `whisper` (native)                | Local STT                                              | Not installed       |
+| `piper` (native)                  | Local TTS                                              | Not installed       |
 
 ---
 
@@ -40,6 +43,7 @@ Allows automations to call an LLM for tasks like:
 
 **Step 1: Add Ollama to Docker Compose**
 Linus owns this — add to `docker-compose.yml` or create `docker-compose.ollama.yml`:
+
 ```yaml
 services:
   ollama:
@@ -62,6 +66,7 @@ services:
 
 **Step 2: Configure in HA**
 Go to Settings → Integrations → Add Integration → Ollama.
+
 - Host: `http://localhost:11434` (HA uses host networking — localhost resolves)
 - Model: `llama3.2` or `mistral` (balance of quality and speed)
 
@@ -95,11 +100,12 @@ automation:
 ### Recipe 3: LLM-Enhanced Jinja2 Templates
 
 Basher can use `conversation.process` service to enrich template logic:
+
 ```yaml
 # Ask the LLM for a friendly name for the current mode
 - action: conversation.process
   data:
-    agent_id: ollama  # or openai
+    agent_id: ollama # or openai
     text: "Give a short friendly status message for 'away mode' in a smart home."
   response_variable: mode_description
 ```
@@ -109,13 +115,17 @@ Basher can use `conversation.process` service to enrich template logic:
 ## Prompt Engineering for HA Jinja2
 
 ### Principle: Specificity Over Cleverness
+
 HA templates execute in milliseconds with no retry. Prompts for template generation must be:
+
 1. **Exact about types:** "states() returns a string, not a number — always cast with | int(default)"
 2. **HA-version aware:** "Use `action:` not `service:`, valid since HA 2024.8"
 3. **Failure-aware:** "Always handle 'unavailable' and 'unknown' states"
 
 ### Canonical Template Prompt Structure
+
 When asking an LLM to generate a HA Jinja2 template:
+
 ```
 Generate a Home Assistant Jinja2 template for [task].
 Constraints:
@@ -143,13 +153,13 @@ Before recommending any new AI integration to the team:
 
 ## Current Opportunity Assessment (This Repo)
 
-| Opportunity | Effort | Impact | Owner |
-|-------------|--------|--------|-------|
-| Local voice (Whisper+Piper+Ollama) | Medium (Linus: Docker, then HA config) | High — hands-free control | Yen→Linus |
-| Evening AI summary notification | Low (Basher/Rusty) | Medium — useful daily | Yen→Rusty |
-| Jinja2 optimization pass via LLM | Low (Basher) | Medium — reduce template complexity | Yen→Basher |
-| AI-powered presence detection (pattern learning) | High | High | Yen→Danny (ADR first) |
-| `extended_openai_conversation` install | Low | Medium — richer voice commands | Yen→Linus |
+| Opportunity                                      | Effort                                 | Impact                              | Owner                 |
+| ------------------------------------------------ | -------------------------------------- | ----------------------------------- | --------------------- |
+| Local voice (Whisper+Piper+Ollama)               | Medium (Linus: Docker, then HA config) | High — hands-free control           | Yen→Linus             |
+| Evening AI summary notification                  | Low (Basher/Rusty)                     | Medium — useful daily               | Yen→Rusty             |
+| Jinja2 optimization pass via LLM                 | Low (Basher)                           | Medium — reduce template complexity | Yen→Basher            |
+| AI-powered presence detection (pattern learning) | High                                   | High                                | Yen→Danny (ADR first) |
+| `extended_openai_conversation` install           | Low                                    | Medium — richer voice commands      | Yen→Linus             |
 
 ---
 
