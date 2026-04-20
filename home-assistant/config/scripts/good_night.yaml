@@ -45,9 +45,9 @@ good_night:
       - fan.smart_strip_1_2
     announce_enabled: "{{ announce_enabled | default(false) }}"
     announce_start_message: "{{ announce_start_message | default('Good night. Securing the house.') }}"
-    announce_start_targets: "{{ announce_start_targets | default(['media_player.living_room_echo']) }}"
+    announce_start_targets: "{{ announce_start_targets | default([]) }}"
     announce_end_message: "{{ announce_end_message | default('Good night. Sleep well.') }}"
-    announce_end_targets: "{{ announce_end_targets | default(['media_player.bedroom_echo']) }}"
+    announce_end_targets: "{{ announce_end_targets | default([]) }}"
   sequence:
     # ========================================================================
     # CONTEXT + SAFETY GATES

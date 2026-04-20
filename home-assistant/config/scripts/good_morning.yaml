@@ -17,7 +17,7 @@ good_morning:
       - light.kitchen_light_3
     announce_enabled: "{{ announce_enabled | default(false) }}"
     announce_message: "{{ announce_message | default('Good morning.') }}"
-    announce_targets: "{{ announce_targets | default(['media_player.kitchen_echo']) }}"
+    announce_targets: "{{ announce_targets | default([]) }}"
   sequence:
     # ========================================================================
     # SET TIME OF DAY
