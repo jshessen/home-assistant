@@ -1,0 +1,27 @@
+# ============================================================================
+# Mode Helper Entities
+# ============================================================================
+# input_select entities used by mode_management automations and scripts.
+# active_holiday is managed via the UI helper — defined here only for the
+# entities that have no other include path.
+# ============================================================================
+
+input_select:
+  presence_mode:
+    name: Presence Mode
+    icon: mdi:home-account
+    options:
+      - Home
+      - Away
+      - Vacation
+    initial: Home
+
+  time_of_day:
+    name: Time of Day
+    icon: mdi:clock-outline
+    options:
+      - Morning
+      - Day
+      - Evening
+      - Night
+    initial: Morning
