@@ -3,7 +3,7 @@ mqtt:
   base_topic: zigbee2mqtt
   server: mqtt://mqtt:1883
   user: hacs
-  password: hERCVg2sLAhEiowyQneU
+  password: rk5W6CfqGqiwILv1r22n64mSG3xpky
 serial:
   port: /dev/ttyUSB0
   adapter: ember

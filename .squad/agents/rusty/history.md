@@ -9,6 +9,21 @@
 ## Learnings
 
 <!-- Append learnings below -->
+
+### 2026-04-20: Full Automation/Script/Lovelace/Helper Audit
+- **Critical: `input_button.good_night_mode`** — Referenced in `automations.yaml` id `1752004821602` but no YAML definition exists anywhere. Likely a UI-only helper (hidden from VCS). Must be declared in `packages/mode_helpers.yaml` or documented.
+- **Critical: `battery_monitoring.yaml` broken** — Jinja2 `zip()` is not available in HA templates (Python builtin only). The notification message template will error at runtime. File is also redundant with `battery_notes.yaml` event-driven approach — recommend deprecating it.
+- **Critical: `mode_management.yaml` uses `service:` everywhere** — 8 occurrences. Needs bulk conversion to `action:`.
+- **Critical: `all_persons_away` has no `for:` guard** — GPS blip will trigger `secure_home` with occupants inside. Add `for: minutes: 3` on triggers.
+- **`good_morning_early` lacks presence guard** — Kitchen light turns on even in Away/Vacation mode.
+- **Good Night script hardcodes holiday switches** — New holiday devices added via label won't be turned off at night.
+- **~50+ `service:` calls across scripts and packages** — Mechanical but important cleanup debt.
+- **~11 `platform:` trigger calls** — Old syntax, should be `trigger:` key.
+- **Missing automations:** (1) Return home presence update, (2) Evening time_of_day transition, (3) Garage failure notification.
+- **Holiday season controller** — Memorial Day loop logic is fragile (no break in Jinja2, relies on iteration order).
+- **Battery dashboard** — Excellent design, fleet summary + hold-to-replace UX.
+- **`secure_home.yaml`** — Good design: parallel lock+garage with wait_template and continue_on_timeout.
+- **`start_active_day.yaml`** — Input-number variable fallback chain is best-practice pattern for UI-configurable scripts.
 - battery-state-card refactor pattern: filter on `*_battery_plus`, `bulk_rename` strips " Battery+" suffix → clean display names, `secondary_info` shows type+days as `{attributes.battery_type_and_quantity} · {attributes.battery_last_replaced_days}d`, `collapse` with `default_hide: true` folds Good tier (≥40%) so page stays scannable; binary_sensor and "never replaced" rows still need auto-entities as battery-state-card only handles numeric sensors
 - Mode system renamed: house_mode→presence_mode, night_mode→time_of_day (input_select), guest_mode (boolean), work_from_home_mode (boolean)
 - New input_datetime.yaml at CONFIG ROOT — add `input_datetime: !include input_datetime.yaml` to configuration.yaml

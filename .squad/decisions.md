@@ -3588,3 +3588,106 @@ card:
 - `battery_notes_low_battery_notification` "Action notify.mobile_app_jeff not found" — last fired 2026-04-19 09:00:00 pre-fix
 
 These errors will stop after HA reloads automations with corrected config.
+
+---
+
+## 2026-04-20: HA-Wide Assessment Session
+
+### 2026-04-20: Zigbee2MQTT MQTT credential mismatch — Fixed
+**Date:** 2026-04-20
+**Author:** Linus (Integration Specialist)
+**Status:** Implemented ✅
+
+**Decision:** Fix Zigbee2MQTT MQTT auth failure causing 4-day service outage.
+
+**Root cause:** `zigbee2mqtt/data/configuration.yaml` had a stale MQTT password that did not match `secrets/mqtt_admin_password`. Z2M exited every ~69 seconds with `MQTT failed to connect... Not authorized`.
+
+**Changes applied:**
+- Updated `zigbee2mqtt/data/configuration.yaml` MQTT password to match live broker credential
+- Updated health check: `http://0.0.0.0:8080/health` → `http://localhost:8080/health`
+- Increased health check `start_period` 30s → 60s (coordinator init takes ~45s)
+
+**Status:** Verified — Z2M running and publishing MQTT discovery messages.
+
+**Secondary finding filed:** `secrets/zigbee2mqtt` is empty (0 bytes). Z2M MQTT password lives in plaintext in `configuration.yaml`. Proper secrets wiring is a medium-priority follow-up (see infra assessment M1).
+
+---
+
+### 2026-04-20: iBlinds v2 Alexa "Open" fix — Applied (restart pending)
+**Date:** 2026-04-20
+**Author:** Livingston (Troubleshooter) + Linus (Integration Specialist)
+**Status:** Applied — HA restart + Alexa rediscovery required ⚠️
+
+**Decision:** Fix iBlinds v2 "Alexa, open blinds" going to 100% instead of 50%.
+
+**Root cause (two compounding bugs):**
+1. `*_hw` physical Z-Wave cover entities were exposed to Alexa alongside the template covers — Alexa could route directly to the physical entity, bypassing the stop-point intercept
+2. Alexa sends `set_cover_position(100)` (not `open_cover`) for position-aware covers — the template cover's `set_cover_position` was passing 100 through to the `*_hw` entity
+
+**Protocol chain:** `"Alexa, open blinds"` → Alexa `SetRangeValue(100)` → HA `cover.set_cover_position(100)` → template → (pre-fix) passthrough → Z-Wave `SetLevel(99)` → blind opens 100%
+
+**Changes applied:**
+- Created `home-assistant/config/alexa/exclude/iblinds_hw.yaml` — excludes all `cover.*_hw` entities from Alexa
+- Modified `home-assistant/config/packages/iblinds_v2_covers.yaml` — `set_cover_position` now caps any position ≥ 99 to the configured stop point (per-device `input_number.iblinds_*_open_position` → global `input_number.iblinds_v2_open_position` → default 50%)
+
+**Action required:** Restart HA, then Alexa app → Devices → Discover Devices.
+
+**Test cases:**
+- "Alexa, open [blind]" → goes to stop_point (default 50%) ✓
+- "Alexa, set [blind] to 30 percent" → goes to 30% ✓
+- "Alexa, close [blind]" → goes to 0% ✓
+
+---
+
+### 2026-04-20: Echo announce defaults cleared in good_night/good_morning/start_active_day
+**Date:** 2026-04-20
+**Author:** Rusty (Automation Engineer)
+**Status:** Implemented ✅
+
+**Decision:** Replace `media_player.*_echo` default announce targets with `[]` in scripts.
+
+**Reason:** `alexa_media_player` HACS integration is not installed. The three Echo entity IDs (`media_player.living_room_echo`, `media_player.bedroom_echo`, `media_player.kitchen_echo`) have never been in the HA entity registry. They were aspirational placeholders. With `announce_enabled: false` as the script default, announce is already disabled — clearing the entity list silences Spook Repair issues without breaking any functionality.
+
+**Files modified:**
+- `home-assistant/config/scripts/good_night.yaml`
+- `home-assistant/config/scripts/good_morning.yaml`
+- `home-assistant/config/scripts/start_active_day.yaml`
+
+**Re-enable path:** Install `alexa_media_player` HACS integration and restore entity IDs.
+
+---
+
+### 2026-04-20: Architecture Assessment — Decisions Deferred to Follow-Up Sessions
+**Date:** 2026-04-20
+**Author:** Danny (Lead / Architect)
+**Status:** Filed — action required
+
+**Findings requiring team action (in priority order):**
+
+#### Critical — Fix This Sprint
+1. **Recorder orphaned (SQLite instead of PostgreSQL):** Add `recorder: !include recorder.yaml` to `configuration.yaml`. Move DB URL to `!secret recorder_db_url`. Owner: Linus + Basher.
+2. **Hardcoded PostgreSQL password in `recorder.yaml`:** Move to `secrets.yaml` as `!secret recorder_db_url`. Owner: Basher.
+3. **`alexa_app_secret` == `ios_app_secret`:** Generate distinct value. Update Lambda wrapper. Owner: jshessen.
+4. **Amazon LWA OAuth credentials in `secrets.yaml`:** Rotate in Amazon Developer Console. Owner: jshessen.
+5. **Dead `secrets/hacs` reference in `docker-compose.yml`:** Remove unused top-level secrets block. Owner: Linus.
+
+#### Medium — This Sprint
+6. **`reverse_proxy.yaml` orphaned dead code:** Delete file. Owner: Rusty.
+7. **`utility_meter.yaml` not loaded:** Add include to `configuration.yaml` or merge into energy package. Owner: Rusty.
+8. **Retire `battery_monitoring.yaml`:** Battery Notes event system is strictly better (event-driven, richer info, auto-dismiss). Owner: Rusty.
+9. **`home-assistant` compose `ports:` block ignored by host networking:** Remove and add explanatory comment. Owner: Linus.
+10. **Ollama missing health check:** Add `curl -f http://localhost:11434/api/tags` health check. Owner: Linus.
+
+#### Infrastructure (from Linus assessment)
+11. **MQTT password in `config.d/mqtt.env`:** Move out of tracked env file; use Docker secret. Owner: Linus.
+12. **MQTT ACL file missing:** Add per-client topic scopes. Owner: Linus.
+13. **MQTT bound to 0.0.0.0:** Restrict to `127.0.0.1:1883`. Owner: Linus.
+14. **Ollama API bound to 0.0.0.0:** Restrict to `127.0.0.1:11434`. Owner: Linus.
+15. **Pin image versions:** Replace `:latest` tags with versioned tags in env files. Owner: Linus.
+16. **Z-Wave Node 136 Nonce errors:** Investigate garage door S0 security issues; consider S2 re-inclusion. Owner: jshessen.
+
+#### User Action Required (HA UI)
+17. **Battery Notes UI automation:** Edit in HA → Settings → Automations → `battery_notes_low_battery_notification` → change `notify.mobile_app_jeff` → `notify.mobile_app_sparky`. Owner: jshessen.
+18. **NUT re-authentication:** Settings → Devices & Services → NUT → Re-authenticate. Owner: jshessen.
+19. **Water meter `state_class_removed` (2 repairs):** Find sensor config, confirm correct `state_class`, apply fix + restart. Owner: Rusty.
+20. **input_boolean holiday entities missing from live registry:** Reload → Developer Tools → YAML Reload → Input Booleans. Owner: jshessen.

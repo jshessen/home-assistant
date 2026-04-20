@@ -58,6 +58,38 @@ data:
 
 **Trade-offs:**
 - More rigid than free-text (but that's the point!)
+
+### 2026-04-20: Full AI Assessment — State of AI in This Deployment
+
+**What:** Conducted a live-verified AI & emerging tech assessment of the full deployment.
+
+**Key findings (all claims verified live on 2026-04-20):**
+
+1. **CRITICAL: Ollama has no models installed.** Container is running (`Up 2 days`) but `ollama list` returns empty. Any `ai_task` routed to Ollama is failing silently. Fix: `docker exec ollama ollama pull llama3.2:3b` (2GB, efficient) or `gemma4:e4b` (3.3GB, tool-calling capable).
+
+2. **HA version is 2026.4.3.** Includes: AI Assist thinking display (desktop only), cross-domain triggers/conditions (Labs), purpose-specific triggers for battery events, Matter lock management with PIN codes.
+
+3. **Ollama v0.21.0** is the current latest (released ~April 16, 2026). Notable: Hermes Agent (`ollama launch hermes` — self-learning skills), parallel tool calling improvements, Gemma4 family fully supported with tool calling.
+
+4. **`ai_task.generate_data` is correctly implemented** in `evening_ai_summary.yaml` using structured output (typed fields). This is good practice.
+
+5. **No voice pipeline configured.** No Wyoming, Whisper, Piper, or custom_sentences directory. Assist is running on default HA agent, not an LLM.
+
+6. **Ollama HA integration not visible in YAML** — may exist in `.storage/` (UI-configured) but can't confirm. Needs verification.
+
+**Priority ranking established (see decision file):**
+- P0: Install Ollama model + verify HA integration configured
+- P1: Battery AI triage summary (50+ devices) + expand evening summary (add iblinds, battery)
+- P2: AI lock anomaly notifications, custom sentences for mode system, Ollama HA control
+- WATCH: Hermes Agent use cases, local voice pipeline (Wyoming on bare Docker is complex)
+
+**HA 2026.4 AI-relevant items NOT YET exploited:**
+- `ai_task.generate_image` action (available, unused)
+- "Think before responding" Ollama integration option
+- Cross-domain Battery triggers in Labs (cleaner than custom battery monitoring)
+- AI Assist thinking display (needs LLM conversation agent configured)
+
+**Decision document:** `.squad/decisions/inbox/yen-ai-assessment-2026-04-20.md`
 - Requires HA 2026.x+ (not available in older versions)
 - LLM must understand schema format (works well with llama3.2:3b+)
 

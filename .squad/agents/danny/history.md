@@ -36,6 +36,28 @@ Re-review of commit `2024949`. Both bugs from 2026-04-16 remain unfixed. Perform
 
 Decision updated: `decisions/inbox/danny-battery-dashboard-review.md`.
 
+### 2026-04-20: Full Architecture Assessment Completed
+
+Conducted comprehensive read of: configuration.yaml, all docker-compose.*.yml, Makefile, all packages/, automations/, scripts/, templates/, recorder.yaml, alexa.yaml, secrets.yaml, and squad decisions.md.
+
+**Most critical discovery:** `recorder.yaml` is an ORPHANED FILE. It is NOT included from `configuration.yaml` (no `recorder: !include recorder.yaml` line exists). No package wraps it either. HA is running with the default SQLite recorder despite PostgreSQL container existing. The `db_url` with hardcoded password is unreachable dead config. This is the most impactful structural bug in the deployment.
+
+**Second critical discovery:** `reverse_proxy.yaml` and `utility_meter.yaml` at the `/config/` root are also orphaned. They are not referenced from `configuration.yaml` at all. `reverse_proxy.yaml` is a duplicate of http config already in configuration.yaml. `utility_meter.yaml` needs `utility_meter: !include utility_meter.yaml` to be loaded.
+
+**Security patterns found:**
+- `secrets.yaml` contains real Amazon OAuth credentials (alexa_client_id, alexa_client_secret) in a git-tracked file — rotation recommended
+- `ios_app_secret` == `alexa_app_secret` (comment in file says "Change this" — never actioned)
+- `recorder.yaml` db_url embeds password in plain text (moot since not loaded, but must be fixed when loading)
+- `docker-compose.yml` top-level secrets block references `./secrets/hacs` (file doesn't exist), never assigned to any service — dead but misleading
+
+**Key architectural patterns:**
+- Package system is well-structured for feature isolation
+- `!include_dir_named packages` loads ONLY the packages/ directory — root-level config files need explicit `key: !include file.yaml` wiring
+- `home-assistant` service uses `network_mode: host` making the `ports:` block in compose silently ignored (host mode bypasses port mapping entirely)
+- Dual battery notification systems (battery_monitoring.yaml template-trigger + battery_notes.yaml event-driven) likely generate duplicate mobile alerts
+
+Decision filed: `decisions/inbox/danny-arch-assessment-2026-04-20.md`
+
 ### 2026-07-20: iBlinds v2/v3 consistency analysis — RECOMMENDATION COMPLETE
 
 Synthesized Linus's Z-Wave research and Livingston's diagnostic findings into a comprehensive implementation plan for the mixed iBlinds v2/v3 environment. Key architectural decisions:

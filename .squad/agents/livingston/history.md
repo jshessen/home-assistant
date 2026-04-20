@@ -43,3 +43,41 @@ The entire blueprint is built around intercepting `call_service` events (`event_
 **Existing scripts already working around the problem:** `start_work_day.yaml`, `start_active_day.yaml`, `secure_home.yaml` all call `cover.open_cover` directly on v2 entities without going through the blueprint. This works because iBlinds v2 DOES respond to `open_cover` (it opens to 50% by default) — the blueprint's value-add was configurable default position and direction reversal, neither of which is wired up.
 
 **Decision filed:** `decisions/inbox/livingston-iblinds-blueprint-diagnosis.md`
+
+### 2026-04-20: iBlinds Alexa "open" sends to 100% — two compounding bugs found and fixed
+
+**Task:** Explain why Alexa sends v2 blinds to 100% while the iBlinds app correctly opens to 50%.
+
+**Root cause — two compounding bugs:**
+
+**Bug 1 (`_hw` entity bypass):** `packages/iblinds_v2_covers.yaml` correctly renames physical Z-Wave entities to `*_hw` suffix and creates template covers with the original IDs. However, the Alexa config (`cover` domain included, no `*_hw` exclusion) exposes BOTH template covers AND `*_hw` physical entities to Alexa. HA logs confirm this: Alexa sends ChangeReports for `cover.window_blind_controller_2_hw` and `cover.window_blind_controller_4_hw`. When Alexa routes to a `*_hw` entity, `cover.open_cover` on the physical entity → Z-Wave Open (SetLevel 99) → 100%.
+
+**Bug 2 (Alexa bypasses `open_cover` entirely):** For position-aware cover entities, the HA Alexa integration exposes them as `RangeController` (0–100%). "Open the blinds" → Alexa sends `SetRangeValue(100)` → HA calls `cover.set_cover_position(100)`. `open_cover` is never invoked. The template's `set_cover_position` pass-through forwarded 100% unchanged → Z-Wave SetLevel 99 → 100%.
+
+**Why iBlinds app shows 50%:** App uses Bluetooth → Z-Wave SetLevel(50) directly, bypassing HA entirely.
+
+**Fixes applied (2026-04-20):**
+1. Created `alexa/exclude/iblinds_hw.yaml` — excludes `cover.*_hw` from Alexa
+2. Modified `packages/iblinds_v2_covers.yaml` — all 4 template covers' `set_cover_position` now cap any `position >= 99` to the configured stop point (per-device or global default 50%)
+3. HA restart + Alexa device rediscovery required to take effect
+
+**Key pattern learned:** Alexa NEVER calls `cover.open_cover` on position-aware covers. Always test with `set_cover_position(100)` as the Alexa "open" equivalent.
+
+**Decision filed:** `decisions/inbox/livingston-iblinds-alexa.md`
+
+### 2026-04-20: Comprehensive System Health Check
+
+**Task:** Full health check across all subsystems — HA, Z-Wave, Zigbee2MQTT, Alexa, PostgreSQL, MQTT, Docker.
+
+**Critical finding — Zigbee2MQTT restart loop:**
+Root cause is MQTT password mismatch. `zigbee2mqtt/data/configuration.yaml` has `hERCVg2sLAhEiowyQneU` but `config.d/mqtt.env` has `MQTTADMINPW="rk5W6CfqGqiwILv1r22n64mSG3xpky"`. Mosquitto password file was hashed from the env file value. Fix: update zigbee2mqtt config to match mqtt.env password.
+
+**Key pattern for future checks:** When a container is restarting, check `docker logs <container> --tail 50` immediately — even debug-level logs show the exit reason. For Zigbee2MQTT, MQTT auth failures appear as `MQTT failed to connect, exiting... (Connection refused: Not authorized)` in the last lines before shutdown.
+
+**Alexa INVALID_ACCESS_TOKEN:** 135 errors today. These fire in batches when cover entities change state. iBlinds covers ARE alive (triggering ChangeReports); the Alexa skill token is expired/invalid. Re-authentication required — separate from the iblinds position fix.
+
+**MQTT auth diagnostic shortcut:** Mosquitto logs `not authorised` per-connection. Cross-reference the connecting IP against container network assignments to identify the failing client immediately. zigbee2mqtt uses the `172.16.2.0/27` bridge network.
+
+**Z-Wave health:** Node 55 persistently dead. Node 136 generating nonce expiry errors (S0 security timing). Both worth monitoring. Nodes 124 and 138 were removed today — note whether intentional.
+
+**Report filed:** `decisions/inbox/livingston-health-2026-04-20.md`

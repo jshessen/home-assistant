@@ -10,6 +10,68 @@
 
 <!-- Append learnings below -->
 
+### 2026-04-20: Full infrastructure assessment
+
+**Task:** Comprehensive audit of all Docker Compose services, Z-Wave, Zigbee, MQTT, secrets, networking.
+
+**Critical active fix applied during assessment:**
+- **Zigbee2MQTT restart loop (4+ days down):** Root cause = stale MQTT password in `zigbee2mqtt/data/configuration.yaml` that didn't match live broker credential. Error: `MQTT failed to connect, exiting... (Connection refused: Not authorized)`. Fixed by updating the password. Also fixed health check from `http://0.0.0.0:8080/health` → `http://localhost:8080/health` (0.0.0.0 is not a valid connect host) and increased start_period from 30s → 60s.
+- **Key lesson:** When rotating MQTT credentials, ALL clients (zigbee2mqtt config, HA MQTT integration, etc.) must be updated atomically. Stale credentials cause silent restart loops.
+
+**Key findings summary:**
+1. `secrets/zigbee2mqtt` file is 0 bytes — ZIGBEE2MQTT_SECRET_FILE mount is a no-op. Credential is plaintext in configuration.yaml.
+2. MQTT admin password is in plaintext in `config.d/mqtt.env` (flows into .env → docker-compose environment).
+3. Z-Wave S2 keys are plaintext in `zwave/settings.json` — Z-Wave JS UI ecosystem limitation, no solution currently.
+4. No MQTT ACL file — all authenticated clients have wildcard topic access.
+5. MQTT port 1883 bound to 0.0.0.0 (all interfaces), not just localhost.
+6. Ollama port 11434 bound to 0.0.0.0 (all interfaces) — local LAN can reach it.
+7. All images use `:latest` — no version pinning.
+8. Node 136 (Garage Door) has persistent S0 nonce expiry errors.
+9. Node 106 (Guest Bedroom) has no name.
+10. socket-proxy container is exited (Exited 255, 2 days ago).
+11. portainer_agent container running but not in any compose file.
+
+**Infrastructure health at assessment end:**
+- HA: running (no healthcheck)
+- zwave-js-ui: healthy
+- mqtt: healthy  
+- homeassistant-postgres: healthy
+- zigbee2mqtt: fixed and running (was unhealthy/restarting)
+- ollama: running (no healthcheck)
+
+**Full assessment filed:** `.squad/decisions/inbox/linus-infra-assessment-2026-04-20.md`
+
+### 2026-04-20: iBlinds v2 Alexa protocol chain investigation
+
+**Question:** Why does "Alexa, open blinds" go to 100% on v2 but the iBlinds app goes to 50%?
+
+**Protocol chain confirmed (all verified live):**
+1. "Alexa, open [blind]" → Alexa `RangeController` "open" semantic → HA `cover.open_cover`
+2. HA `ZWaveMultilevelSwitchCover.async_open_cover()` → `Multilevel Switch Set(99)` (99 = fully open in Z-Wave)
+3. v2 device receives Set(99) → moves to 99% (no Parameter 4 to remap it)
+4. iBlinds app sends `Multilevel Switch Set(50)` explicitly → both v2 and v3 go to 50%
+
+**Key difference v2 vs v3 via Alexa:**
+- v3 has Parameter 4 "Default ON Value" = 50 → firmware remaps incoming 99 to 50
+- v2 has no Parameter 4 → 99 is executed literally
+
+**ib2_0.json current state (2026-04-20):**
+- ✅ Lifeline association (Group 1) — ALREADY APPLIED (since research report 2026-04-15)
+- ✅ Binary Switch CC removal compat — ALREADY APPLIED
+- ⚠️ `treatSetAsReport: ["Multilevel Switch"]` — added but effect on Multilevel Switch CC uncertain; research report says it only works for Binary Switch CC and Thermostat Mode CC
+
+**Fix options ranked:**
+1. **Template Cover** (best) — override `open_cover` to call `set_cover_position(50)`, pass through everything else; preserves all Alexa utterances
+2. **Script** — single script sets all v2 blinds to 50%; simpler but loses per-blind Alexa control
+3. **Alexa Routine** — no HA changes; brittle with NLP conflicts
+
+**Source verified:** 
+- HA Alexa cover docs: https://www.home-assistant.io/integrations/alexa.smart_home/
+- HA zwave_js cover source: github.com/home-assistant/core/blob/dev/homeassistant/components/zwave_js/cover.py
+- Full report: `.squad/decisions/inbox/linus-iblinds-alexa-protocol.md`
+
+**Pending action:** 6 v2 nodes (67, 71, 72, 103, 106, 107) need re-interview in Z-Wave JS UI to activate Lifeline association. Template cover implementation needed for Alexa fix.
+
 ### 2026-04-15: battery-state-card v4.2.0 full feature audit
 
 **Latest version:** v4.2.0 (released 2026-04-02). Our dashboard uses the card but with several deprecated/legacy properties.

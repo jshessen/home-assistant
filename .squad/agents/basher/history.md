@@ -79,6 +79,35 @@ Deployment uses modern, idiomatic HA patterns — no changes required. Full repo
 
 ---
 
+### 2026-04-20: Full Jinja2 audit — key findings
+
+Completed a codebase-wide template audit covering `templates/`, `packages/`, `automations/`, `lovelace/battery_dashboard.yaml`.
+
+**Critical bugs found:**
+
+1. **Namespace-less loop mutation** (`holiday_season_controller.yaml`): Memorial Day and Labor Day both use `{% set var = ... %}` inside a `for` loop. Jinja2 inner-scope assignments never escape the loop. The "last Monday" and "first Monday" computations are silently no-ops. Both holidays display wrong results (Memorial Day: always "No Holiday" May 18-23, always "Memorial Day" May 24-31; Labor Day: only Sep 1 ever triggers). Fix: `namespace()` pattern on both loops.
+
+2. **elif ordering swallows Cinco de Mayo and Memorial Day** (`holiday_season_controller.yaml`): The `elif month >= 2 and month <= 5` Easter block is too broad. It catches April 28-30 (Cinco de Mayo) and all of May (Memorial Day) before those specific elif branches can be reached. Cinco de Mayo is unreachable; Memorial Day May range is unreachable. Fix: move specific-date elif blocks before the broad month range.
+
+**Medium findings:**
+- `ios_companion.yaml` / `alexa_helpers.yaml`: `{% set now = ... %}` shadows the `now()` built-in. Works in current code but will silently break if template is extended. Rename to `_now_ts`.
+- Same files: guard is `!= 'unknown'` only; `'unavailable'` during startup would cause TypeError. Use `has_value()`.
+- `energy_costs.yaml`, `spire_gas_costs.yaml`, `amwater_water_costs.yaml`: No `availability:` templates. Sensors show `$0.00` instead of `unavailable` when sources are unavailable.
+- `mode_management.yaml`: Uses deprecated `service:` key, not `action:`.
+- `seasonal_displays.yaml` / `seasonal_living_room.yaml`: `default_entity_id:` is not a recognized HA template switch key — silently ignored.
+
+**What's solid:**
+- `iblinds_v2_covers.yaml` — exemplary; no issues
+- Battery dashboard fleet summary — correct namespace + filter pattern
+- Easter Computus algorithm — correctly implemented
+- Energy cost tiered rate math — correct
+- Filter order discipline — zero `| int | default` antipatterns anywhere
+- All template files use `action:` (violations only in automation files)
+
+Full report: `.squad/decisions/inbox/basher-template-assessment-2026-04-20.md`
+
+---
+
 ### 2026-04-14: YAML scalar choice in Lovelace markdown cards
 
 **Bug pattern:** Using `>-` (folded scalar) in `content:` fields of `type: markdown` cards collapses all newlines into spaces. Markdown tables depend on literal newlines to render rows — a folded scalar turns the entire table into one unreadable line.
