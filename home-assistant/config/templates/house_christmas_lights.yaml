@@ -49,7 +49,7 @@
           'Easter': 'mdi:egg-easter',
           "St. Patrick's Day": 'mdi:clover',
           'Independence Day': 'mdi:firework',
-          'None': 'mdi:led-strip-variant'
+          'No Holiday': 'mdi:led-strip-variant'
         }.get(season, 'mdi:led-strip-variant') }}
 
       # State and attributes from physical light

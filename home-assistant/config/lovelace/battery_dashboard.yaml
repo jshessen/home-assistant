@@ -1,9 +1,17 @@
 # ============================================================================
-# Battery Status Dashboard — v9
+# Battery Status Dashboard — v15
 # ============================================================================
 # Views:
 #   1. Monitor — Fleet summary + Needs Attention + All Batteries by Area
 #              (Manage view removed — hold any battery row to log replacement)
+#
+# Changes in v10:
+#   - Census view: Device-list cards now use battery-state-card with grouped-by
+#     attribute display (battery_type, note). Brand/Model markdown summary card
+#     removed (consolidated into battery-state-card). Visual treatment matches
+#     Monitor view — battery level bars, colors, icons.
+#   - battery-state-card grouping: group by attribute.battery_type and
+#     attribute.note with collapse:false and secondary_info:"{count} devices".
 #
 # Changes in v9:
 #   - Manage view removed. Hold (long-press) any battery row in either card to
@@ -207,126 +215,155 @@ views:
     path: battery-census
     icon: mdi:chart-bar
     type: sections
-    max_columns: 2
+    max_columns: 3
 
     sections:
 
-      # ── LEFT section: Summary + Type Breakdown ──────────────────────────────
+      # ── Section 1: By Type ───────────────────────────────────────────────────
       - type: grid
-        title: ""
+        title: "🔋 By Type"
         cards:
+          - type: custom:battery-state-card
+            title: "🔋 Batteries by Type"
+            sort: *battery-sort
+            tap_action: *battery-tap
+            hold_action: *battery-hold
+            entities: *rechargeable-entities
+            filter:
+              include: *battery-include
+              exclude:
+                - name: state
+                  value: unavailable
+                - name: state
+                  value: unknown
+                - name: entity_id
+                  value: "*_battery_plus_low*"
+            group:
+              - by: "attributes.battery_type"
+                collapse: false
+                secondary_info: "{count} devices · {sum(attributes.battery_quantity)} units"
+            secondary_info: *battery-secondary-info
+            bulk_rename: *battery-bulk-rename
+            colors: *battery-colors
+            style: *battery-style
 
-          # Fleet Summary Header
-          - type: markdown
-            content: |
-              {% set ns = namespace(total=0, types={}) %}
-              {% for s in states.sensor
-                  | selectattr('entity_id', 'search', '_battery_plus')
-                  | rejectattr('entity_id', 'search', '_low')
-                  | rejectattr('state', 'in', ['unavailable', 'unknown']) %}
-                {%- set ns.total = ns.total + 1 -%}
-                {%- set btype = state_attr(s.entity_id, 'battery_type') -%}
-                {%- if btype != none and btype != '' -%}
-                  {%- if btype not in ns.types -%}
-                    {%- set ns.types = dict(ns.types, **{btype: 0}) -%}
-                  {%- endif -%}
-                  {%- set ns.types = dict(ns.types, **{btype: ns.types[btype] + 1}) -%}
-                {%- endif -%}
-              {% endfor %}
-              📊 **Battery Fleet Census**
-              - **{{ ns.total }}** devices monitored
-              - **{{ ns.types | length }}** distinct battery types
-
-          # Type Breakdown Card
-          - type: markdown
-            content: |
-              {% set ns = namespace(types={}) %}
-              {% for s in states.sensor
-                  | selectattr('entity_id', 'search', '_battery_plus')
-                  | rejectattr('entity_id', 'search', '_low')
-                  | rejectattr('state', 'in', ['unavailable', 'unknown']) %}
-                {%- set btype = state_attr(s.entity_id, 'battery_type') -%}
-                {%- set bqty = state_attr(s.entity_id, 'battery_quantity') | int(default=1) -%}
-                {%- if btype != none and btype != '' -%}
-                  {%- if btype not in ns.types -%}
-                    {%- set ns.types = dict(ns.types, **{btype: {'count': 0, 'units': 0}}) -%}
-                  {%- endif -%}
-                  {%- set current = ns.types[btype] -%}
-                  {%- set ns.types = dict(ns.types, **{btype: {'count': current.count + 1, 'units': current.units + bqty}}) -%}
-                {%- endif -%}
-              {% endfor %}
-              🔋 **Battery Type Breakdown**
-              {% if ns.types | length == 0 %}
-              _No battery type data available_
-              {% else %}
-              {%- for btype, data in ns.types.items() | sort(attribute='1.count', reverse=true) %}
-              - **{{ btype }}**: {{ data.count }} devices ({{ data.units }} units total)
-              {%- endfor %}
-              {% endif %}
-
-      # ── RIGHT section: Brand/Model + Lifespan Stats ────────────────────────
+      # ── Section 2: By Brand/Model ─────────────────────────────────────────────
       - type: grid
-        title: ""
+        title: "🏷️ By Brand/Model"
         cards:
+          - type: custom:battery-state-card
+            title: "🏷️ Batteries by Brand/Model"
+            sort: *battery-sort
+            tap_action: *battery-tap
+            hold_action: *battery-hold
+            entities: *rechargeable-entities
+            filter:
+              include: *battery-include
+              exclude:
+                - name: state
+                  value: unavailable
+                - name: state
+                  value: unknown
+                - name: entity_id
+                  value: "*_battery_plus_low*"
+            group:
+              - by: "attributes.note"
+                collapse: false
+                secondary_info: "{count} devices · {sum(attributes.battery_quantity)} units"
+              - name: "🔖 No Brand Data ({count})"
+                collapse: false
+                secondary_info: "{count} devices — add notes in Battery Notes"
+                filter:
+                  - or:
+                      - name: "attributes.note"
+                        operator: "not_exists"
+                      - name: "attributes.note"
+                        value: ""
+            secondary_info: *battery-secondary-info
+            bulk_rename: *battery-bulk-rename
+            colors: *battery-colors
+            style: *battery-style
 
-          # Brand/Model Breakdown Card (note-based)
-          - type: markdown
-            content: |
-              {% set ns = namespace(notes={}) %}
-              {% for s in states.sensor
-                  | selectattr('entity_id', 'search', '_battery_plus')
-                  | rejectattr('entity_id', 'search', '_low')
-                  | rejectattr('state', 'in', ['unavailable', 'unknown']) %}
-                {%- set note = state_attr(s.entity_id, 'note') -%}
-                {%- set btype = state_attr(s.entity_id, 'battery_type') -%}
-                {%- if note != none and note != '' -%}
-                  {%- if note not in ns.notes -%}
-                    {%- set ns.notes = dict(ns.notes, **{note: {'count': 0, 'types': []}}) -%}
-                  {%- endif -%}
-                  {%- set current = ns.notes[note] -%}
-                  {%- set types_list = current.types if btype in current.types or btype == none or btype == '' else current.types + [btype] -%}
-                  {%- set ns.notes = dict(ns.notes, **{note: {'count': current.count + 1, 'types': types_list}}) -%}
-                {%- endif -%}
-              {% endfor %}
-              🏷️ **Brand/Model Breakdown**
-              {% if ns.notes | length == 0 %}
-              _No brand/model data yet — long-press any battery in Monitor view to log replacements and add notes in Battery Notes_
-              {% else %}
-              {%- for note, data in ns.notes.items() | sort(attribute='1.count', reverse=true) %}
-              - **{{ note }}**: {{ data.count }} devices{% if data.types | length > 0 %} ({{ data.types | join(', ') }}){% endif %}
-              {%- endfor %}
-              {% endif %}
-
-          # Lifespan Stats Card
-          - type: markdown
-            content: |
-              {% set ns = namespace(lifespan={}) %}
-              {% for s in states.sensor
-                  | selectattr('entity_id', 'search', '_battery_plus')
-                  | rejectattr('entity_id', 'search', '_low')
-                  | rejectattr('state', 'in', ['unavailable', 'unknown']) %}
-                {%- set last_replaced = state_attr(s.entity_id, 'battery_last_replaced') -%}
-                {%- set btype = state_attr(s.entity_id, 'battery_type') -%}
-                {%- if last_replaced != none and last_replaced != '' and btype != none and btype != '' -%}
-                  {%- set replaced_dt = as_datetime(last_replaced) -%}
-                  {%- if replaced_dt != none -%}
-                    {%- set days_old = (now() - replaced_dt).days -%}
-                    {%- if btype not in ns.lifespan -%}
-                      {%- set ns.lifespan = dict(ns.lifespan, **{btype: {'ages': [], 'count': 0}}) -%}
-                    {%- endif -%}
-                    {%- set current = ns.lifespan[btype] -%}
-                    {%- set ns.lifespan = dict(ns.lifespan, **{btype: {'ages': current.ages + [days_old], 'count': current.count + 1}}) -%}
-                  {%- endif -%}
-                {%- endif -%}
-              {% endfor %}
-              📅 **Battery Lifespan Statistics**
-              {% if ns.lifespan | length == 0 %}
-              _No replacement history yet_
-              {% else %}
-              {%- for btype, data in ns.lifespan.items() | sort %}
-              {%- set avg_days = (data.ages | sum / data.count) | int(default=0) -%}
-              {%- set min_days = data.ages | min -%}
-              {%- set max_days = data.ages | max -%}
-              - **{{ btype }}**: {{ avg_days }} days avg ({{ min_days }}–{{ max_days }} days, {{ data.count }} devices)
-              {%- endfor %}
-              {% endif %}
+      # ── Section 3: Lifespan Stats ─────────────────────────────────────────────
+      - type: grid
+        title: "📅 Lifespan Stats"
+        cards:
+          - type: custom:config-template-card
+            entities:
+              - sensor.sparky_battery_plus
+              - sensor.galaxy_watch_ultra_a61f_battery_plus
+              - sensor.patricia_s_phone_battery_plus
+            card:
+              type: vertical-stack
+              cards: >-
+                ${(function() {
+                  var allBatteries = Object.values(states).filter(function(s) {
+                    return s.entity_id.includes('_battery_plus') &&
+                           !s.entity_id.includes('_battery_plus_low') &&
+                           s.attributes && s.attributes.battery_type &&
+                           s.state !== 'unavailable' && s.state !== 'unknown';
+                  });
+                  var btypes = Array.from(new Set(allBatteries.map(function(s) {
+                    return s.attributes.battery_type;
+                  }))).sort();
+                  return btypes.flatMap(function(btype) {
+                    var matching = allBatteries.filter(function(s) {
+                      return s.attributes.battery_type === btype;
+                    });
+                    var withHistory = matching.filter(function(s) {
+                      return s.attributes.battery_last_replaced;
+                    });
+                    var days = withHistory.map(function(s) {
+                      var d = new Date(s.attributes.battery_last_replaced);
+                      return Math.floor((Date.now() - d.getTime()) / 86400000);
+                    });
+                    var avgDays = days.length > 0
+                      ? Math.round(days.reduce(function(a,b){return a+b;},0) / days.length)
+                      : null;
+                    var minDays = days.length > 0 ? Math.min.apply(null, days) : null;
+                    var maxDays = days.length > 0 ? Math.max.apply(null, days) : null;
+                    var statsLine = avgDays !== null
+                      ? avgDays + ' days avg \u00b7 ' + minDays + '\u2013' + maxDays + ' days range \u00b7 ' + withHistory.length + ' with history'
+                      : '_No replacement history yet_';
+                    return [
+                      {
+                        type: 'markdown',
+                        content: '### \ud83d\udcc5 ' + btype + '\n\n' +
+                                 '**' + matching.length + ' device' + (matching.length !== 1 ? 's' : '') + '** \u00b7 ' + statsLine
+                      },
+                      {
+                        type: 'custom:battery-state-card',
+                        sort: [{ by: 'entity.attributes.battery_last_replaced', desc: false }],
+                        tap_action: { action: 'more-info' },
+                        hold_action: {
+                          action: 'call-service',
+                          service: 'button.press',
+                          target: { entity_id: '{entity_id|replace(sensor.,button.)|replace(_battery_plus,_battery_replaced)}' }
+                        },
+                        filter: {
+                          include: [
+                            { name: 'entity_id', value: '*_battery_plus*' },
+                            { name: 'attributes.battery_type', operator: '=', value: btype }
+                          ],
+                          exclude: [
+                            { name: 'state', value: 'unavailable' },
+                            { name: 'state', value: 'unknown' },
+                            { name: 'entity_id', value: '*_battery_plus_low*' },
+                            { name: 'attributes.battery_last_replaced', operator: 'not_exists' }
+                          ]
+                        },
+                        collapse: 0,
+                        secondary_info: '{attributes.battery_type_and_quantity} \u00b7 {attributes.battery_last_replaced|reltime()} \u00b7 Hold to Replace \ud83d\udd0b',
+                        bulk_rename: [{ from: ' Battery+', to: '' }],
+                        colors: {
+                          steps: [
+                            { value: 20, color: 'var(--label-badge-red)' },
+                            { value: 39, color: 'var(--label-badge-yellow)' },
+                            { value: 100, color: 'var(--label-badge-green)' }
+                          ]
+                        },
+                        style: 'battery-state-entity { padding-left: 16px; border-left: 2px solid var(--divider-color); margin-left: 8px; }'
+                      }
+                    ];
+                  });
+                })()}

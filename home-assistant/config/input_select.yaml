@@ -25,7 +25,7 @@ active_holiday:
   name: Active Holiday
   icon: mdi:calendar-star
   options:
-    - None
+    - No Holiday
     - New Years            # Jan 1
     - Valentines Day       # Feb 14 (week before to day of)
     - St. Patrick's Day    # March 17 (week before to day of)
@@ -37,7 +37,7 @@ active_holiday:
     - Halloween            # October (all month)
     - Thanksgiving         # Nov 1 to Thanksgiving Day (4th Thursday)
     - Christmas            # Black Friday to Epiphany (Jan 6)
-  initial: None
+  initial: No Holiday
 
 # ============================================================================
 # Time of Day

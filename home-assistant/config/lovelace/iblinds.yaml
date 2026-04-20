@@ -34,44 +34,44 @@ views:
     cards:
 
       # ── Living Room ────────────────────────────────────────────
-      - type: markdown
-        content: "## Living Room"
-
-      - type: grid
-        columns: 2
-        cards:
-          - type: vertical-stack
-            cards:
-              - type: tile
-                entity: cover.window_blind_controller
-                name: Right Blinds
-                features:
-                  - type: cover-open-close
-                  - type: cover-position
-              - type: tile
-                entity: input_number.iblinds_v2_node71_open_position
-                name: Open Stop Point
-                icon: mdi:blinds-open
-
-          - type: vertical-stack
-            cards:
-              - type: tile
-                entity: cover.window_blind_controller_3
-                name: Left Blinds
-                features:
-                  - type: cover-open-close
-                  - type: cover-position
-              - type: tile
-                entity: input_number.iblinds_v2_node72_open_position
-                name: Open Stop Point
-                icon: mdi:blinds-open
-
-      # ── Guest Room ─────────────────────────────────────────────
-      - type: markdown
-        content: "## Guest Room"
-
       - type: vertical-stack
         cards:
+          - type: markdown
+            content: "## Living Room"
+          - type: grid
+            columns: 2
+            cards:
+              - type: vertical-stack
+                cards:
+                  - type: tile
+                    entity: cover.window_blind_controller
+                    name: Right Blinds
+                    features:
+                      - type: cover-open-close
+                      - type: cover-position
+                  - type: tile
+                    entity: input_number.iblinds_v2_node71_open_position
+                    name: Open Stop Point
+                    icon: mdi:blinds-open
+
+              - type: vertical-stack
+                cards:
+                  - type: tile
+                    entity: cover.window_blind_controller_3
+                    name: Left Blinds
+                    features:
+                      - type: cover-open-close
+                      - type: cover-position
+                  - type: tile
+                    entity: input_number.iblinds_v2_node72_open_position
+                    name: Open Stop Point
+                    icon: mdi:blinds-open
+
+      # ── Guest Room ─────────────────────────────────────────────
+      - type: vertical-stack
+        cards:
+          - type: markdown
+            content: "## Guest Room"
           - type: tile
             entity: cover.window_blind_controller_2
             name: Guest Blinds
@@ -84,11 +84,10 @@ views:
             icon: mdi:blinds-open
 
       # ── Bedroom ────────────────────────────────────────────────
-      - type: markdown
-        content: "## Bedroom"
-
       - type: vertical-stack
         cards:
+          - type: markdown
+            content: "## Bedroom"
           - type: tile
             entity: cover.window_blind_controller_4
             name: Bedroom Blinds
@@ -101,13 +100,14 @@ views:
             icon: mdi:blinds-open
 
       # ── Global Default ─────────────────────────────────────────
-      - type: markdown
-        content: "## Global Default"
-
-      - type: tile
-        entity: input_number.iblinds_v2_open_position
-        name: Default Open Stop Point (fallback for all v2 blinds)
-        icon: mdi:blinds-open
+      - type: vertical-stack
+        cards:
+          - type: markdown
+            content: "## Global Default"
+          - type: tile
+            entity: input_number.iblinds_v2_open_position
+            name: Default Open Stop Point (fallback for all v2 blinds)
+            icon: mdi:blinds-open
 
 
   # ═══════════════════════════════════════════════════════════════
@@ -123,81 +123,82 @@ views:
     cards:
 
       # ── Sunroom — Quick Group Controls ─────────────────────────
-      - type: markdown
-        content: "## Sunroom — Group Controls"
-
-      - type: grid
-        columns: 2
-        cards:
-          - type: tile
-            entity: cover.sunroom_blinds_2
-            name: All Sunroom
-            features:
-              - type: cover-open-close
-              - type: cover-position
-
-          - type: tile
-            entity: cover.north_sunroom_blinds_2
-            name: North Sunroom
-            features:
-              - type: cover-open-close
-              - type: cover-position
-
-          - type: tile
-            entity: cover.south_sunroom_blinds_2
-            name: South Sunroom
-            features:
-              - type: cover-open-close
-              - type: cover-position
-
-          - type: tile
-            entity: cover.west_sunroom_blinds_2
-            name: West Sunroom
-            features:
-              - type: cover-open-close
-              - type: cover-position
-
-          - type: tile
-            entity: cover.bay_blinds
-            name: Bay Blinds
-            features:
-              - type: cover-open-close
-              - type: cover-position
-
-      # ── Personal / Named Groups ────────────────────────────────
-      - type: markdown
-        content: "## Personal Groups"
-
-      - type: grid
-        columns: 3
-        cards:
-          - type: tile
-            entity: cover.patricia_s_blinds
-            name: Patricia's
-            features:
-              - type: cover-open-close
-              - type: cover-position
-
-          - type: tile
-            entity: cover.stella_s_blinds
-            name: Stella's
-            features:
-              - type: cover-open-close
-              - type: cover-position
-
-          - type: tile
-            entity: cover.hadley_s_blinds
-            name: Hadley's
-            features:
-              - type: cover-open-close
-              - type: cover-position
-
-      # ── Kids' Bedroom ──────────────────────────────────────────
-      - type: markdown
-        content: "## Kids' Bedroom"
-
       - type: vertical-stack
         cards:
+          - type: markdown
+            content: "## Sunroom — Group Controls"
+          - type: grid
+            columns: 2
+            cards:
+              - type: tile
+                entity: cover.sunroom_blinds_2
+                name: All Sunroom
+                features:
+                  - type: cover-open-close
+                  - type: cover-position
+
+              - type: tile
+                entity: cover.north_sunroom_blinds_2
+                name: North Sunroom
+                features:
+                  - type: cover-open-close
+                  - type: cover-position
+
+              - type: tile
+                entity: cover.south_sunroom_blinds_2
+                name: South Sunroom
+                features:
+                  - type: cover-open-close
+                  - type: cover-position
+
+              - type: tile
+                entity: cover.west_sunroom_blinds_2
+                name: West Sunroom
+                features:
+                  - type: cover-open-close
+                  - type: cover-position
+
+              - type: tile
+                entity: cover.bay_blinds
+                name: Bay Blinds
+                features:
+                  - type: cover-open-close
+                  - type: cover-position
+
+      # ── Personal / Named Groups ────────────────────────────────
+      - type: vertical-stack
+        cards:
+          - type: markdown
+            content: "## Personal Groups"
+          - type: grid
+            columns: 3
+            cards:
+              - type: tile
+                entity: cover.patricia_s_blinds
+                name: Patricia's
+                features:
+                  - type: cover-open-close
+                  - type: cover-position
+
+              - type: tile
+                entity: cover.stella_s_blinds
+                name: Stella's
+                features:
+                  - type: cover-open-close
+                  - type: cover-position
+
+              - type: tile
+                entity: cover.hadley_s_blinds
+                name: Hadley's
+                features:
+                  - type: cover-open-close
+                  - type: cover-position
+
+      # ── Kids' Bedroom ──────────────────────────────────────────
+      - type: vertical-stack
+        cards:
+          - type: markdown
+            content: "## Kids' Bedroom"
           - type: tile
             entity: cover.window_blind_controller_1_horizontal_slats_angle_2
             name: Kid's Blinds
@@ -210,159 +211,163 @@ views:
             icon: mdi:blinds-open
 
       # ── North Sunroom — Individual Blinds ─────────────────────
-      - type: markdown
-        content: "## North Sunroom — Individual Blinds"
-
-      - type: grid
-        columns: 2
+      - type: vertical-stack
         cards:
-          - type: vertical-stack
+          - type: markdown
+            content: "## North Sunroom — Individual Blinds"
+          - type: grid
+            columns: 2
             cards:
-              - type: tile
-                entity: cover.window_blind_controller_9_horizontal_slats_angle
-                name: SR Blind 9
-                features:
-                  - type: cover-open-close
-                  - type: cover-position
-              - type: tile
-                entity: number.window_blind_controller_9_default_on_value
-                name: Open Stop Point (Param 4)
-                icon: mdi:blinds-open
+              - type: vertical-stack
+                cards:
+                  - type: tile
+                    entity: cover.window_blind_controller_9_horizontal_slats_angle
+                    name: SR Blind 9
+                    features:
+                      - type: cover-open-close
+                      - type: cover-position
+                  - type: tile
+                    entity: number.window_blind_controller_9_default_on_value
+                    name: Open Stop Point (Param 4)
+                    icon: mdi:blinds-open
 
-          - type: vertical-stack
-            cards:
-              - type: tile
-                entity: cover.window_blind_controller_horizontal_slats_angle
-                name: SR Blind 10
-                features:
-                  - type: cover-open-close
-                  - type: cover-position
-              - type: tile
-                entity: number.window_blind_controller_default_on_value
-                name: Open Stop Point (Param 4)
-                icon: mdi:blinds-open
+              - type: vertical-stack
+                cards:
+                  - type: tile
+                    entity: cover.window_blind_controller_horizontal_slats_angle
+                    name: SR Blind 10
+                    features:
+                      - type: cover-open-close
+                      - type: cover-position
+                  - type: tile
+                    entity: number.window_blind_controller_default_on_value
+                    name: Open Stop Point (Param 4)
+                    icon: mdi:blinds-open
 
       # ── South Sunroom — Individual Blinds ─────────────────────
-      - type: markdown
-        content: "## South Sunroom — Individual Blinds"
-
-      - type: grid
-        columns: 2
+      - type: vertical-stack
         cards:
-          - type: vertical-stack
+          - type: markdown
+            content: "## South Sunroom — Individual Blinds"
+          - type: grid
+            columns: 2
             cards:
-              - type: tile
-                entity: cover.window_blind_controller_1_horizontal_slats_angle
-                name: SR Blind 1
-                features:
-                  - type: cover-open-close
-                  - type: cover-position
-              - type: tile
-                entity: number.window_blind_controller_1_default_on_value
-                name: Open Stop Point (Param 4)
-                icon: mdi:blinds-open
+              - type: vertical-stack
+                cards:
+                  - type: tile
+                    entity: cover.window_blind_controller_1_horizontal_slats_angle
+                    name: SR Blind 1
+                    features:
+                      - type: cover-open-close
+                      - type: cover-position
+                  - type: tile
+                    entity: number.window_blind_controller_1_default_on_value
+                    name: Open Stop Point (Param 4)
+                    icon: mdi:blinds-open
 
-          - type: vertical-stack
-            cards:
-              - type: tile
-                entity: cover.window_blind_controller_2_horizontal_slats_angle
-                name: SR Blind 2
-                features:
-                  - type: cover-open-close
-                  - type: cover-position
-              - type: tile
-                entity: number.window_blind_controller_2_default_on_value
-                name: Open Stop Point (Param 4)
-                icon: mdi:blinds-open
+              - type: vertical-stack
+                cards:
+                  - type: tile
+                    entity: cover.window_blind_controller_2_horizontal_slats_angle
+                    name: SR Blind 2
+                    features:
+                      - type: cover-open-close
+                      - type: cover-position
+                  - type: tile
+                    entity: number.window_blind_controller_2_default_on_value
+                    name: Open Stop Point (Param 4)
+                    icon: mdi:blinds-open
 
-          - type: vertical-stack
-            cards:
-              - type: tile
-                entity: cover.window_blind_controller_3_horizontal_slats_angle
-                name: SR Blind 3
-                features:
-                  - type: cover-open-close
-                  - type: cover-position
-              - type: tile
-                entity: number.window_blind_controller_3_default_on_value
-                name: Open Stop Point (Param 4)
-                icon: mdi:blinds-open
+              - type: vertical-stack
+                cards:
+                  - type: tile
+                    entity: cover.window_blind_controller_3_horizontal_slats_angle
+                    name: SR Blind 3
+                    features:
+                      - type: cover-open-close
+                      - type: cover-position
+                  - type: tile
+                    entity: number.window_blind_controller_3_default_on_value
+                    name: Open Stop Point (Param 4)
+                    icon: mdi:blinds-open
 
       # ── West Sunroom — Individual Blinds ──────────────────────
-      - type: markdown
-        content: "## West Sunroom — Individual Blinds"
-
-      - type: grid
-        columns: 2
+      - type: vertical-stack
         cards:
-          - type: vertical-stack
+          - type: markdown
+            content: "## West Sunroom — Individual Blinds"
+          - type: grid
+            columns: 2
             cards:
-              - type: tile
-                entity: cover.window_blind_controller_horizontal_slats_angle_3
-                name: SR Blind 4
-                features:
-                  - type: cover-open-close
-                  - type: cover-position
-              - type: tile
-                entity: number.window_blind_controller_default_on_value_3
-                name: Open Stop Point (Param 4)
-                icon: mdi:blinds-open
+              - type: vertical-stack
+                cards:
+                  - type: tile
+                    entity: cover.window_blind_controller_horizontal_slats_angle_3
+                    name: SR Blind 4
+                    features:
+                      - type: cover-open-close
+                      - type: cover-position
+                  - type: tile
+                    entity: number.window_blind_controller_default_on_value_3
+                    name: Open Stop Point (Param 4)
+                    icon: mdi:blinds-open
 
-          - type: vertical-stack
-            cards:
-              - type: tile
-                entity: cover.window_blind_controller_horizontal_slats_angle_2
-                name: SR Blind 8
-                features:
-                  - type: cover-open-close
-                  - type: cover-position
-              - type: tile
-                entity: number.window_blind_controller_default_on_value_2
-                name: Open Stop Point (Param 4)
-                icon: mdi:blinds-open
+              - type: vertical-stack
+                cards:
+                  - type: tile
+                    entity: cover.window_blind_controller_horizontal_slats_angle_2
+                    name: SR Blind 8
+                    features:
+                      - type: cover-open-close
+                      - type: cover-position
+                  - type: tile
+                    entity: number.window_blind_controller_default_on_value_2
+                    name: Open Stop Point (Param 4)
+                    icon: mdi:blinds-open
 
       # ── Bay — Individual Blinds ────────────────────────────────
-      - type: markdown
-        content: "## Bay — Individual Blinds"
-
-      - type: grid
-        columns: 2
+      - type: vertical-stack
         cards:
-          - type: vertical-stack
+          - type: markdown
+            content: "## Bay — Individual Blinds"
+          - type: grid
+            columns: 2
             cards:
-              - type: tile
-                entity: cover.window_blind_controller_5_horizontal_slats_angle
-                name: SR Blind 5
-                features:
-                  - type: cover-open-close
-                  - type: cover-position
-              - type: tile
-                entity: number.window_blind_controller_5_default_on_value
-                name: Open Stop Point (Param 4)
-                icon: mdi:blinds-open
+              - type: vertical-stack
+                cards:
+                  - type: tile
+                    entity: cover.window_blind_controller_5_horizontal_slats_angle
+                    name: SR Blind 5
+                    features:
+                      - type: cover-open-close
+                      - type: cover-position
+                  - type: tile
+                    entity: number.window_blind_controller_5_default_on_value
+                    name: Open Stop Point (Param 4)
+                    icon: mdi:blinds-open
 
-          - type: vertical-stack
-            cards:
-              - type: tile
-                entity: cover.window_blind_controller_6_horizontal_slats_angle
-                name: SR Blind 6
-                features:
-                  - type: cover-open-close
-                  - type: cover-position
-              - type: tile
-                entity: number.window_blind_controller_6_default_on_value
-                name: Open Stop Point (Param 4)
-                icon: mdi:blinds-open
+              - type: vertical-stack
+                cards:
+                  - type: tile
+                    entity: cover.window_blind_controller_6_horizontal_slats_angle
+                    name: SR Blind 6
+                    features:
+                      - type: cover-open-close
+                      - type: cover-position
+                  - type: tile
+                    entity: number.window_blind_controller_6_default_on_value
+                    name: Open Stop Point (Param 4)
+                    icon: mdi:blinds-open
 
-          - type: vertical-stack
-            cards:
-              - type: tile
-                entity: cover.window_blind_controller_horizontal_slats_angle_4
-                name: SR Blind 7
-                features:
-                  - type: cover-open-close
-                  - type: cover-position
-              - type: tile
-                entity: number.window_blind_controller_default_on_value_4
-                name: Open Stop Point (Param 4)
-                icon: mdi:blinds-open
+              - type: vertical-stack
+                cards:
+                  - type: tile
+                    entity: cover.window_blind_controller_horizontal_slats_angle_4
+                    name: SR Blind 7
+                    features:
+                      - type: cover-open-close
+                      - type: cover-position
+                  - type: tile
+                    entity: number.window_blind_controller_default_on_value_4
+                    name: Open Stop Point (Param 4)
+                    icon: mdi:blinds-open

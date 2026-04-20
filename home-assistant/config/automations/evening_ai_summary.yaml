@@ -50,7 +50,7 @@ action:
           description: "Short note about tomorrow based on current modes/schedule"
     response_variable: evening_data
 
-  - action: notify.mobile_app_jeff
+  - action: notify.mobile_app_sparky
     data:
       title: "🏡 Evening Summary"
       message: >-

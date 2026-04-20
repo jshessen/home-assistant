@@ -45,7 +45,7 @@
                   Battery level: {{ trigger.event.data.battery_level }}%
                   {{ '\n' -}}
                   Needs: {{ trigger.event.data.battery_quantity }}× {{ trigger.event.data.battery_type }}
-            - action: notify.mobile_app_jeff
+            - action: notify.mobile_app_sparky
               data:
                 title: "🔋 {{ trigger.event.data.device_name }} Battery Low"
                 message: >

@@ -3420,3 +3420,171 @@ The opaque `{name}` placeholder has been replaced with the self-explanatory `{yo
 ## Confidence
 
 All verification is 🟢 direct file inspection — no inference required. No live web fetch was needed for this session.
+
+---
+
+### 2026-04-17: Fix Automation Include Pattern
+**Date:** 2026-04-17  
+**Author:** Rusty (Automation Engineer)  
+**Status:** ✅ Implemented  
+
+**Problem:** `automation: !include automations.yaml` pointed to a single flat file; the `automations/` directory with hand-crafted automations was not loading.
+
+**Decision:** Migrate all automations from `automations.yaml` into `automations/` directory structure.
+- Created `automations/homeseer_dimmers.yaml` — 4 HomeSeer dimmer multi-tap automations
+- Created `automations/network_monitoring.yaml` — AsusRouter device connected notification
+- Updated `automations/mode_management.yaml` — added Good Night Button automation
+- Replaced `automations.yaml` with empty stub (`[]`)
+- Fixed `configuration.yaml` line 13: `automation: !include automations.yaml` → `automation: !include_dir_merge_list automations/`
+
+**Validated:** Config check passed.
+
+---
+
+### 2026-04-17: Dual-Include Pattern for Automations
+**Date:** 2026-04-17  
+**Author:** Rusty (Automation Engineer)  
+**Status:** ✅ Implemented  
+
+**Problem:** Directory-based include (`!include_dir_merge_list`) breaks HA UI automation editor which expects to write to `automations.yaml`.
+
+**Decision:** Use HA's labeled automation include pattern to load from both sources:
+```yaml
+automation ui: !include automations.yaml
+automation manual: !include_dir_merge_list automations/
+```
+🟢 Verified live — confirmed against `https://www.home-assistant.io/docs/automation/yaml/`
+
+---
+
+### 2026-04-17: Battery Note Field Naming Convention
+**Date:** 2026-04-17  
+**Author:** Danny (Lead / Architect)  
+**Status:** Proposed  
+
+**Problem:** Battery Notes `note` field used inconsistent Amazon product titles causing meaningless fragmentation in brand/model grouping.
+
+**Decision:** Two-tier convention — `Brand ProductLine` for disposable; `Brand Model` for rechargeable.
+
+**Rules:** Include brand + performance-tier differentiator only. Exclude: battery type/size, chemistry, pack count, marketing fluff, seller details.
+
+**Examples:**
+- `Energizer AA Batteries Alkaline Power, 32 Count` → `Energizer Alkaline Power`
+- `Energizer AA Batteries, MAX Double AA, 24 Count` → `Energizer MAX`
+- `Duracell Optimum AA 28 Count with power boost...` → `Duracell Optimum`
+
+---
+
+### 2026-04-17: Section 3 Lifespan Stats — Card Composition Design
+**Date:** 2026-04-17 (revised from initial design)  
+**Author:** Danny (Lead / Architect)  
+**Status:** Ready for Rusty (implementation)  
+
+**Reframing:** This is a card composition problem, not a data aggregation problem. Goal: make Section 3 look like Sections 1 and 2 (one cohesive card unit) via visual composition.
+
+**Recommended approach — Option A' (vertical-stack + card-mod):**
+- Zero new dependencies (`card-mod` already installed)
+- Use `card-mod` CSS to zero out border-radius and box-shadow at the seam between the markdown stats card and the `battery-state-card`
+- Jinja2 template content is unchanged — purely visual composition
+
+**Rejected approaches:**
+- `stack-in-card` (not installed, adds dependency)
+- `vertical-stack` alone (wrong visual result — two distinct cards)
+
+**KString merge feasibility:** NOT feasible. `{avg(path)}` excludes non-numeric values; `battery_last_replaced` is an ISO 8601 string. KString has no date-to-elapsed-days function. Verdict upheld after live research.
+
+**Files to change:** `lovelace/battery_dashboard.yaml` — Section 3 only.
+
+---
+
+### 2026-04-17: Loop Feasibility — Dynamic Battery-Type Sections
+**Date:** 2026-04-17  
+**Author:** Danny (Lead / Architect)  
+**Status:** Finding — jshessen was right, coordinator was wrong  
+
+**Finding:** Looping without hardcoding IS possible. The installed `battery-state-card` v4 supports native `by` grouping.
+
+**Key facts:**
+- Jinja2 cannot generate card structure (static YAML at load time) — confirmed
+- `auto-entities` generates entity rows into one card, cannot spawn per-type cards — confirmed
+- `config-template-card` not installed (as of 2026-04-17 research date)
+- **`battery-state-card` v4 native `by` grouping:** `collapse: [{by: "attributes.battery_type"}]` dynamically creates one group per unique attribute value — no hardcoding
+
+**Correct architecture:**
+```yaml
+type: custom:battery-state-card
+collapse:
+  - by: "attributes.battery_type"
+    name: "{count} batteries"
+    secondary_info: "Avg: {avg|round(0)}%"
+```
+One card, all types handled dynamically, auto-adapts as new battery types appear.
+
+---
+
+### 2026-04-20: config-template-card Feasibility for Dynamic Sections
+**Date:** 2026-04-20  
+**Author:** Danny (Lead / Architect)  
+**Status:** APPROVED — feasible with documented constraints  
+
+**Finding:** `config-template-card` (verified installed at `www/community/config-template-card/`) supports `${JS expression}` in any YAML string field, evaluated via browser `eval()` with `states` in scope.
+
+**Key mechanic:** `cards:` must be a YAML string scalar (not a YAML array) containing `${expression}`. The eval result replaces `config.cards` with any JS-generated array of card config objects.
+
+**Full ES6+ available:** `flatMap`, `map`, `filter`, `Set`, arrow functions, etc.
+
+**Pattern:**
+```yaml
+card:
+  type: vertical-stack
+  cards: >-
+    ${(function() {
+      var btypes = Array.from(new Set(allBatteries.map(s => s.attributes.battery_type))).sort();
+      return btypes.flatMap(btype => [...]);
+    })()}
+```
+
+**Constraint:** The entire field value must be `${expr}` — mixed content (`"prefix ${expr} suffix"`) is not supported.
+
+---
+
+### 2026-04-20: active_holiday None option renamed to No Holiday
+**Date:** 2026-04-20  
+**Author:** Rusty (Automation Engineer)  
+
+**Problem:** `input_select.active_holiday` had a bare YAML `None` option which HA parsed as Python `None`, causing `holiday_season_controller` to fail with "string value is None for dictionary value @ data['option']" on every scheduled run.
+
+**Decision:** Renamed option and `initial:` value from `None` to `No Holiday` in `input_select.yaml`.
+
+**File changed:** `home-assistant/config/input_select.yaml`
+
+---
+
+### 2026-04-20: Template icon dicts updated for No Holiday
+**Date:** 2026-04-20  
+**Author:** Basher (Template Dev)  
+
+**What:** Renamed `'None'` dict key to `'No Holiday'` in seasonal template files that map `input_select.active_holiday` state to icons.
+
+**Files changed:**
+- `home-assistant/config/templates/seasonal_displays.yaml`
+- `home-assistant/config/templates/seasonal_living_room.yaml`
+- `home-assistant/config/templates/house_christmas_lights.yaml`
+
+**Why:** Follows Rusty's rename of the input_select option — keeps icon lookups consistent with the new option name.
+
+---
+
+### 2026-04-20: Config validation after HA Repair fixes
+**Date:** 2026-04-20  
+**Author:** Livingston (Troubleshooter)  
+
+**Result:** PASS — exit code 0, clean even with `--fail-on-warnings`.
+
+**All modified files validated:** `automations/battery_notes.yaml`, `automations/battery_monitoring.yaml`, `automations/evening_ai_summary.yaml`, `automations/holiday_season_controller.yaml`, `input_select.yaml`, `templates/seasonal_displays.yaml`, `templates/seasonal_living_room.yaml`, `templates/house_christmas_lights.yaml`.
+
+**Historical error correlation:** Runtime errors in `home-assistant.log` (Apr 18–20) confirm bugs existed before today's fixes:
+- `holiday_season_controller` "string value is None" — last fired 2026-04-20 00:01:00 pre-fix
+- `battery_notes_low_battery_notification` "Action notify.mobile_app_jeff not found" — last fired 2026-04-19 09:00:00 pre-fix
+
+These errors will stop after HA reloads automations with corrected config.

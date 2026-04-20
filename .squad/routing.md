@@ -34,6 +34,7 @@ How to decide who handles what. This table is authoritative — when two agents 
 | Repo scope decisions | Saul | What paths belong in source control, what's excluded, external repo boundaries |
 | Git clean-up | Saul | Stale branches, commit history organization, pre-commit conventions |
 | Ralph work queue monitoring | Ralph | Issues with `squad` label — scan board, surface work, keep team moving |
+| Async background tasks (tests, docs, deps) | @copilot | Routine mechanical work assigned via GitHub issue; not spawnable |
 | AI/ML integration research | Yen | Ollama, LocalAI, Whisper, conversation agents, HA AI Task |
 | LLM-assisted template/prompt work | Yen | Prompt engineering, Jinja2 optimization via AI techniques |
 | Emerging tech evaluation | Yen | New HA integrations, custom components, agent frameworks |
@@ -53,6 +54,7 @@ How to decide who handles what. This table is authoritative — when two agents 
 | `squad:saul` | Pick up and complete repo hygiene/GitHub project management work | Saul |
 | `squad:ralph` | Monitor, triage, or escalate issue/PR work | Ralph |
 | `squad:yen` | Pick up and complete AI/ML integration or tech research work | Yen |
+| `squad:copilot` | Assign issue to GitHub Copilot coding agent for async work | @copilot |
 
 ### How Issue Assignment Works
 

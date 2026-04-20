@@ -6,7 +6,11 @@ default_config:
 frontend:
   themes: !include_dir_merge_named themes
 
-automation: !include automations.yaml
+# Automations managed by HA UI
+automation ui: !include automations.yaml
+# Custom hand-crafted automations
+automation manual: !include_dir_merge_list automations/
+
 script: !include_dir_merge_named scripts/
 scene: !include scenes.yaml
 

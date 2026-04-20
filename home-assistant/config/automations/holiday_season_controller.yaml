@@ -90,7 +90,7 @@
             {% if today >= ash_wednesday and today <= easter_date %}
               Easter
             {% else %}
-              None
+              No Holiday
             {% endif %}
 
           {# ================================================================
@@ -114,7 +114,7 @@
             {% if day >= last_monday_day - 7 %}
               Memorial Day
             {% else %}
-              None
+              No Holiday
             {% endif %}
 
           {# ================================================================
@@ -140,7 +140,7 @@
             {% if day <= first_monday_day %}
               Labor Day
             {% else %}
-              None
+              No Holiday
             {% endif %}
 
           {# ================================================================
@@ -174,10 +174,10 @@
             Christmas
 
           {# ================================================================
-             NONE: No active holiday
+             NO HOLIDAY: No active holiday
              ================================================================ #}
           {% else %}
-            None
+            No Holiday
           {% endif %}
 
   mode: single

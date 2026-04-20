@@ -19,8 +19,23 @@
 | Livingston | Troubleshooter                | `.squad/agents/livingston/charter.md` | ✅ Active  |
 | Saul       | Project Steward               | `.squad/agents/saul/charter.md`       | ✅ Active  |
 | Yen        | AI & Emerging Tech Specialist | `.squad/agents/yen/charter.md`        | ✅ Active  |
+| @copilot   | 🤖 Coding Agent               | `.github/copilot-instructions.md`     | 🤖 Async   |
 | Scribe     | Session Logger                | `.squad/agents/scribe/charter.md`     | 📋 Silent  |
 | Ralph      | Work Monitor                  | `.squad/agents/ralph/charter.md`      | 🔄 Monitor |
+
+## @copilot Capability Profile
+
+| Task Type | Suitability | Notes |
+|-----------|-------------|-------|
+| Dependency updates | 🟢 | Routine, mechanical, well-scoped |
+| Test scaffolding | 🟢 | Known patterns, low judgment needed |
+| Doc generation | 🟢 | Reads code, outputs markdown |
+| Automation scaffolding (simple) | 🟡 | Needs clear spec; verify YAML output |
+| Jinja2 template logic | 🔴 | Requires HA-specific context + Basher review |
+| Architecture decisions | 🔴 | Always route to Danny |
+| Z-Wave/Zigbee config | 🔴 | Always route to Linus |
+
+<!-- copilot-auto-assign: false -->
 
 ## Project Context
 

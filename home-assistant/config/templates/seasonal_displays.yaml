@@ -51,7 +51,7 @@
           'Easter': 'mdi:rabbit-variant',
           "St. Patrick's Day": 'mdi:clover',
           'Independence Day': 'mdi:flag-variant',
-          'None': 'mdi:power-socket-us'
+          'No Holiday': 'mdi:power-socket-us'
         }.get(season, 'mdi:power-socket-us') }}
 
       # Define anchors here on first use
