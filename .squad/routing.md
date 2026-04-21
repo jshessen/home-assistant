@@ -29,10 +29,12 @@ How to decide who handles what. This table is authoritative — when two agents 
 | Git commits of `.squad/` files | Scribe | Always `mode: "background"` |
 | GitHub issue triage | Saul | Issues, milestones, labels, issue templates, GitHub project board |
 | PR lifecycle monitoring | Saul | PR status, changelogs, release tags, branch hygiene |
+| Branch management | Saul | ahead/behind checks, stale branches, branch cleanup plans |
+| Release changelog management | Saul | release notes drafts, changelog curation, release cut prep |
 | `.gitignore` / `.gitattributes` | Saul | Scope boundaries, merge driver decisions, exclusion rules |
 | VS Code workspace config | Saul | `home-assistant.code-workspace`, `.vscode/` settings, custom YAML tags |
 | Repo scope decisions | Saul | What paths belong in source control, what's excluded, external repo boundaries |
-| Git clean-up | Saul | Stale branches, commit history organization, pre-commit conventions |
+| Git clean-up / repo hygiene | Saul | working tree cleanup checklists, non-destructive reconciliation plans, pre-commit conventions |
 | Ralph work queue monitoring | Ralph | Issues with `squad` label — scan board, surface work, keep team moving |
 | Async background tasks (tests, docs, deps) | @copilot | Routine mechanical work assigned via GitHub issue; not spawnable |
 | AI/ML integration research | Yen | Ollama, LocalAI, Whisper, conversation agents, HA AI Task |
@@ -86,5 +88,5 @@ How to decide who handles what. This table is authoritative — when two agents 
 | Livingston | Debugging, log analysis, entity ID research, diagnostics |
 | Yen | AI/ML integrations, emerging tech, team training, prompt engineering |
 | Scribe | Session logging, decision merging, `.squad/` git commits |
-| Ralph | GitHub issue triage, PR lifecycle monitoring |
+| Ralph | Work queue monitoring and escalation |
 

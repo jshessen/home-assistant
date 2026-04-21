@@ -64,3 +64,21 @@ Sub-repos in the workspace (NOT owned by this project):
 - `.ignore` file exists for ripgrep/fd — keep in sync with `.gitignore` where appropriate.
 - `keymaster-github/` and `pyonwater-github/` are referenced in workspace/gitignore as position-holders even when not cloned; guard entries are correct defensive practice.
 
+### 2026-04-21 — Repo hygiene pass: branch tracking + dirty tree reconciliation checklist
+
+**Verified current state (non-destructive):**
+- `origin` remote is configured, but `main` has **no upstream tracking branch**.
+- Ahead/behind is currently unavailable until upstream is set.
+- Working tree is dirty (multiple modified files plus untracked files outside `.squad/`).
+
+**Next safe steps (in order):**
+1. Set upstream for `main`: `git branch --set-upstream-to=origin/main main`
+2. Fetch refs to refresh comparison base: `git fetch origin`
+3. Re-run divergence check: `git rev-list --left-right --count origin/main...main`
+4. Snapshot current WIP before cleanup decisions: `git stash push -u -m "pre-saul-hygiene-reconcile"` (optional but recommended)
+5. Review stashed/working changes by domain and split into focused commits (HA config vs infra vs repo governance)
+6. Resolve obsolete/deleted file intent explicitly (for example the deleted reverse proxy file) before next merge/push
+7. After commits, verify clean branch state with: `git status -sb` and `git branch -vv`
+
+**Guardrail:** Do not rewrite history during routine hygiene passes unless explicitly requested.
+

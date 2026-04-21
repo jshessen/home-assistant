@@ -23,6 +23,11 @@
 | Scribe     | Session Logger                | `.squad/agents/scribe/charter.md`     | 📋 Silent  |
 | Ralph      | Work Monitor                  | `.squad/agents/ralph/charter.md`      | 🔄 Monitor |
 
+## Stewardship Ownership
+
+- **Git Hygiene & Repo Stewardship Owner:** Saul
+- **Ownership Scope:** branch hygiene, repo cleanup checklists, release changelog and tagging workflow, `.gitignore`/`.gitattributes` boundaries, and GitHub issue/PR process hygiene
+
 ## @copilot Capability Profile
 
 | Task Type | Suitability | Notes |
