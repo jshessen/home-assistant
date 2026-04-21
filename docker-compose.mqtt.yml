@@ -53,9 +53,9 @@ services:
   mqtt:
     image: eclipse-mosquitto:${MQTT_TAG:-latest}
     container_name: mqtt
-    restart: always
+    restart: unless-stopped
     healthcheck:
-      test: mosquitto_sub -u $$MQTTADMIN -P $$MQTTADMINPW -t '$$SYS/#' -C 1 -i healthcheck -W 3
+      test: mosquitto_pub -u $$(tr -d '[:space:]' < /run/secrets/mqtt_admin) -P $$(tr -d '[:space:]' < /run/secrets/mqtt_admin_password) -t homeassistant/status/healthcheck -m ok -q 0
       interval: 20s
       timeout: 10s
       retries: 3  
@@ -78,10 +78,6 @@ services:
       - mqtt_admin_password
     environment:
       TZ: ${TZ}
-      #MQTTADMIN_FILE: "/run/secrets/mqtt_admin"
-      #MQTTADMINPASS_FILE: "/run/secrets/mqtt_admin_password"
-      MQTTADMIN: ${MQTTADMIN}
-      MQTTADMINPW: ${MQTTADMINPW}
   ##########
   #
   #################### 

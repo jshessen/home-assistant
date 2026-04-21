@@ -43,10 +43,10 @@ services:
   home-assistant:
     image: ghcr.io/home-assistant/home-assistant:${HACS_TAG:-latest}
     container_name: home-assistant
-    restart: always
+    restart: unless-stopped
     network_mode: host
     healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:8123/"]
+      test: [ "CMD", "curl", "-sf", "http://localhost:8123/" ]
       interval: 1m
       timeout: 10s
       start_period: 120s
@@ -70,5 +70,5 @@ services:
   ##########
   #
   #################### 
-#
-##############################
+  #
+  ##############################
