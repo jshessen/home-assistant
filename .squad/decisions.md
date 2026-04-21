@@ -8,9 +8,9 @@
 **Status:** Implemented  
 **Context:** Yen Tech Briefing (2026-04-15) — Action 3 & 4
 
-**Decision:** Deploy Ollama as a containerized local LLM server for Home Assistant AI integrations using the dual-config pattern.
+**Decision:** Deploy Ollama as a containerized local LLM server for Home Assistant AI integrations.
 
-**Model Selected:** `llama3.2:3b` (CPU-friendly, 2GB, general-purpose)
+**Model Selected:** ~~`llama3.2:3b`~~ → **`qwen3:4b-instruct`** (updated 2026-04-21 — `llama3.2:3b` was the original plan; `qwen3:4b-instruct` is the model actually pulled and in use)
 
 **What Was Built:**
 - Docker Compose: `docker-compose.ollama.yml` with Ollama service on port 11434
@@ -18,18 +18,18 @@
 - Documentation: `home-assistant/config/docs/setup/ollama-setup.md` with dual-config setup guide
 - Directory: `ollama/models/` for model persistence
 
-**Dual-Config Pattern:**
-- Two HA integrations point to same Ollama server (localhost:11434)
-- "Ollama Chat" — Assist pipeline (conversation agent)
-- "Ollama Control" — Device control (scripts, automations)
-- Rationale: Context isolation, independent tuning, future model flexibility
+**Dual-Config Pattern:** ~~Planned but not implemented~~ **(SUPERSEDED 2026-04-21)**
+- ~~Two HA integrations point to same Ollama server (localhost:11434)~~
+- ~~"Ollama Chat" — Assist pipeline (conversation agent)~~
+- ~~"Ollama Control" — Device control (scripts, automations)~~
+- **Actual state:** Single Ollama integration configured via UI, using `qwen3:4b-instruct` as conversation agent. Dual-config was abandoned — only one integration exists.
 
 **Technical Decisions:**
 - No GPU acceleration (CPU-only, universal compatibility)
 - Host networking: HA resolves `localhost:11434` directly
 - Restart policy: `unless-stopped` (respects user intent)
 - Volume: Bind mount `./ollama/models` → `/root/.ollama`
-- Manual model pull: `docker exec ollama ollama pull llama3.2:3b` required on first startup
+- Manual model pull: `docker exec ollama ollama pull qwen3:4b-instruct` required on first startup (original plan referenced `llama3.2:3b` — superseded)
 
 **Integration:**
 - Preserves existing `make hacs` target
@@ -308,6 +308,68 @@ variable_name: >-
 - Actionable iOS notifications
 
 **Commit:** `08d391c` (feat(automations): Add battery monitoring automation)
+
+---
+
+### 2026-04-21: reverse_proxy.yaml Dead Code Investigation
+**Date:** 2026-04-21
+**Author:** Danny (Lead/Architect)
+**Status:** Closed — No Action Required
+
+**Investigation:** Task requested removal of `home-assistant/config/reverse_proxy.yaml` as orphaned dead code.
+
+**Findings:**
+- Zero references found anywhere in the config tree
+- File does not exist on disk
+- File was never tracked in git (no history)
+- `configuration.yaml` lines 29–43 contain the `http:` block inline with `trusted_proxies` properly configured (192.168.1.20, 172.16.2.0/27, 127.0.0.1)
+
+**Conclusion:** Dead code was already absent — no action taken.
+
+---
+
+### 2026-04-21: Utility Meter Include, input_button Definition, and Away Guard
+**Date:** 2026-04-21
+**Author:** Rusty (Automation Engineer)
+**Status:** ✅ Implemented (one correction; two already-done)
+
+**Summary:** Audited three reported configuration gaps.
+
+**Task 1 — utility_meter.yaml wired into configuration.yaml:** Already present (`utility_meter: !include utility_meter.yaml`). No changes.
+
+**Task 2 — input_button.good_night_mode definition:** File and include existed, but entity name was wrong.
+- **Change:** `home-assistant/config/input_button.yaml` — `name: "Good Night"` → `name: "Good Night Mode"`
+
+**Task 3 — for: guard on all_persons_away automation:** Already present (`for: "00:05:00"` on both person triggers in `automations/mode_management.yaml`). No changes.
+
+**Files Changed:** `home-assistant/config/input_button.yaml`
+
+---
+
+### 2026-04-20: AI & Emerging Tech Assessment
+**Date:** 2026-04-20
+**Author:** Yen (AI & Emerging Tech Specialist)
+
+**Critical Finding:** Ollama container was running but had zero models installed. `ai_task` routes were non-functional.
+
+**Resolution (2026-04-21):** `qwen3:4b-instruct` pulled and configured as Ollama conversation agent. Single integration (not dual-config — see Ollama Deployment entry correction above).
+
+**Gap Analysis — Unused HA 2026.x AI Capabilities:**
+1. **Ollama Integration options** — "Think before responding", HA Control toggle, context window, keep-alive: available but not configured
+2. **ai_task.generate_image** — not used; low priority
+3. **Assist Pipeline / Local Voice** — not deployed; requires Wyoming containers
+4. **Custom Sentences** — not configured; `config/custom_sentences/en/` directory
+5. **AI Thinking Display (2026.4)** — desktop web UI shows reasoning steps; requires LLM-backed Assist agent
+6. **Cross-Domain Triggers in Labs (2026.4)** — battery triggers now native; could replace battery monitoring automation
+7. **OpenAI GPT-5.4 Support** — available if OpenAI integration desired
+
+**Evening AI Summary (`automations/evening_ai_summary.yaml`) gaps noted:**
+- Blind states not included
+- Battery triage not included
+- Tomorrow's forecast not included
+- `entity_id` unspecified (fragile default)
+
+**Priority:** Wiring `qwen3:4b-instruct` to Assist pipeline complete. Voice/STT/TTS deferred.
 
 **Recommendation:** Promote device_class + template trigger pattern as squad standard for cross-device automations.
 
