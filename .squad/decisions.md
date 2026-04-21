@@ -2,6 +2,135 @@
 
 ## Active Decisions
 
+### 2026-04-21: Template Sensor Availability Guards
+**Date:** 2026-04-21
+**Author:** Basher (Template Dev)
+**Status:** Implemented, validated EXIT:0
+
+#### Context
+
+Template sensors without `availability:` silently return `unavailable` when their source entities are
+unavailable. This causes cascading failures in automations and dashboards that consume those sensors.
+
+#### Audit Findings
+
+**Already had `availability:` (no changes):**
+
+| File | Switch/Sensor |
+|------|---------------|
+| christmas_tree.yaml | switch.christmas_tree |
+| house_christmas_lights.yaml | light.house_seasonal_lights + static aliases |
+| seasonal_displays.yaml | switch.front_yard_seasonal_display + static aliases |
+| seasonal_living_room.yaml | switch.living_room_seasonal_display + static aliases |
+| snowman.yaml | switch.snowman |
+| sunroom_christmas_tree.yaml | switch.sunroom_christmas_tree |
+| table_tree.yaml | switch.table_tree |
+
+**Skipped (time-only, no external entity):**
+- `Current Electricity Season` — only uses `now().month`
+- `Current Gas Season` — only uses `now().month`
+
+#### Changes Made
+
+**amwater_water_costs.yaml:** Current Water Rate, Monthly Water Cost — guarded on `input_number.amwater_mo_stl_rate_per_100_gal` / `sensor.monthly_water`
+
+**energy_costs.yaml:** Current Electricity Rate, Monthly Electricity Cost, Daily Electricity Cost, Estimated Monthly Bill Projection — guarded on `sensor.monthly_electricity` / `sensor.daily_electricity` / `sensor.monthly_electricity_cost`
+
+**spire_gas_costs.yaml:** Gas Usage Ccf, Current Gas Rate, Monthly Gas Cost, Daily Gas Cost — guarded on `sensor.scmplus_111066304_gas_usage` / `input_number.spire_mo_east_pga_rate` / `sensor.monthly_gas` / `sensor.daily_gas`
+
+#### Pattern Applied
+
+```yaml
+availability: "{{ states('entity_id') not in ('unavailable', 'unknown', 'none', '') }}"
+```
+
+Cost sensors guarded on their primary real-world data source (utility consumption sensor), not on derived template sensors, to avoid dependency chains.
+
+---
+
+### 2026-04-21: MQTT ACL Hardening
+**Date:** 2026-04-21
+**Author:** Linus (Integration Specialist)
+**Status:** Implemented
+
+#### Context
+
+Mosquitto was running with `allow_anonymous false` and password auth but **no ACL file**. Any authenticated client could publish/subscribe to any topic without restriction.
+
+#### Findings
+
+**Users (from password.txt):** Only `hacs` credential existed; both HA and zigbee2mqtt shared it.
+
+**Service MQTT Topology:**
+
+| Service | Connection | Topics | Auth |
+|---------|------------|--------|------|
+| Home Assistant | `localhost:1883` (host network) | `homeassistant/#`, `zigbee2mqtt/#`, `$SYS/#` | user: `hacs` |
+| zigbee2mqtt | `mqtt://mqtt:1883` (bridge network) | `zigbee2mqtt/#`, `homeassistant/#` | user: `hacs` |
+| zwave-js-ui | N/A | N/A | MQTT gateway disabled |
+
+#### Bind Address Decision: Do Not Change
+
+Binding to `127.0.0.1` breaks zigbee2mqtt (bridge network). Binding to `172.16.2.x` breaks HA (host network). Left `listener 1883` as-is (all interfaces). Network-layer isolation provided by Docker bridge firewall rules and published port mapping.
+
+#### Changes Made
+
+- Created `/mosquitto/config/acl.conf` with per-user topic ACLs
+- `mosquitto/config/password.txt`: added `homeassistant`, `zigbee2mqtt`, `rtl433` users (hacs kept)
+- `zigbee2mqtt/data/configuration.yaml`: mqtt.user changed from `hacs` to `zigbee2mqtt`, password rotated
+
+**Post-restart status (verified 2026-04-21):** mqtt container healthy, zigbee2mqtt MQTT connected, bridge online. Aether (rtl-haos) still on `hacs` legacy credential — pending manual migration.
+
+---
+
+### 2026-04-21: MQTT Per-Client Credential Migration
+**Date:** 2026-04-21
+**Author:** Linus (Integration Specialist)
+**Status:** Partially complete — Aether migration pending
+
+#### Credentials Created
+
+- **homeassistant** — for HA MQTT integration (Settings → Integrations → MQTT → Reconfigure)
+- **zigbee2mqtt** — already updated in `zigbee2mqtt/data/configuration.yaml`
+- **rtl433** — for Aether (rtl-haos) at `/opt/docker/rtl-haos/secrets/`
+- **hacs (legacy)** — still active; remove after all clients confirmed migrated
+
+#### Next Steps for jshessen
+
+1. HA UI: Settings → Integrations → MQTT → Reconfigure → username: `homeassistant`
+2. Aether: `echo "rtl433" > /opt/docker/rtl-haos/secrets/mqtt_admin && echo "<password>" > /opt/docker/rtl-haos/secrets/mqtt_admin_password && docker compose up -d`
+3. Confirm Aether reconnects, then confirm HA reconnects
+4. Once both confirmed: remove `hacs` from Mosquitto password.txt
+
+*(Credentials stored in Linus's inbox decision file — reference that for actual password values)*
+
+---
+
+### 2026-04-21: Evening AI Summary Error Fallback
+**Date:** 2026-04-21
+**Author:** Rusty (Automation Engineer)
+**Status:** Implemented
+**File:** `home-assistant/config/automations/evening_ai_summary.yaml`
+
+#### Problem
+
+`ai_task.generate_data` had no error handling — if Ollama was down, the automation aborted hard with no notification.
+
+#### Change Made
+
+1. Added `continue_on_error: true` to the `ai_task.generate_data` action
+2. Replaced direct `notify` with `choose:` block:
+   - **Success path:** Template condition checks `evening_data` is defined, `evening_data.data` exists, and `evening_data.data.summary` is a non-empty string
+   - **Fallback path (default):** Sends `"Evening summary unavailable — Ollama did not respond."` via `notify.mobile_app_sparky`
+
+#### Why `choose:` over try/catch
+
+HA has no native try/catch. `continue_on_error: true` + `choose:` with template condition is the idiomatic HA pattern. Guards cover: action failure, partial/malformed response, empty summary.
+
+**Validation:** `check_config` → EXIT:0
+
+---
+
 ### 2026-04-15: Ollama Local LLM Deployment
 **Date:** 2026-04-15  
 **Author:** Linus (Integration Specialist)  
