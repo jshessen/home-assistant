@@ -2,15 +2,15 @@ version: 5
 mqtt:
   base_topic: zigbee2mqtt
   server: mqtt://mqtt:1883
-  user: hacs
-  password: rk5W6CfqGqiwILv1r22n64mSG3xpky
+  user: zigbee2mqtt
+  password: oub607/3HuGOFoKTAoG4JWTXX2ncrn0Q6rkWEUVLhcM=
 serial:
   port: /dev/ttyUSB0
   adapter: ember
   baudrate: 115200
   rtscts: false
 advanced:
-  log_level: debug
+  log_level: info
   channel: 11
   network_key:
     - 97

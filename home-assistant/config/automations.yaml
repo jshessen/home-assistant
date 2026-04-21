@@ -129,5 +129,5 @@
       to:
   conditions: []
   actions:
-    - service: script.good_night
+    - action: script.good_night
   mode: single
