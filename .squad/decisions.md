@@ -3882,3 +3882,970 @@ These errors will stop after HA reloads automations with corrected config.
 18. **NUT re-authentication:** Settings → Devices & Services → NUT → Re-authenticate. Owner: jshessen.
 19. **Water meter `state_class_removed` (2 repairs):** Find sensor config, confirm correct `state_class`, apply fix + restart. Owner: Rusty.
 20. **input_boolean holiday entities missing from live registry:** Reload → Developer Tools → YAML Reload → Input Booleans. Owner: jshessen.
+]633;E;echo "";16a0e96b-f1b0-4d47-8d85-e9ad4e637447]633;C
+---
+
+### 2026-04-21: Basher — seasonal_displays.yaml Assessment & Fix
+# Basher — seasonal_displays.yaml Assessment & Fix
+
+**Date:** 2026-04-21  
+**Author:** Basher (Template Dev)  
+**File:** `home-assistant/config/templates/seasonal_displays.yaml`  
+**Status:** Complete — was incomplete, now fixed
+
+---
+
+## Current State (after fix)
+
+The file is now complete and valid. Config check passes (exit 0).
+
+---
+
+## What Was Found
+
+### 1. File was incomplete (prior session left it mid-edit)
+The SMART switch name template referenced 6 holiday names:
+- Pumpkin Patch (Halloween)
+- Turkey Tom (Thanksgiving)
+- Christmas Accent Lights (Christmas)
+- Peter Cottontail (Easter)
+- **Shamrock Display (St. Patrick's Day)** ← name existed in template, no alias
+- **Patriotic Display (Independence Day)** ← name existed in template, no alias
+
+But only 4 static aliases existed. The header comment also listed only 4.
+
+### 2. Invalid `default_entity_id:` key on SMART switch
+`default_entity_id: switch.front_yard_seasonal_display` is not a recognized HA template switch key. As noted in the 2026-04-20 audit, it is silently ignored. Removed.
+
+---
+
+## What Was Fixed
+
+| Fix | Details |
+|-----|---------|
+| Removed `default_entity_id:` | Not a valid key, silently ignored |
+| Added `switch.shamrock_display` alias | `unique_id: seasonal_shamrock_display`, icon `mdi:clover` |
+| Added `switch.patriotic_display` alias | `unique_id: seasonal_patriotic_display`, icon `mdi:flag-variant` |
+| Updated header comment | Now lists all 6 static aliases |
+
+All 6 aliases now use YAML anchors from the SMART switch definition: `*state_template`, `*availability_template`, `*turn_on_action`, `*turn_off_action`.
+
+---
+
+## Entity References — Flag for Livingston/Rusty
+
+| Entity | Purpose | Verified? |
+|--------|---------|-----------|
+| `switch.plug_in_front_yard_adapters` | Physical switch backing all front yard aliases | ⚠️ Not verified — needs confirmation |
+| `input_select.active_holiday` | Season state read by SMART switch | ✅ Confirmed in `input_select.yaml` |
+
+**Action needed:** Confirm `switch.plug_in_front_yard_adapters` exists in the HA entity registry. If the entity ID has changed, all 6 switches in this file need updating.
+
+---
+
+## Out of Scope — Noted for Follow-Up
+
+- `seasonal_living_room.yaml` also has `default_entity_id:` (same invalid key). Should be cleaned up in a future pass.
+- The new `switch.shamrock_display` and `switch.patriotic_display` entities need to be discovered in Alexa after HA restart.
+
+---
+
+### 2026-04-21: Basher — seasonal_living_room.yaml Cleanup
+# Decision: seasonal_living_room.yaml Cleanup
+
+**Date:** 2026-04-21
+**Author:** Basher (Template Dev)
+**File:** `home-assistant/config/templates/seasonal_living_room.yaml`
+
+---
+
+## Changes Applied
+
+### 1. Removed invalid `default_entity_id:` key
+
+```yaml
+# BEFORE
+unique_id: living_room_seasonal_display
+default_entity_id: switch.living_room_seasonal_display
+
+# AFTER
+unique_id: living_room_seasonal_display
+```
+
+`default_entity_id:` is not a recognized HA template switch property. It is silently ignored at runtime. Removing it eliminates misleading dead config.
+
+### 2. Added missing static alias switches
+
+The smart switch name template has 6 named cases:
+
+| Season          | Display Name     | Had Alias? |
+|-----------------|-----------------|------------|
+| Halloween       | Pumpkin          | ✓ existing |
+| Thanksgiving    | Pumpkin          | ✓ existing |
+| Christmas       | Present          | ✓ existing |
+| New Years       | Present          | ✓ existing |
+| Easter          | Bunny            | ✗ **added** |
+| Independence Day| Flag             | ✗ **added** |
+| (fallback)      | Living Room Display | — (generic, no alias needed) |
+
+Added two new static alias switches:
+- `name: "Bunny"` / `unique_id: seasonal_living_room_bunny` / `icon: mdi:rabbit`
+- `name: "Flag"` / `unique_id: seasonal_living_room_flag` / `icon: mdi:flag-variant`
+
+Both reuse the existing YAML anchors (`*state_template`, `*availability_template`, `*turn_on_action`, `*turn_off_action`) so the physical entity target `switch.in_wall_single_outlet_7` is DRY throughout.
+
+---
+
+## Audit Findings (No Action Needed)
+
+- **No TODO comments** in file
+- **No other invalid keys** found
+- **`action:` syntax** correct (HA 2024.8+)
+- **`input_select.active_holiday`** — valid, maintained by `holiday_season_controller` automation
+- **`switch.in_wall_single_outlet_7`** — Living Room outlet, Z-Wave, no issues flagged
+- **YAML anchors** properly scoped to file, defined on first use pattern followed
+
+---
+
+## Config Check
+
+Passed clean. No errors from `docker exec home-assistant python -m homeassistant --script check_config -c /config`.
+
+---
+
+## Rule Established
+
+When a seasonal smart switch has an N-case name template, static alias switches should cover all N named cases except the generic fallback. This ensures every seasonal name is a stable, always-available Alexa voice target regardless of current season.
+
+---
+
+### 2026-04-21: Basher — Full Template Audit
+# Template Audit Report — 2026-04-21
+**Author:** Basher (Template Dev)
+**Scope:** All 10 files in `home-assistant/config/templates/`, plus package-level template sensors in `packages/`
+**Status:** Audit complete — no changes made
+
+---
+
+## Files Audited
+
+| File | Type | Entities |
+|------|------|----------|
+| `templates/amwater_water_costs.yaml` | sensor (2) | Current Water Rate, Monthly Water Cost |
+| `templates/energy_costs.yaml` | sensor (5) | Current Electricity Season, Current Electricity Rate, Monthly/Daily Electricity Cost, Estimated Monthly Bill Projection |
+| `templates/spire_gas_costs.yaml` | sensor (5) | Gas Usage Ccf, Current Gas Season, Current Gas Rate, Monthly/Daily Gas Cost |
+| `templates/seasonal_displays.yaml` | switch (7) | front_yard_seasonal_display + 6 static Alexa aliases |
+| `templates/seasonal_living_room.yaml` | switch (5) | living_room_seasonal_display + 4 static Alexa aliases |
+| `templates/house_christmas_lights.yaml` | light (2) | house_seasonal_lights + house_christmas_lights static alias |
+| `templates/christmas_tree.yaml` | switch (1) | christmas_tree |
+| `templates/snowman.yaml` | switch (1) | snowman |
+| `templates/sunroom_christmas_tree.yaml` | switch (1) | sunroom_christmas_tree |
+| `templates/table_tree.yaml` | switch (1) | table_tree |
+
+Package templates also reviewed (out-of-scope for changes but noted):
+- `packages/alexa_helpers.yaml` — Alexa Wrapper Connection Status sensor
+- `packages/ios_companion.yaml` — iOS App Connection Status sensor + binary_sensor
+- `packages/iblinds_v2_covers.yaml` — template covers
+
+---
+
+## CRITICAL Findings
+
+### CRITICAL-1: `templates/` directory has no include declaration in `configuration.yaml`
+
+**File:** `home-assistant/config/configuration.yaml`
+**Impact:** ALL 10 template files are orphaned. On next full HA restart, none of these entities will load from YAML. Entity registry will retain stale entries but templates will not evaluate.
+
+**Evidence:**
+- `grep "^template:" configuration.yaml` → no match
+- `grep "include_dir_merge_list templates" configuration.yaml` → no match
+- No package references the templates/ directory
+
+**Required fix — add to `configuration.yaml`:**
+```yaml
+template: !include_dir_merge_list templates/
+```
+
+**Contextual note:** Entities exist in `.storage/core.entity_registry` and `core.restore_state` with recent timestamps (last_updated `2026-04-14` for electricity sensors, `2026-04-10` for switch states). HA is likely still running on an in-memory config that previously had this include, or entity data is stale from a prior load. The current YAML config on disk is broken.
+
+🔴 Speculative: unclear exactly when this line was removed. The entity registry shows platform="template" for all affected entities, confirming they were once loaded via the template platform.
+
+---
+
+## MODERATE Findings
+
+### MODERATE-1: Inconsistent `unit_of_measurement` on monetary sensors
+
+**File:** `templates/energy_costs.yaml` (lines 83, 149, 182)
+**Issue:** Monthly Electricity Cost, Daily Electricity Cost, and Estimated Monthly Bill Projection use `unit_of_measurement: "$"` while the equivalent sensors in `amwater_water_costs.yaml` and `spire_gas_costs.yaml` use `unit_of_measurement: "USD"`.
+
+| Sensor | UoM |
+|--------|-----|
+| Monthly Water Cost | `USD` ✓ |
+| Monthly Gas Cost | `USD` ✓ |
+| Daily Gas Cost | `USD` ✓ |
+| Monthly Electricity Cost | `$` ← inconsistent |
+| Daily Electricity Cost | `$` ← inconsistent |
+| Estimated Monthly Bill Projection | `$` ← inconsistent |
+
+HA treats `"$"` and `"USD"` as different units. While `device_class: monetary` is present on all, HA may display them with different formatting in the energy dashboard or statistics view.
+
+**Fix:** Change `unit_of_measurement: "$"` → `unit_of_measurement: "USD"` in `energy_costs.yaml` for these three sensors.
+
+---
+
+## MINOR Findings
+
+### MINOR-1: Package template sensors missing `unavailable` guard on `input_datetime` reads
+
+**Files:** `packages/alexa_helpers.yaml`, `packages/ios_companion.yaml`
+**Issue:** Both check `states('input_datetime.xxx') != 'unknown'` before calling `as_timestamp()`, but do not guard against `'unavailable'`. If the `input_datetime` entity is `unavailable`, the state check passes (because `'unavailable' != 'unknown'` is True), and then `as_timestamp('unavailable')` returns `None`, causing `(now - None)` to throw a TemplateError → sensor goes unavailable.
+
+This is self-correcting (the sensor just reports unavailable) but generates HA log errors.
+
+**Current pattern:**
+```jinja2
+{% if states('input_datetime.last_alexa_request') != 'unknown' %}
+```
+**Correct pattern:**
+```jinja2
+{% if states('input_datetime.last_alexa_request') not in ('unknown', 'unavailable', 'none', '') %}
+```
+
+### MINOR-2: `rate_breakdown` and similar display-only attributes show raw `states()` string
+
+**File:** `templates/energy_costs.yaml` (lines 71, 75, 77, 120, 174–176)
+**Issue:** Display attributes like `rate_breakdown`, `fixed_charge`, `rate_per_kwh` use `{{ states('input_number.xxx') }}` without `| float()`. If a helper is temporarily unavailable, the attribute shows `"unavailable"` as a string (e.g., `"42.5 kWh @ unavailable"`).
+
+This is cosmetic — the sensor's `state:` computation uses `| float()` and is guarded. But the string attribute could mislead a dashboard card.
+
+**Fix (optional):** Wrap with `| float(0.1560) | string` or use `state_attr` patterns. Low priority since helpers are persistent config entities rarely unavailable.
+
+### MINOR-3: `seasonal_living_room.yaml` header comment is incomplete
+
+**File:** `templates/seasonal_living_room.yaml` (line 9)
+**Comment says:** `STATIC ALIASES (always available for Alexa): switch.pumpkin, switch.present`
+**Reality:** 4 aliases exist — Pumpkin, Present, Bunny, Flag.
+
+Doc-only inconsistency. No functional impact.
+
+### MINOR-4: Dead else-branch in `Estimated Monthly Bill Projection` attribute
+
+**File:** `templates/energy_costs.yaml` (lines 208–214, `daily_average` attribute)
+**Issue:**
+```jinja2
+{% if current_day > 0 %}
+```
+`now().day` is always 1–31, so `current_day > 0` is always `True`. The `else: 0.00` branch is dead code. No functional impact.
+
+---
+
+## Verified Correct
+
+| Area | Finding |
+|------|---------|
+| Deprecated `service:` | Zero occurrences in templates/ — all use `action:` ✓ |
+| Filter order | No `\| int \| default` or `\| float \| default` patterns — all correct ✓ |
+| TODO/FIXME/HACK markers | Zero ✓ |
+| `default_entity_id:` invalid key | Not present anywhere ✓ |
+| Availability guards — switch/light templates | All 8 simple switch/light files use `has_value()` ✓ |
+| Availability guards — cost sensor templates | All guarded on primary consumption sensor, per design decision ✓ |
+| `states('input_select.active_holiday')` guards | Safe — name/icon templates all fall through to else clause when unavailable ✓ |
+| `| float()` inline defaults | All template sensor state computations use inline defaults ✓ |
+| YAML anchors | Correctly defined on first entity, aliased via `*` on all statics ✓ |
+| `action:` in turn_on/turn_off | All use `action:` not `service:` ✓ |
+| `unique_id` completeness | All entities have unique_ids ✓ |
+| Static alias count vs header comment | seasonal_displays (6 aliases — all 6 present ✓), seasonal_living_room (4 aliases present, 2 in comment — see MINOR-3) |
+| `timedelta` usage | Used in energy_costs.yaml Estimated Projection — valid HA template function ✓ 🟢 |
+| `level:` key in house_christmas_lights | Valid template light attribute in new-style platform 🟡 |
+
+---
+
+## Priority Action Items
+
+| Priority | Item | File |
+|----------|------|------|
+| 🔴 CRITICAL | Add `template: !include_dir_merge_list templates/` to configuration.yaml | configuration.yaml |
+| 🟠 MODERATE | Normalize `unit_of_measurement: "$"` → `"USD"` (3 sensors) | energy_costs.yaml |
+| 🟡 MINOR | Add `'unavailable'` to input_datetime guard checks | packages/alexa_helpers.yaml, packages/ios_companion.yaml |
+| 🟢 MINOR | Fix header comment (STATIC ALIASES list) | seasonal_living_room.yaml |
+| 🟢 MINOR | Remove dead `else: 0.00` branch in daily_average attribute | energy_costs.yaml |
+
+---
+
+### 2026-04-21: Linus — Infrastructure Audit
+# Infrastructure Audit — 2026-04-21
+**Author:** Linus (Integration Specialist)  
+**Scope:** Docker Compose files, Makefile, config.d env files, device paths, Mosquitto config, secrets, zigbee2mqtt, Z-Wave
+
+---
+
+## CRITICAL (Active Issues)
+
+### 1. zigbee2mqtt Container Unhealthy — Stale Healthcheck Config
+**Status:** 🔴 Active — container marked unhealthy but actually running correctly
+
+**Root cause:** Container was NOT recreated after the 2026-04-20 healthcheck fix. The running container has the OLD baked-in healthcheck (`http://0.0.0.0:8080/health`) that returns 404.
+
+The compose file `docker-compose.zigbee.yml` was already updated to `http://localhost:8080/health`, but the running container is still using the old config. Confirmed via:
+```
+docker inspect zigbee2mqtt --format '{{json .Config.Healthcheck}}'
+# → "http://0.0.0.0:8080/health" (old config, returns 404)
+```
+
+**Additional finding:** The `/health` endpoint does not exist in zigbee2mqtt. The correct URL is the root `http://localhost:8080/`. Manually confirmed: `wget --spider http://localhost:8080/` exits 0.
+
+**Fix applied (compose file):** Updated `docker-compose.zigbee.yml` healthcheck test to:
+```yaml
+test: "wget --no-verbose --spider --no-check-certificate http://localhost:8080/ || exit 1"
+```
+
+**Action required (manual):** Recreate the container to pick up the new healthcheck:
+```bash
+docker compose -f docker-compose.yml -f docker-compose.zigbee.yml up -d --force-recreate zigbee2mqtt
+```
+
+---
+
+### 2. Z-Wave SESSION_SECRET_FILE Path Mismatch
+**Status:** 🔴 Secret not being read — zwave-js-ui session secret is unapplied
+
+**Finding:** Secret name `zwave_secrets` mounts at `/run/secrets/zwave_secrets` (underscore), but the env var pointed to `/run/secrets/zwave-secrets` (hyphen). Docker uses the secret name as the filename — so the path was always wrong.
+
+**Impact:** zwave-js-ui is running, but the `SESSION_SECRET_FILE` is pointing to a nonexistent path. The session secret is not loaded from the file. This means sessions may use a hardcoded or default value, weakening CSRF/session security.
+
+**Fix applied (compose file):** Corrected in `docker-compose.zwave.yml`:
+```yaml
+# before
+SESSION_SECRET_FILE: /run/secrets/zwave-secrets
+# after
+SESSION_SECRET_FILE: /run/secrets/zwave_secrets
+```
+
+**Action required:** Recreate zwave-js-ui container:
+```bash
+docker compose -f docker-compose.yml -f docker-compose.zwave.yml up -d --force-recreate zwave-js-ui
+```
+
+---
+
+### 3. docker-compose.yml Declared Stale `zwave_secrets` Pointing to Nonexistent File
+**Status:** 🔴 Stale / confusing — file `./secrets/hacs` does not exist
+
+The main `docker-compose.yml` had:
+```yaml
+secrets:
+  zwave_secrets:
+    file: ./secrets/hacs  # ← this file does not exist
+```
+
+This was being silently overridden by the `zwave_secrets` definition in `docker-compose.zwave.yml`. The definition in the main compose is leftover cruft from before the secret structure was reorganized.
+
+**Fix applied:** Changed `docker-compose.yml` secrets section to `secrets: {}` (empty — no secrets needed for the base HA compose).
+
+---
+
+## WARNINGS (Non-Critical, Require Attention)
+
+### 4. secrets/zigbee2mqtt is 0 Bytes (Known)
+**Status:** 🟡 Known since 2026-04-20 audit — not yet resolved
+
+The `ZIGBEE2MQTT_SECRET_FILE` env var points to a Docker secret that is empty. The Zigbee2MQTT MQTT password is stored in plaintext in `zigbee2mqtt/data/configuration.yaml`. The ACL hardenig (2026-04-21) reduced the blast radius, but the file-based secret injection is still not working.
+
+**No fix in this audit** — fixing requires populating `secrets/zigbee2mqtt` with the correct credential and migrating zigbee2mqtt to read it. Track separately.
+
+### 5. HA MQTT Credential Migration Incomplete (Known)
+**Status:** 🟡 Partially complete — per 2026-04-21 decisions
+
+HA still uses the `hacs` legacy MQTT credential. The `homeassistant` credential was created in `password.txt` and ACL rules added, but the HA MQTT integration has not been reconfigured in the UI.
+
+**Action required (manual):** Settings → Integrations → MQTT → Reconfigure → username: `homeassistant`, password from `secrets/mqtt_admin_password`.
+
+### 6. zigbee2mqtt Log Level is `debug` in Production
+**Status:** 🟡 Performance/storage impact
+
+`zigbee2mqtt/data/configuration.yaml` has `log_level: debug`. This generates very high log volume. Should be `info` for production.
+
+**Fix (manual):** Edit `zigbee2mqtt/data/configuration.yaml`, change `log_level: debug` → `log_level: info`, then restart zigbee2mqtt.
+
+### 7. HA Container Has No Healthcheck
+**Status:** 🟡 Operational gap
+
+The `home-assistant` container has no `healthcheck` defined. Docker cannot detect if HA is frozen or stuck. All other services (mqtt, postgres, zwave-js-ui, zigbee2mqtt) have healthchecks.
+
+**Improvement:** Add to `docker-compose.yml`:
+```yaml
+healthcheck:
+  test: ["CMD", "curl", "-f", "http://localhost:8123/api/config"]
+  interval: 60s
+  timeout: 15s
+  start_period: 120s
+  retries: 3
+```
+Note: `curl` may not be in the HA image. Alternative: `wget --spider http://localhost:8123/`.
+
+### 8. Ollama API Exposed to All Interfaces (0.0.0.0)
+**Status:** 🟡 Known from 2026-04-20 audit — no auth on LLM API
+
+`docker-compose.ollama.yml` binds port `${OLLAMA_PORT:-11434}:11434/tcp` without specifying an interface. This exposes the Ollama API to the entire local network without authentication.
+
+**Options:**
+- Change to `127.0.0.1:${OLLAMA_PORT:-11434}:11434/tcp` if only HA needs it (HA uses host networking, so localhost works)
+- Or add network-level firewall rule
+
+---
+
+## HEALTHY ✅
+
+| Item | Status | Notes |
+|------|--------|-------|
+| Z-Wave device path | ✅ Match | `usb-Zooz_800_Z-Wave_Stick_533D004242-if00 → ttyACM0` matches compose |
+| Zigbee USB path | ✅ Match | `usb-Itead_Sonoff_Zigbee_3.0_USB_Dongle_Plus_V2_...→ ttyUSB0` matches compose |
+| Both use by-id symlinks | ✅ Best practice | Not raw `/dev/ttyACM*` |
+| Mosquitto ACL | ✅ Active | `acl_file /mosquitto/config/acl.conf` confirmed |
+| Mosquitto password auth | ✅ Active | `allow_anonymous false` + `password_file` |
+| Postgres port binding | ✅ Localhost only | `127.0.0.1:5432:5432` — not exposed to network |
+| Postgres healthcheck | ✅ Good | `pg_isready` check, proper start_period |
+| MQTT healthcheck | ✅ Active | Uses `mosquitto_pub` with secret credentials |
+| zwave-js-ui healthcheck | ✅ Active | `/health` on 8091 works |
+| Secrets directory permissions | ✅ Correct | `jshessen:docker` ownership, `640` mode |
+| All required secret files present | ✅ | mqtt_admin, mqtt_admin_password, postgres_password, zwave-js-ui |
+| `security_opt: no-new-privileges` | ✅ All services | |
+| No TODO/FIXME in compose files | ✅ Clean | |
+| zigbee2mqtt MQTT connection | ✅ Working | Logs show `Connected to MQTT server`, devices reporting |
+| Z-Wave JS UI | ✅ Healthy | 3 days uptime |
+| Postgres | ✅ Healthy | 3 days uptime |
+
+---
+
+## IMPROVEMENTS (Non-Blocking)
+
+### I1. All Images Use `:latest` — No Version Pinning
+All services tag: `latest`, except postgres (`16-alpine`). With `make update` pulling latest, a breaking upstream change will deploy immediately. Consider pinning to major versions:
+- `eclipse-mosquitto:2` 
+- `koenkk/zigbee2mqtt:2`
+- `ghcr.io/zwave-js/zwave-js-ui:9`
+- `ghcr.io/home-assistant/home-assistant:2025`
+
+### I2. Inconsistent Restart Policies
+- `restart: always` — HA, MQTT, zigbee2mqtt, zwave-js-ui  
+- `restart: unless-stopped` — postgres, ollama
+
+`unless-stopped` is generally preferred (doesn't restart after `docker stop`). Suggest standardizing to `unless-stopped` across all services.
+
+### I3. HA `ports` Block Is a No-Op (network_mode: host)
+`docker-compose.yml` defines `ports: - ${HACS_PORT:-8123}:8123/tcp` but `network_mode: host` ignores port mappings entirely. This is confusing to readers. Should be removed or commented out.
+
+### I4. zwave-js-ui Healthcheck start_period Too Short
+Compose file has `start_period: 30s`. Z-Wave network initialization can take 60–90s on startup. Consider increasing to `start_period: 90s` to avoid false-positive unhealthy during normal startup.
+
+### I5. Makefile `setup` Target — Convoluted CLEAN Guard
+The `setup` target uses a self-referential `CLEAN=1 make setup` recursion to isolate environment variables. Functional, but difficult to understand. Could be replaced with a simple shell script if this causes confusion.
+
+### I6. portainer_agent Running Outside Compose
+`docker ps` shows `portainer_agent` running but it's not in any compose file. It was started separately and won't be managed by `make down` / `make restart`. Document this or add to a compose file.
+
+### I7. MQTT SSL/WS Ports Defined in mqtt.env But Not Used
+`config.d/mqtt.env` defines `MQTT_SSL_PORT=8883`, `MQTT_WS_PORT=443`, `MQTT_QUIC_PORT=14567` but none of these ports are published in `docker-compose.mqtt.yml` (only 1883 is active, WS is commented out). Either remove these vars or implement TLS.
+
+---
+
+## Fixes Applied in This Audit
+
+| File | Change |
+|------|--------|
+| `docker-compose.zigbee.yml` | Healthcheck URL: `http://localhost:8080/health` → `http://localhost:8080/` |
+| `docker-compose.zwave.yml` | `SESSION_SECRET_FILE` path: `zwave-secrets` → `zwave_secrets` (underscore) |
+| `docker-compose.zwave.yml` | Port comment typo: `# Web UI:wq` → `# Web UI` |
+| `docker-compose.yml` | Removed stale `zwave_secrets` secret pointing to nonexistent `./secrets/hacs` |
+
+## Required Manual Actions (jshessen)
+
+1. **Recreate zigbee2mqtt** to pick up corrected healthcheck:
+   ```bash
+   docker compose -f docker-compose.yml -f docker-compose.zigbee.yml up -d --force-recreate zigbee2mqtt
+   ```
+
+2. **Recreate zwave-js-ui** to pick up corrected SESSION_SECRET_FILE:
+   ```bash
+   docker compose -f docker-compose.yml -f docker-compose.zwave.yml up -d --force-recreate zwave-js-ui
+   ```
+
+3. **Reconfigure HA MQTT integration** in UI (Settings → Integrations → MQTT → Reconfigure) — use `homeassistant` credential.
+
+4. **Change zigbee2mqtt log level** from `debug` to `info` in `zigbee2mqtt/data/configuration.yaml`.
+
+---
+
+### 2026-04-21: Livingston — switch.plug_in_front_yard_adapters Entity Verification
+# Livingston Finding: switch.plug_in_front_yard_adapters Entity Verification
+
+**Date:** 2026-04-21
+**Requested by:** Basher (via coordinator)
+**Task:** Verify `switch.plug_in_front_yard_adapters` existence and functionality
+
+---
+
+## Verdict
+
+🟢 **Entity exists and is registered and enabled.**
+
+---
+
+## Entity Registry Details
+
+- **entity_id:** `switch.plug_in_front_yard_adapters`
+- **platform:** `group`
+- **device_class:** `outlet`
+- **area_id:** `front_porch`
+- **disabled_by:** `null` (enabled)
+- **config_entry_id:** `01KBZ7YWXS0X85F3TAMCK2TC85`
+- **original_name:** `Plug-in - Front Yard Adapters`
+- **created_at:** 2025-12-08T15:05:56Z
+
+---
+
+## Group Composition
+
+This is a **HA Group helper** (platform: `group`, domain: `group`) that aggregates 3 Z-Wave JS switch entities:
+
+| Member Entity | Platform | disabled_by | area |
+|---|---|---|---|
+| `switch.plug_in_outdoor_switch_500s` | zwave_js | None | None |
+| `switch.porch_soffit_plug` | zwave_js | None | None |
+| `switch.outdoor_double_plug` | zwave_js | None | None |
+
+Group mode: `all: false` (any member on = group on)
+Members hidden: `false`
+
+---
+
+## Log Errors
+
+No errors referencing `plug_in_front_yard` or `front_yard_adapter` found in `home-assistant.log`.
+
+---
+
+## seasonal_displays.yaml Reference
+
+Confirmed the exact reference in `templates/seasonal_displays.yaml`:
+```yaml
+state: "{{ is_state('switch.plug_in_front_yard_adapters', 'on') }}"
+availability: "{{ has_value('switch.plug_in_front_yard_adapters') }}"
+turn_on/turn_off target: switch.plug_in_front_yard_adapters
+```
+All 6 template switches (smart + 5 static aliases) correctly reference this entity.
+
+---
+
+## Risk Notes
+
+- 🟡 The 3 Z-Wave member switches have no `area_id` set (area is `None`). This is cosmetic and doesn't affect function.
+- 🟢 All 3 member entities are `zwave_js` platform and none are disabled.
+- 🟢 No log errors found for this entity.
+
+---
+
+## Conclusion
+
+Basher's assumption is correct: `switch.plug_in_front_yard_adapters` is a valid, registered, enabled HA group switch backed by 3 Z-Wave JS outlets. The `seasonal_displays.yaml` template wiring is sound.
+
+---
+
+### 2026-04-21: Livingston — System Health Audit
+# System Health Audit — 2026-04-21
+**Author:** Livingston (Troubleshooter)  
+**Timestamp:** 2026-04-21 ~12:15 CT  
+**HA Version:** 2026.4.x (container Up 3 hours at time of audit)
+
+---
+
+## SUMMARY
+
+| Category | Count |
+|----------|-------|
+| HEALTHY  | 5 |
+| WARNING  | 9 |
+| ERROR    | 0 |
+
+No blocking errors. Two issues need active follow-up: the MQTT broker instability (root cause TBD) and the dead Z-Wave node 55 (Back Door Lock).
+
+---
+
+## HEALTHY
+
+### H1 — PostgreSQL
+- Container: `homeassistant-postgres` — running, Docker healthcheck **healthy**
+- `pg_isready` returns exit 0, accepting connections on port 5432
+- Bound to `127.0.0.1:5432` (not exposed to network)
+
+### H2 — Z-Wave JS UI
+- Container: `zwave-js-ui` — Up 3 days, Docker healthcheck **healthy**
+- No critical errors in `zwavejs_2026-04-21.log` (route failures and duplicate commands are WARNING-level, see below)
+
+### H3 — HA Configuration
+- `check_config` exits 0, no configuration errors
+- `configuration.yaml` includes structure intact
+
+### H4 — No Entity Resolution Failures
+- Zero matches for `entity.*not found|unknown entity|entity_id.*not found|no state.*found` in HA log
+- All entity IDs resolving correctly
+
+### H5 — MQTT ACL Configuration
+- ACL file present and correct: `homeassistant` user has `readwrite #`, `zigbee2mqtt` user scoped to `zigbee2mqtt/#` + `homeassistant/#`
+- ACL is NOT the cause of MQTT drops (homeassistant user has full access)
+
+---
+
+## WARNING
+
+### W1 — MQTT Broker Instability (HIGH PRIORITY)
+**Severity:** High  
+**Evidence:**
+- HA log: 16 MQTT events today — 9× "Error returned from MQTT server: The connection was lost." + 7× "No ACK from MQTT server in 10 seconds"
+- Zigbee2MQTT log: `homeassistant/status` cycling offline→online every 30-90 seconds from ~11:19–11:48
+- Mosquitto log shows `homeassistant` user (`auto-` client IDs) connecting and disconnecting every ~20 seconds
+- `mqtt` container is "Up 27 minutes" at time of audit — it restarted around 11:48, correlating with end of the instability period
+
+**Impact:** Every MQTT drop causes all zigbee2mqtt state updates to be missed by HA, all MQTT-based automations to pause, and device state reports to go stale.
+
+**Root cause:** Unclear. The mqtt container restart at ~11:48 appears to have stabilized the connection. Possible causes: (a) OOM kill under memory pressure, (b) crash from unexpected MQTT message format, (c) external network event. System memory was at 74-78% during the instability window (see W8).
+
+**Recommended action:** Check `docker logs mqtt` for crash context prior to restart. Add restart policy logging or `docker events` monitoring. Consider increasing mqtt container memory limits if OOM is suspected.
+
+### W2 — Zigbee2MQTT Healthcheck FALSE POSITIVE (unhealthy label)
+**Severity:** Medium (operational false alarm)  
+**Evidence:**
+- Docker reports `zigbee2mqtt` container as **unhealthy**
+- Healthcheck: `wget http://localhost:8080/health` → HTTP 404 (endpoint does not exist in zigbee2mqtt frontend)
+- Root `/` returns HTTP 200; the frontend IS running
+- Z2M MQTT: `connected: true`, `queued: 0`, processing messages normally
+- Last health report (12:08): `"load_average":[1.25,1.37,1.32]`, process healthy
+
+**Impact:** Docker monitoring dashboards (e.g. Portainer) show false red status. Restart policies that trigger on unhealthy would incorrectly restart a healthy container.
+
+**Recommended fix:** Change healthcheck in `docker-compose.zigbee.yml` to:
+```yaml
+test: "wget --no-verbose --spider http://localhost:8080/ || exit 1"
+```
+Or use the zigbee2mqtt MQTT API health topic instead.
+
+### W3 — Z-Wave Node 55 (Back Door Lock) Dead
+**Severity:** High  
+**Evidence:**
+- HA log at startup: `WARNING [custom_components.keymaster.providers.zwave_js] [ZWaveJSProvider] Node 55 is currently dead, connecting anyway (cached data may still be available)`
+- Node 55 identified: **"Back Door Lock" (location: Sunroom)**
+- Node 55 not present in active Z-Wave node registry (only `name` and `loc` fields returned — minimal cached data)
+
+**Impact:** Back Door Lock is not responding to Z-Wave commands. Lock/unlock automations for this lock will silently fail. Keymaster is running on cached state — actual lock status unknown.
+
+**Recommended action:**
+1. Check Z-Wave JS UI (port 8091) for node 55 status and last seen time
+2. Check back door lock battery level
+3. Attempt manual wake: hold button on lock for 5 seconds, or remove/reinsert battery
+4. If node remains dead after battery check: exclude and re-pair
+
+### W4 — Z-Wave Route Failures (47 today)
+**Severity:** Medium  
+**Evidence:** `route failed here` in `zwavejs_2026-04-21.log`:
+- Node 36 → 50: 4 failures (most frequent pair)
+- Node 12 → 48: 4 failures
+- Node 29 → 108: 1 failure
+- Node 4 → 113: 1 failure
+- Node 10 → 53: 1 failure
+
+**Impact:** Commands to affected nodes take longer (Z-Wave retries alternate routes). Not causing functional outages but degrades response time and can contribute to "dead" node classification over time.
+
+**Recommended action:** Run a Network Heal in Z-Wave JS UI after checking/replacing batteries on frequently-failing nodes.
+
+### W5 — Z-Wave Duplicate Commands (20 instances, seq 155)
+**Severity:** Low-Medium  
+**Evidence:** `error: Duplicate command (sequence number 155)` × 20 in today's Z-Wave log  
+**Impact:** A device is retransmitting command sequence 155 aggressively. Causes unnecessary Z-Wave traffic and can clog the network. Likely a battery-powered device with poor signal (related to W4 route failures).
+
+### W6 — Z-Wave Security Nonce Expiry (4 events)
+**Severity:** Low  
+**Evidence:** `error: Nonce 0xa3 expired, cannot decode security encapsulated command.` × 4  
+**Impact:** S0/S2 security-encapsulated commands (likely from a lock) are timing out before HA can decrypt them. Commands are dropped. May be related to the Back Door Lock (node 55) issues.
+
+### W7 — Alexa INVALID_ACCESS_TOKEN (3 errors)
+**Severity:** Medium  
+**Evidence:**
+```
+ERROR [homeassistant.components.alexa.state_report] Error when sending ChangeReport for light.bedroom_lamps to Alexa: INVALID_ACCESS_TOKEN_EXCEPTION
+ERROR [homeassistant.components.alexa.state_report] Error when sending ChangeReport for light.smart_strip_2_1 to Alexa: INVALID_ACCESS_TOKEN_EXCEPTION
+ERROR [homeassistant.components.alexa.state_report] Error when sending ChangeReport for light.smart_strip_1_1 to Alexa: INVALID_ACCESS_TOKEN_EXCEPTION
+```
+**Impact:** HA cannot push proactive state reports (ChangeReports) to Alexa. Alexa will show stale device states in the app. Voice commands from Alexa to HA still function (pull-based). This error clears automatically when the OAuth token is refreshed (usually within hours) or can be forced by re-linking the skill.
+
+### W8 — System Memory Pressure
+**Severity:** Medium  
+**Evidence:** Z2M bridge health reports:
+- 11:48: `memory_used_mb: 6002.77, memory_percent: 74.44%`
+- 11:58: `memory_used_mb: 6304.05, memory_percent: 78.18%` (peak)
+- 12:08: `memory_used_mb: 3131.8, memory_percent: 38.84%` (post-mqtt-restart drop)
+
+**Impact:** The spike to 78% and subsequent drop after the mqtt restart is suspicious — possibly the mqtt container was OOM-killed (linking to W1). At 74-78% system memory usage, any additional allocation pressure could cause OOM kills. Ollama container running alongside HA is a likely large memory consumer.
+
+**Recommended action:** Check `dmesg | grep -i oom` or `docker events` for OOM kill events around 11:45-11:50. Consider `docker stats` during peak hours.
+
+### W9 — WebSocket Client Message Backlog Overflow (3 events)
+**Severity:** Low-Medium  
+**Evidence:**
+```
+ERROR [homeassistant.components.websocket_api.http.connection] Client unable to keep up with pending messages. Reached 4096 pending messages.
+```
+Triggered by: `sensor.citroen_964d6f4f_noise_floor` and `sensor.interlogix_security_140254_signal_snr`  
+Client: Jeff (192.168.1.21) in Chrome browser  
+
+**Impact:** These sensors (RTL433 or similar software-defined radio sensors) are publishing state updates extremely rapidly, flooding the HA WebSocket connection to the browser. The browser dashboard tab becomes unresponsive or shows stale data until the backlog clears.
+
+**Recommended action:** Add these noisy sensors to `recorder.yaml` exclude list (if not already there). Consider adding `entity_globs: ["sensor.citroen_*", "sensor.interlogix_*"]` to the recorder and state_changed exclude in `configuration.yaml` to reduce update frequency hitting the WebSocket.
+
+---
+
+## ERROR
+
+_None — no blocking errors found at time of audit._
+
+---
+
+## CUSTOM COMPONENT WARNINGS (Informational)
+
+HA startup warnings for 14 custom integrations (expected, not actionable):
+`openid`, `monitor_docker`, `samsungtv_smart`, `alarmo`, `device_tools`, `keymaster`, `spook`, `bhyve`, `presence_simulation`, `eyeonwater`, `spook_inverse`, `smartthinq_sensors`, `asusrouter`, `battery_notes`
+
+These are standard "untested by HA" notices for all HACS/custom components. Not actionable unless specific components malfunction.
+
+---
+
+## SINGLE TEMPLATE UNDEFINED VARIABLE
+
+`zwave_device` undefined in a rendered template. Low priority but the template should add a default: `{{ zwave_device | default('') }}` or `{% if zwave_device is defined %}`. File not identified — would need `debug: info` level logging to pinpoint.
+
+---
+
+## ACTION ITEMS (Priority Order)
+
+| Priority | Item | Action |
+|----------|------|--------|
+| 1 | W3 — Node 55 Back Door Lock DEAD | Check battery, attempt wake, re-pair if needed |
+| 2 | W1 — MQTT broker instability | Check `docker logs mqtt --since 2h` for pre-restart crash context; check for OOM |
+| 3 | W8 — Memory pressure | `dmesg | grep -i oom`; consider Ollama memory limits |
+| 4 | W2 — Z2M false unhealthy | Fix healthcheck URL in `docker-compose.zigbee.yml` |
+| 5 | W7 — Alexa token expired | Monitor — auto-refreshes, or re-link skill if persists |
+| 6 | W4/W5 — Z-Wave route failures | Network heal in Z-Wave JS UI after battery checks |
+| 7 | W9 — RTL433 sensor flooding | Add `citroen_*`/`interlogix_*` sensors to recorder exclude |
+
+---
+
+### 2026-04-21: Rusty — Automation & Script Audit
+# Automation & Script Audit — 2026-04-21
+
+**Author:** Rusty (Automation Engineer)
+**Scope:** All automations/, scripts/, input helpers, automations.yaml, packages/
+**Purpose:** Audit-only — no changes made. Prioritize for jshessen.
+
+---
+
+## Summary Scorecard
+
+| Area | Status |
+|------|--------|
+| `service:` in automations/ | ✅ CLEAN |
+| `service:` in scripts/ | ⚠️ WARNING — 5 keymaster scripts + 1 master |
+| `service:` in automations.yaml | ❌ ACTION NEEDED — 1 in UI automation |
+| `platform:` (old trigger syntax) | ⚠️ WARNING — 3 automations + 8 package automations |
+| TODO/placeholder entity IDs | ⚠️ WARNING — 4 keymaster scripts have stale comment |
+| Input helpers vs usage | ✅ CLEAN — all helpers appear in use |
+| input_button.good_night_mode | ✅ RESOLVED — defined in input_button.yaml |
+| Automations in automations.yaml | ⚠️ WARNING — 5 inline automations (UI-generated) |
+| battery_monitoring.yaml Jinja2 zip() | ✅ RESOLVED — zip() removed, loop fixed |
+| Duplicate battery monitoring | ⚠️ WARNING — overlap with battery_notes.yaml |
+| Structural integrity | ✅ CLEAN |
+| Script file coverage | ✅ CLEAN |
+
+---
+
+## ACTION NEEDED
+
+### 1. `service:` in automations.yaml (UI-generated automation)
+
+**File:** `home-assistant/config/automations.yaml` line 132
+**Automation ID:** `1752004821602` — "Good Night Button (Selected Areas)"
+
+```yaml
+actions:
+  - service: script.good_night    # ← stale syntax
+```
+
+Should be:
+```yaml
+actions:
+  - action: script.good_night
+```
+
+**Risk:** Deprecated syntax, may trigger warnings in HA logs. Functionally works today.
+**Fix effort:** 1-line change. Can be done in UI editor or YAML.
+
+---
+
+### 2. `service:` in keymaster scripts/ (5 alias scripts + 1 master)
+
+**Files:**
+- `scripts/keymaster_manual_notify_master.yaml` line 5 — `service: logbook.log`
+- `scripts/keymaster_back_door_lock_manual_notify.yaml` line 5 — `service: script.keymaster_manual_notify_master`
+- `scripts/keymaster_front_door_lock_manual_notify.yaml` line 5 — `service: script.keymaster_manual_notify_master`
+- `scripts/keymaster_garage_entry_lock_manual_notify.yaml` line 5 — `service: script.keymaster_manual_notify_master`
+- `scripts/keymaster_kitchen_door_lock_manual_notify.yaml` line 5 — `service: script.keymaster_manual_notify_master`
+
+**Pattern:** All keymaster alias scripts use old `service:` key.
+**Risk:** Deprecated syntax, HA 2025.x logs warnings, may break in future major release.
+**Fix effort:** 5 files, 1-line change each. Bulk mechanical fix.
+
+---
+
+### 3. Stale `# Replace with your actual entity` comments in keymaster scripts
+
+**Files:** All 4 keymaster alias scripts (`back_door`, `front_door`, `garage_entry`, `kitchen_door`)
+**Example (keymaster_back_door_lock_manual_notify.yaml line 9):**
+```yaml
+entity_id: "lock.touchscreen_deadbolt_back_door"  # Replace with your actual entity
+```
+The entity IDs ARE correct for this deployment (entities confirmed in `secure_home.yaml`).
+The comment is misleading boilerplate that was never cleaned up.
+**Fix effort:** Remove 4 stale comments.
+
+---
+
+## WARNINGS
+
+### 4. `platform:` (old trigger syntax) in automation files
+
+Old syntax: `- platform: time` / `- platform: state` etc.
+New syntax (HA 2024.x+): `- trigger: time` / `- trigger: state`
+
+**automations/ directory:**
+- `battery_monitoring.yaml` lines 6, 11 — `platform: time`, `platform: template`
+- `evening_ai_summary.yaml` line 9 — `platform: time`
+
+**packages/ directory:**
+- `ios_companion.yaml` lines 133, 137, 158, 162 — 4 occurrences
+- `alexa_helpers.yaml` lines 66, 70 — 2 occurrences
+- `spire.yaml` line 16, `amwater.yaml` line 16, `ameren.yaml` line 19 — 3 occurrences
+
+**Total:** 11 `platform:` occurrences across files Rusty owns.
+**Risk:** Low — HA still supports old syntax with deprecation warnings. Will eventually break.
+**Fix effort:** Mechanical find-and-replace per file.
+
+---
+
+### 5. Overlapping battery monitoring coverage
+
+Two automations both cover low-battery notification:
+1. `battery_monitoring.yaml` — daily + template trigger, device_class auto-discovery, 20% threshold
+2. `battery_notes.yaml` (automation 2) — event-driven via Battery Notes integration, per-device thresholds
+
+**Both are active simultaneously.** A device hitting low battery could produce double notifications.
+**Recommendation:** Evaluate whether `battery_monitoring.yaml` should be disabled in favor of the Battery Notes event-driven approach (which is more sophisticated and per-device).
+**Risk:** Notification noise / duplicate alerts for the same device.
+**Decision needed by:** jshessen (preference question, not a bug).
+
+---
+
+### 6. `good_morning_early` automation lacks presence guard
+
+**File:** `automations/mode_management.yaml` — `good_morning_early` automation
+**Issue:** Runs whenever `time_of_day == Night` and `disable_good_morning == off`. No check for `presence_mode`. Kitchen light turns on at 5:30am even when house is in Away/Vacation mode.
+**Previously noted:** Flagged in 2026-04-20 audit history.
+**Risk:** Wasted electricity in Away/Vacation mode. Not a security risk.
+**Fix:** Add `condition: state / entity_id: input_select.presence_mode / state: "Home"` (or allow Guest).
+
+---
+
+### 7. Good Night script — hardcoded holiday switches
+
+**File:** `scripts/good_night.yaml`
+**Issue:** Holiday decoration turn-off is hardcoded to 4 named switches:
+```yaml
+- switch.pumpkin_patch
+- switch.turkey_tom
+- switch.christmas_accent_lights
+- switch.peter_cottontail
+```
+New holiday devices added to labels (`halloween`, `thanksgiving`, `christmas`, etc.) are **not** automatically turned off at night. They're only turned on by `holiday_decorations.yaml` automations.
+**Risk:** Holiday devices left on overnight if they're label-based but not in this hardcoded list.
+**Fix recommendation:** Replace hardcoded list with label-based `switch.turn_off / target: label_id:` for all holiday labels. Requires confirming which labels exist and are device-safe.
+
+---
+
+### 8. `all_persons_away` — covers only Jeff and Patricia
+
+**File:** `automations/mode_management.yaml` — `all_persons_away`
+**Issue:** Only watches `person.jeff` and `person.patricia`. Works for current 2-person household. Not a bug today.
+**Note:** Trigger has `for: "00:05:00"` on state trigger — good guard against GPS blips.
+**Risk:** None current. Flag for future if household changes.
+
+---
+
+## CLEAN
+
+### Automations Structure
+- ✅ All manual automations are in `automations/` directory (correct)
+- ✅ `automations.yaml` contains only UI-generated automations (5 total) — structurally correct
+- ✅ `configuration.yaml` line 10: `script: !include_dir_merge_named scripts/` — correct
+- ✅ `automation manual: !include_dir_merge_list automations/` — correct
+
+### Input Helpers
+- ✅ `input_button.good_night_mode` — **RESOLVED** since last audit. Defined in `input_button.yaml`.
+- ✅ All `input_select`, `input_boolean`, `input_datetime`, `input_number` helpers in `mode_helpers.yaml` are referenced by automations/scripts
+- ✅ `disable_good_morning`, `disable_good_night` booleans — wired correctly to automations
+- ✅ `input_datetime` schedule helpers — all referenced via `at: input_datetime.schedule_NAME` pattern
+
+### Script Coverage
+- ✅ All scripts referenced from automations exist as files
+- ✅ `script.good_night`, `script.start_active_day`, `script.start_work_day`, `script.good_morning`, `script.secure_home` — all present
+- ✅ Keymaster alias scripts cover: back_door, front_door, garage_entry, kitchen_door, plus master
+- ✅ `fix_keymaster_sync_loop.yaml` — utility script, correctly structured
+- ✅ `ui_scripts.yaml` — area-based good_night_by_area, clean structure
+
+### Mode Management Automations
+- ✅ `good_night_time_weekday` / `good_night_time_weekend` — correct, uses `action:`, schedule-driven
+- ✅ `good_morning_weekday` / `good_morning_weekend` — correct, presence + time_of_day guards
+- ✅ `work_time_weekday` — correct, presence guard, WFH mode trigger
+- ✅ `all_persons_away` — correct logic, 5-minute GPS guard on each trigger
+
+### Holiday System
+- ✅ `holiday_season_controller.yaml` — comprehensive, single source of truth
+- ✅ `holiday_decorations.yaml` — label-based targeting, clean structure
+- ✅ All decorations gate on `input_select.active_holiday` (no duplicate date logic)
+- ✅ Easter Computus algorithm — correct implementation
+- ✅ Memorial Day / Labor Day calculated correctly via namespace loop
+
+### Scripts — Core Routines
+- ✅ `good_night.yaml` — all actions use `action:`, variable-driven entity lists, parallel execution
+- ✅ `good_morning.yaml` — clean, minimal, correct
+- ✅ `secure_home.yaml` — parallel lock+garage, wait_template with timeout, clean
+- ✅ `start_active_day.yaml` — input_number fallback chain pattern, well-structured
+- ✅ `start_work_day.yaml` — clean, correct, sets `work_from_home_mode`
+
+### Packages
+- ✅ `mode_helpers.yaml` — complete helper definition for all mode entities
+- ✅ `ios_companion.yaml` — sensors reference `sensor.ios_requests_daily` which is defined in same file
+- ✅ `alexa_helpers.yaml` — sensors reference `sensor.alexa_requests_daily` defined in same file
+- ✅ `iblinds_v2_covers.yaml` — complete template cover package, well-documented
+
+---
+
+## Prioritized Fix List for jshessen
+
+| Priority | Item | Effort | Risk |
+|----------|------|--------|------|
+| HIGH | Fix `service:` in automations.yaml UI automation | 1 line | Deprecation warning |
+| HIGH | Fix `service:` in 5 keymaster scripts | 5 files, 5 lines | Deprecation warning |
+| MEDIUM | Decide: deprecate `battery_monitoring.yaml` or keep? | Decision only | Duplicate notifications |
+| MEDIUM | Add presence guard to `good_morning_early` | 3 lines | Minor: light on in Away mode |
+| LOW | Fix `platform:` → `trigger:` in automations/ (3 files) | Mechanical | Future compat |
+| LOW | Fix `platform:` → `trigger:` in packages/ (8 occurrences) | Mechanical | Future compat |
+| LOW | Clean stale `# Replace with your actual entity` comments (4 files) | 4 lines | Cosmetic |
+| DEFER | Good Night hardcoded holiday switches | Needs label audit | Device left on overnight |

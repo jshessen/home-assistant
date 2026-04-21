@@ -64,6 +64,27 @@ entity_name(hass, entity_id) -> str | None
 ```
 
 Deployment uses modern, idiomatic HA patterns — no changes required. Full report: `.squad/decisions/inbox/basher-template-audit-2026-04-15.md`
+
+### 2026-04-21: Full Templates Audit — templates/ directory orphaned
+
+Ran full audit of all 10 files in `templates/` directory and package-level template sensors.
+
+**Critical discovery: `template: !include_dir_merge_list templates/` is MISSING from configuration.yaml.**
+All 10 template files are orphaned — not loaded on HA restart. Entities persist in entity registry and restore_state from prior loads, masking the breakage until next full restart. The `check_config` command passes because it only validates files that are included.
+
+**Rule added:** After any config restructuring, always verify `grep "templates/" configuration.yaml` returns a match — not just config-check passing.
+
+**Patterns confirmed working (all templates that ARE loaded):**
+- `has_value()` as availability guard on switch/light templates — correct pattern
+- `states('input_select.active_holiday')` in name/icon templates — safe, all have else/default fallback
+- YAML anchors (`&anchor` / `*alias`) — correct scope (per-file) and semantics
+
+**Unit inconsistency found:** `energy_costs.yaml` uses `unit_of_measurement: "$"` on 3 monetary sensors while `amwater_water_costs.yaml` and `spire_gas_costs.yaml` use `"USD"`. HA treats these as different units.
+
+**Package templates (alexa_helpers, ios_companion):** Both use `!= 'unknown'` guard on input_datetime reads but miss `'unavailable'` case. Pattern should be `not in ('unknown', 'unavailable', 'none', '')`.
+
+**Decisions to propagate:** CRITICAL-1 (missing include) blocks safe restart. MODERATE-1 (unit inconsistency) should be fixed before energy dashboard is configured. Both filed in decisions/inbox.
+
 ### 2026-04-15: |-  vs >- for markdown card content; fnmatch vs regex in auto-entities
 
 **`|-` vs `>-` for Lovelace markdown cards:**
@@ -105,6 +126,20 @@ Completed a codebase-wide template audit covering `templates/`, `packages/`, `au
 - All template files use `action:` (violations only in automation files)
 
 Full report: `.squad/decisions/inbox/basher-template-assessment-2026-04-20.md`
+
+---
+
+### 2026-04-21: seasonal_living_room.yaml cleanup + missing alias audit
+
+Removed invalid `default_entity_id:` key from smart switch block in `seasonal_living_room.yaml`. Same pattern as `seasonal_displays.yaml` cleanup done this session.
+
+**Alias completeness audit:** Smart switch name template supports 6 seasonal names (Pumpkin, Present, Bunny, Flag, Living Room Display). Only Pumpkin and Present had static alias switches. Added missing:
+- `Bunny` (Easter) — `unique_id: seasonal_living_room_bunny`, `icon: mdi:rabbit`
+- `Flag` (Independence Day) — `unique_id: seasonal_living_room_flag`, `icon: mdi:flag-variant`
+
+**Rule:** When a seasonal smart switch has an N-case name template, there must be N-1 static alias switches (all named cases except the generic fallback "Living Room Display" / "Display" etc.). The generic fallback name is not a useful Alexa voice target.
+
+**Config check:** Passed clean (no error output from check_config).
 
 ---
 
@@ -217,3 +252,26 @@ Implemented complete Monitor view rewrite with correct battery-state-card v4.2.0
 **Caveat — reltime() Parsing:** If Date.parse() fails on `battery_last_replaced` ISO strings, card gracefully degrades to raw attribute. Visual verification required post-deploy. Fallback: remove `|reltime()` if raw ISO strings appear instead of relative time.
 
 Manage view unchanged (uses auto-entities, no battery-state-card bugs). Dashboard ready for HA restart.
+
+---
+
+### 2026-04-21: seasonal_displays.yaml — Completion
+
+**State when found:** Incomplete. File was mid-edit in a prior session.
+
+**Issues fixed:**
+1. `default_entity_id:` removed from SMART SWITCH — not a valid HA template switch key (silently ignored).
+2. Added two missing static aliases:
+   - "Shamrock Display" (`unique_id: seasonal_shamrock_display`, icon `mdi:clover`) — St. Patrick's Day
+   - "Patriotic Display" (`unique_id: seasonal_patriotic_display`, icon `mdi:flag-variant`) — Independence Day
+3. Updated header comment to list all 6 aliases.
+
+**Evidence of incompleteness:** SMART switch name template referenced 6 holiday names (incl. Shamrock Display and Patriotic Display) but header and static alias section listed only 4. Pattern from `seasonal_living_room.yaml` confirms aliases should exist for every name the SMART switch can surface.
+
+**Physical entity referenced:** `switch.plug_in_front_yard_adapters` — used for state, availability, turn_on, turn_off. Existence unverified (flag for Livingston/Rusty).
+
+**Config check:** Passed (exit 0).
+
+**Note re: seasonal_living_room.yaml:** Same file also has `default_entity_id:` — same invalid key. Not fixed in this session (out of scope), but should be cleaned up.
+
+**Pattern locked in:** Static alias count must match SMART switch name variant count. Every holiday name surfaced by the SMART switch should have a year-round Alexa alias.

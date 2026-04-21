@@ -104,3 +104,14 @@ All files updated and config-check validated. Full context — including all dec
 - **Battery Notes threshold trap:** `exclude: attributes.battery_low: false` only shows devices Battery Notes itself considers low (below their configured threshold). A device at 32% with a 10% threshold = NOT flagged. For "visually concerning" devices, filter on `state < 40` instead of the `battery_low` attribute.
 - **4→2 tabs:** Overview + All Devices + Maintenance + Details collapsed to Status + Manage. battery-state-card's collapse feature replaces the need for separate "overview" and "all devices" tabs — 3-tier collapse handles both roles in one card.
 - **Never write to decisions/inbox without also appending to history.md** — the two are always paired.
+
+### 2026-04-21: Automation & Script Audit
+- **`service:` is GONE from all hand-crafted automations/ and core scripts/** — bulk cleanup from prior sessions worked. Only remaining `service:` is in 5 keymaster alias scripts + 1 master script + 1 UI automation in automations.yaml.
+- **`input_button.good_night_mode` RESOLVED** — was missing in prior audit; now properly defined in `input_button.yaml`. The UI automation referencing it is structurally correct.
+- **`platform:` (old trigger syntax) remains in 3 automation files** — `battery_monitoring.yaml` (2), `evening_ai_summary.yaml` (1). Also in 8 package automations (ios_companion, alexa_helpers, spire, amwater, ameren, rtl433). All functional, deprecated only.
+- **Duplicate battery monitoring** — `battery_monitoring.yaml` and `battery_notes.yaml` both send low-battery notifications. Decision needed: deprecate `battery_monitoring.yaml` in favor of Battery Notes events?
+- **`good_morning_early` still lacks presence guard** — flagged in 2026-04-20 audit, not yet fixed. Kitchen light turns on in Away/Vacation mode.
+- **Good Night hardcoded holiday switches** — still hardcoded to 4 switch names. Label-based approach would auto-expand. Defer until Livingston confirms label entity coverage.
+- **Keymaster scripts** — 5 alias scripts and 1 master all use `service:`. Placeholder comment `# Replace with your actual entity` is stale but entity IDs are correct. Low risk but creates noise.
+- **Holiday system is well-designed** — single source of truth in `holiday_season_controller.yaml`, label-based targeting in decorations, no duplicate date logic.
+- **Core scripts (good_night, good_morning, secure_home, start_active_day, start_work_day)** — all clean, `action:` syntax throughout, variable-driven entity lists, good guard patterns.

@@ -72,6 +72,42 @@
 
 **Pending action:** 6 v2 nodes (67, 71, 72, 103, 106, 107) need re-interview in Z-Wave JS UI to activate Lifeline association. Template cover implementation needed for Alexa fix.
 
+### 2026-04-21: Infrastructure audit
+
+**Task:** Targeted re-audit of all compose files, env files, device paths, secrets, MQTT config, and container health.
+
+**Active issues found and fixed:**
+1. **zigbee2mqtt unhealthy (running container using stale healthcheck):** Container was never recreated after prior healthcheck fix. Running container still had OLD `http://0.0.0.0:8080/health` baked in (returns 404). Fixed compose to `http://localhost:8080/` (root URL works; `/health` endpoint does not exist in z2m). Container needs manual recreation.
+2. **zwave SESSION_SECRET_FILE path mismatch:** Secret name `zwave_secrets` mounts at `/run/secrets/zwave_secrets` (underscore). Env var pointed to `/run/secrets/zwave-secrets` (hyphen). Secret was never being read. Fixed env var to use underscore. Container needs manual recreation.
+3. **docker-compose.yml stale `zwave_secrets` secret:** Pointed to `./secrets/hacs` which doesn't exist. Was silently overridden by zwave compose. Replaced with `secrets: {}`.
+4. **Port comment typo:** `# Web UI:wq` (vim artifact) in zwave compose fixed.
+
+**Key lessons:**
+- When a compose file change only affects healthcheck config, the CONTAINER must be recreated (not just restarted) for Docker to apply the new healthcheck. `docker compose up -d` only recreates if the container definition changes; healthcheck-only changes may not trigger recreation.
+- Docker mounts secrets at `/run/secrets/{secret_name}` using the secret's **name** in the compose YAML, not the filename. When name has underscores, path has underscores.
+- zigbee2mqtt's health endpoint is `/` (root), not `/health` — `/health` returns 404.
+- `docker inspect <container> --format '{{json .Config.Healthcheck}}'` shows the RUNNING container's baked-in healthcheck, which may differ from the compose file if the container hasn't been recreated.
+
+**Warnings still outstanding:**
+- secrets/zigbee2mqtt is 0 bytes — credential plaintext in z2m config
+- HA MQTT integration still uses `hacs` credential (migration incomplete)
+- zigbee2mqtt log_level is `debug` in production
+- HA container has no healthcheck
+- Ollama port exposed to all interfaces (0.0.0.0)
+
+**Infrastructure health at audit end:**
+- home-assistant: running (no healthcheck, 3 hours uptime)
+- zwave-js-ui: healthy (3 days)
+- mqtt: healthy (27 min — restarted recently)
+- homeassistant-postgres: healthy (3 days)
+- zigbee2mqtt: UNHEALTHY (running, MQTT connected, but healthcheck failing — needs recreation)
+- ollama: running, no healthcheck (3 days)
+- portainer_agent: running outside compose management
+
+**Full audit filed:** `.squad/decisions/inbox/linus-infra-audit-2026-04-21.md`
+
+---
+
 ### 2026-04-15: battery-state-card v4.2.0 full feature audit
 
 **Latest version:** v4.2.0 (released 2026-04-02). Our dashboard uses the card but with several deprecated/legacy properties.

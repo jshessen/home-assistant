@@ -65,6 +65,22 @@ The entire blueprint is built around intercepting `call_service` events (`event_
 
 **Decision filed:** `decisions/inbox/livingston-iblinds-alexa.md`
 
+### 2026-04-21: switch.plug_in_front_yard_adapters — entity confirmed valid
+
+**Task:** Verify `switch.plug_in_front_yard_adapters` exists and is functional (Basher flagged it as backing entity for all 6 seasonal display template switches in `templates/seasonal_displays.yaml`).
+
+**Entity confirmed 🟢:** Present in `core.entity_registry`, platform=`group`, device_class=`outlet`, area=`front_porch`, not disabled.
+
+**Group composition:** 3 Z-Wave JS member switches — `switch.plug_in_outdoor_switch_500s`, `switch.porch_soffit_plug`, `switch.outdoor_double_plug`. All 3 are registered, enabled (disabled_by=None), and on `zwave_js` platform. Group mode is `all: false` (any-on semantics).
+
+**No log errors** found for this entity in `home-assistant.log`.
+
+**Template wiring confirmed correct** — all 6 template switches in `seasonal_displays.yaml` reference the entity properly for state, availability, turn_on, and turn_off.
+
+**Minor cosmetic note:** The 3 member Z-Wave entities have no `area_id` set — doesn't affect function.
+
+**Decision filed:** `decisions/inbox/livingston-front-yard-entity.md`
+
 ### 2026-04-20: Comprehensive System Health Check
 
 **Task:** Full health check across all subsystems — HA, Z-Wave, Zigbee2MQTT, Alexa, PostgreSQL, MQTT, Docker.
@@ -81,3 +97,21 @@ Root cause is MQTT password mismatch. `zigbee2mqtt/data/configuration.yaml` has 
 **Z-Wave health:** Node 55 persistently dead. Node 136 generating nonce expiry errors (S0 security timing). Both worth monitoring. Nodes 124 and 138 were removed today — note whether intentional.
 
 **Report filed:** `decisions/inbox/livingston-health-2026-04-20.md`
+
+### 2026-04-21: Full system health audit — MQTT instability root cause, Z-Wave dead lock, z2m false-unhealthy
+
+**Task:** Full health sweep across all 7 subsystems (containers, HA logs, Z-Wave, Zigbee2MQTT, MQTT, PostgreSQL, check_config).
+
+**MQTT instability (W1 — high priority):** 16 MQTT drop events between 10:09–11:48. The `mqtt` container was "Up 27 minutes" at audit time — it restarted ~11:48, correlating precisely with the end of the instability window. System memory spiked to 78% (6300 MB) before the restart and dropped to 38% after — strongly suggests OOM kill. Diagnostic shortcut: `dmesg | grep -i oom` to confirm OOM cause.
+
+**Node 55 = "Back Door Lock" (Sunroom) — dead again (W3 — high priority):** Keymaster logged at HA startup that node 55 is "currently dead." This is the Back Door Lock. Node barely present in registry (only name/loc fields). Battery check and re-pair procedure likely needed.
+
+**Zigbee2MQTT "unhealthy" is a FALSE POSITIVE (W2):** The Docker healthcheck tests `http://localhost:8080/health` — that URL returns 404 because the z2m frontend has no `/health` endpoint. The service is fully operational (MQTT connected, devices publishing). Fix: change healthcheck URL to `/` (root path, returns 200). This has been a persistent false alarm.
+
+**RTL433 sensors flooding WebSocket (W9):** `sensor.citroen_964d6f4f_noise_floor` and `sensor.interlogix_security_140254_signal_snr` caused 3 WebSocket 4096-message backlog events. These SDR sensors update at very high frequency and need to be added to recorder exclude list.
+
+**Alexa token expired (W7):** 3 INVALID_ACCESS_TOKEN errors, affecting `light.bedroom_lamps`, `light.smart_strip_2_1`, `light.smart_strip_1_1`. Auto-refreshes; monitor for persistence.
+
+**Z-Wave:** 47 route failures (nodes 36→50 and 12→48 most affected), 20 duplicate command seq-155 errors, 4 nonce expiry events. Network heal recommended after battery checks on frequently-failing nodes.
+
+**Report filed:** `decisions/inbox/livingston-system-audit-2026-04-21.md`

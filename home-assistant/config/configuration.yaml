@@ -14,8 +14,15 @@ automation manual: !include_dir_merge_list automations/
 script: !include_dir_merge_named scripts/
 scene: !include scenes.yaml
 
+template: !include_dir_merge_list templates/
+
 # Alexa Smart Home Skill integration
 alexa: !include alexa.yaml
+
+recorder: !include recorder.yaml
+
+utility_meter: !include utility_meter.yaml
+input_button: !include input_button.yaml
 
 # Packages for self-contained feature modules (recorder, alexa helpers, iOS companion, etc.)
 homeassistant:
