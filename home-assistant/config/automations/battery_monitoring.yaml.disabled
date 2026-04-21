@@ -39,31 +39,15 @@ action:
     data:
       title: "🔋 Low Battery Alert"
       message: >-
-        {% set low_devices = states.sensor 
+        {% set sensors = states.sensor
           | selectattr('attributes.device_class', 'eq', 'battery')
           | selectattr('state', 'is_number')
           | rejectattr('state', 'in', ['unknown', 'unavailable'])
-          | map(attribute='entity_id')
-          | map('regex_replace', find='sensor.', replace='')
           | list %}
-        {% set low_levels = states.sensor 
-          | selectattr('attributes.device_class', 'eq', 'battery')
-          | selectattr('state', 'is_number')
-          | rejectattr('state', 'in', ['unknown', 'unavailable'])
-          | map(attribute='state')
-          | map('float')
-          | list %}
-        {% set low_names = states.sensor 
-          | selectattr('attributes.device_class', 'eq', 'battery')
-          | selectattr('state', 'is_number')
-          | rejectattr('state', 'in', ['unknown', 'unavailable'])
-          | map(attribute='name')
-          | list %}
-        
         The following devices have low batteries (below 20%):
-        {% for name, level in zip(low_names, low_levels) %}
-        {%- if level < 20 -%}
-        • {{ name }}: {{ level | int }}%
+        {% for s in sensors %}
+        {%- if s.state | float < 20 -%}
+        • {{ s.name }}: {{ s.state | int }}%
         {% endif %}
         {%- endfor %}
       
