@@ -39,7 +39,7 @@ secure_home:
                 - condition: template
                   value_template: "{{ secure_locks | count > 0 }}"
               sequence:
-                - service: lock.lock
+                - action: lock.lock
                   target:
                     entity_id: "{{ secure_locks | join(', ') }}"
         - sequence:
@@ -48,7 +48,7 @@ secure_home:
                     - condition: template
                       value_template: "{{ garage_covers | count > 0 }}"
                   sequence:
-                    - service: cover.close_cover
+                    - action: cover.close_cover
                       target:
                         entity_id: "{{ garage_covers | join(', ') }}"
                     - wait_template: >
@@ -67,7 +67,7 @@ secure_home:
             - condition: template
               value_template: "{{ all_covers | count > 0 }}"
           sequence:
-            - service: cover.close_cover
+            - action: cover.close_cover
               target:
                 entity_id: "{{ all_covers | join(', ') }}"
 
@@ -79,6 +79,6 @@ secure_home:
             - condition: template
               value_template: "{{ not (skip_guest_covers | bool) and guest_covers | count > 0 }}"
           sequence:
-            - service: cover.close_cover
+            - action: cover.close_cover
               target:
                 entity_id: "{{ guest_covers | join(', ') }}"

@@ -19,8 +19,8 @@ automation:
       - condition: template
         value_template: "{{ now().day == 1 }}"
     actions:
-      - service: shell_command.update_amwater_rates
-      - service: system_log.write
+      - action: shell_command.update_amwater_rates
+      - action: system_log.write
         data:
           message: "MO American Water rate check completed"
           level: info

@@ -73,12 +73,12 @@ automation:
           domain: "rest_command"
           service: "test_alexa_wrapper"
     actions:
-      - service: input_datetime.set_datetime
+      - action: input_datetime.set_datetime
         target:
           entity_id: input_datetime.last_alexa_request
         data:
           datetime: "{{ now() }}"
-      - service: counter.increment
+      - action: counter.increment
         target:
           entity_id: counter.alexa_requests_total
 
@@ -88,17 +88,17 @@ script:
     description: "Tests the Alexa Lambda wrapper connectivity"
     mode: single
     sequence:
-      - service: persistent_notification.create
+      - action: persistent_notification.create
         data:
           title: "Alexa Test Started"
           message: "Starting Alexa wrapper connectivity test..."
           notification_id: alexa_wrapper_test
 
-      - service: rest_command.test_alexa_wrapper
+      - action: rest_command.test_alexa_wrapper
       - delay:
           seconds: 2
 
-      - service: persistent_notification.create
+      - action: persistent_notification.create
         data:
           title: "Alexa Wrapper Test Complete"
           message: >-
@@ -116,7 +116,7 @@ script:
     description: "Comprehensive health check of Alexa Lambda wrapper"
     mode: single
     sequence:
-      - service: persistent_notification.create
+      - action: persistent_notification.create
         data:
           title: "Alexa Health Check Started"
           message: "Starting comprehensive Alexa wrapper health check..."
@@ -125,11 +125,11 @@ script:
       - repeat:
           count: 2
           sequence:
-            - service: rest_command.test_alexa_wrapper
+            - action: rest_command.test_alexa_wrapper
             - delay:
                 seconds: 3
 
-      - service: persistent_notification.create
+      - action: persistent_notification.create
         data:
           title: "Alexa Health Check Complete"
           message: >-

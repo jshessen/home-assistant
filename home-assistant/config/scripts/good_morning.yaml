@@ -22,7 +22,7 @@ good_morning:
     # ========================================================================
     # SET TIME OF DAY
     # ========================================================================
-    - service: input_select.select_option
+    - action: input_select.select_option
       target:
         entity_id: input_select.time_of_day
       data:
@@ -36,7 +36,7 @@ good_morning:
             - condition: template
               value_template: "{{ announce_enabled | bool and (announce_targets | count > 0) }}"
           sequence:
-            - service: notify.alexa_media
+            - action: notify.alexa_media
               data:
                 message: "{{ announce_message }}"
                 data:
@@ -51,7 +51,7 @@ good_morning:
             - condition: template
               value_template: "{{ kitchen_lights | count > 0 }}"
           sequence:
-            - service: light.turn_on
+            - action: light.turn_on
               target:
                 entity_id: "{{ kitchen_lights | join(', ') }}"
               data:
