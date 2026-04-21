@@ -38,13 +38,13 @@ services:
     security_opt:
       - no-new-privileges:true
     healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:11434/api/tags"]
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/11434' || exit 1"]
       interval: 1m
       timeout: 10s
       start_period: 60s
       retries: 3
     ports:
-      - 127.0.0.1:${OLLAMA_PORT:-11434}:11434/tcp    # API — localhost only (Jarvis host)
+      - 127.0.0.1:${OLLAMA_PORT:-11434}:11434/tcp # API — localhost only (Jarvis host)
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ollama-models:/root/.ollama
@@ -53,5 +53,5 @@ services:
   ##########
   #
   #################### 
-#
-##############################
+  #
+  ##############################
