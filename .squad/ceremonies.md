@@ -42,13 +42,13 @@
 
 ---
 
-## Yen Tech Briefing
+## Vision Tech Briefing
 
 | Field | Value |
 |-------|-------|
 | **Trigger** | periodic |
 | **When** | after |
-| **Condition** | user asks "what's new in HA AI?" or at start of any Yen-assigned session |
+| **Condition** | user asks "what's new in HA AI?" or at start of any Vision-assigned session |
 | **Facilitator** | yen |
 | **Participants** | all-relevant |
 | **Time budget** | focused |
@@ -60,9 +60,9 @@
 3. Specific opportunities identified in this project (templates, automations, voice control)
 4. Recommended action items — only what moves the needle, no noise
 
-**Live Data Requirement:** Yen MUST use `web_fetch` to pull current release notes and changelogs before writing this briefing. No training-data-only analysis. See Yen charter for mandatory source list.
+**Live Data Requirement:** Vision MUST use `web_fetch` to pull current release notes and changelogs before writing this briefing. No training-data-only analysis. See Vision charter for mandatory source list.
 
-**Output:** A concise briefing note in `.squad/log/` titled `yen-tech-briefing-{date}.md`. If a new pattern warrants a skill, Yen creates it in `.copilot/skills/` and notifies the coordinator.
+**Output:** A concise briefing note in `.squad/log/` titled `yen-tech-briefing-{date}.md`. If a new pattern warrants a skill, Vision creates it in `.copilot/skills/` and notifies the coordinator.
 
 ---
 
@@ -84,6 +84,6 @@
 3. Ollama model updates — new releases relevant to this project's hardware profile
 4. HA AI-adjacent releases — any Ollama, Assist, or ai_task changes
 
-**Live Data Requirement:** Yen MUST fetch live changelogs (VS Code updates page, GitHub blog, Ollama releases) before writing. No training-data-only summaries.
+**Live Data Requirement:** Vision MUST fetch live changelogs (VS Code updates page, GitHub blog, Ollama releases) before writing. No training-data-only summaries.
 
 **Output:** Update to `.squad/agents/yen/history.md` with pulse date + key findings. High-signal items → `.squad/decisions/inbox/` for routing.

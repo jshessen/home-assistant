@@ -1,7 +1,7 @@
 # Battery Monitoring Automation — Implemented
 
 **Date:** 2026-04-15  
-**Author:** Rusty (Automation Engineer)  
+**Author:** Iron Man (Automation Engineer)  
 **Status:** ✅ Implemented  
 **Related:** Purpose-Specific Triggers Investigation (decisions.md)
 

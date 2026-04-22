@@ -4,7 +4,7 @@
 
 ### 2026-04-21: Template Sensor Availability Guards
 **Date:** 2026-04-21
-**Author:** Basher (Template Dev)
+**Author:** Doctor Strange (Template Dev)
 **Status:** Implemented, validated EXIT:0
 
 #### Context
@@ -50,7 +50,7 @@ Cost sensors guarded on their primary real-world data source (utility consumptio
 
 ### 2026-04-21: MQTT ACL Hardening
 **Date:** 2026-04-21
-**Author:** Linus (Integration Specialist)
+**Author:** Black Widow (Integration Specialist)
 **Status:** Implemented
 
 #### Context
@@ -85,7 +85,7 @@ Binding to `127.0.0.1` breaks zigbee2mqtt (bridge network). Binding to `172.16.2
 
 ### 2026-04-21: MQTT Per-Client Credential Migration
 **Date:** 2026-04-21
-**Author:** Linus (Integration Specialist)
+**Author:** Black Widow (Integration Specialist)
 **Status:** Partially complete — Aether migration pending
 
 #### Credentials Created
@@ -102,13 +102,13 @@ Binding to `127.0.0.1` breaks zigbee2mqtt (bridge network). Binding to `172.16.2
 3. Confirm Aether reconnects, then confirm HA reconnects
 4. Once both confirmed: remove `hacs` from Mosquitto password.txt
 
-*(Credentials stored in Linus's inbox decision file — reference that for actual password values)*
+*(Credentials stored in Black Widow's inbox decision file — reference that for actual password values)*
 
 ---
 
 ### 2026-04-21: Evening AI Summary Error Fallback
 **Date:** 2026-04-21
-**Author:** Rusty (Automation Engineer)
+**Author:** Iron Man (Automation Engineer)
 **Status:** Implemented
 **File:** `home-assistant/config/automations/evening_ai_summary.yaml`
 
@@ -133,9 +133,9 @@ HA has no native try/catch. `continue_on_error: true` + `choose:` with template 
 
 ### 2026-04-15: Ollama Local LLM Deployment
 **Date:** 2026-04-15  
-**Author:** Linus (Integration Specialist)  
+**Author:** Black Widow (Integration Specialist)  
 **Status:** Implemented  
-**Context:** Yen Tech Briefing (2026-04-15) — Action 3 & 4
+**Context:** Vision Tech Briefing (2026-04-15) — Action 3 & 4
 
 **Decision:** Deploy Ollama as a containerized local LLM server for Home Assistant AI integrations.
 
@@ -180,8 +180,8 @@ HA has no native try/catch. `continue_on_error: true` + `choose:` with template 
 
 ### 2026-04-15: Purpose-Specific Triggers Investigation
 **Date:** 2026-04-15  
-**Investigator:** Rusty (Automation Engineer)  
-**Source:** Yen Tech Briefing (2026-04-15) - Action Item 2  
+**Investigator:** Iron Man (Automation Engineer)  
+**Source:** Vision Tech Briefing (2026-04-15) - Action Item 2  
 **Status:** Research Complete
 
 **Finding:** Purpose-Specific Triggers do not exist in Home Assistant 2026.4.2 — feature was speculative.
@@ -228,7 +228,7 @@ HA has no native try/catch. `continue_on_error: true` + `choose:` with template 
 ---
 
 ### 2026-04-14: UI-configurable helper schema design
-**By:** Danny (Lead)
+**By:** Nick Fury (Lead)
 **What:** Defined 18 input helpers across 6 logical groups for the mode/routine system. All timing trigger times, brightness levels, color temps, delays, and positional values are moved out of hardcoded YAML into HA UI-manageable helpers. Mode flags and enumerated states (covered in main plan) round out the full picture.
 
 **Why:** User wants all timing/level values manageable via HA UI; no YAML edits needed for behavior tuning. input_datetime time-only helpers used as automation triggers via `at: "{{ states('input_datetime.foo') }}"` are re-evaluated daily by HA's scheduler — UI changes take effect at the next occurrence with no restart required.
@@ -252,7 +252,7 @@ HA has no native try/catch. `continue_on_error: true` + `choose:` with template 
 ---
 
 ### 2026-04-14: Jinja2 variable resolution pattern
-**By:** Basher (Template Dev)
+**By:** Doctor Strange (Template Dev)
 **Status:** Proposed — pending squad review
 
 **What:** A canonical three-level Jinja2 variable resolution pattern for all HA scripts that read from `input_number` or `input_datetime` helpers. Every configurable script variable MUST use this pattern so the codebase is consistent and maintainable.
@@ -283,7 +283,7 @@ variable_name: >-
 ---
 
 ### 2026-04-14: Canonical Jinja2 patterns (supplemental)
-**By:** Basher (Template Dev)
+**By:** Doctor Strange (Template Dev)
 
 **Filter order:** Always `| int(default)`, never `| int | default(X)`. `default()` only catches Jinja `Undefined`, not int conversion errors.
 
@@ -296,7 +296,7 @@ variable_name: >-
 ---
 
 ### 2026-04-14: TBD entity ID resolution
-**By:** Livingston (Troubleshooter)
+**By:** Hawkeye (Troubleshooter)
 
 **Kitchen cabinet lights:** `light.kitchen_light_3` — user-named "Kitchen Light" — Z-Wave dimmer. No dedicated under-cabinet entity exists; scripts use this entity at low brightness (~10–15%) for pre-dawn nav lighting.
 
@@ -314,7 +314,7 @@ variable_name: >-
 ---
 
 ### 2026-04-14: Routing table now authoritative
-**By:** Danny (Lead / Architect)
+**By:** Nick Fury (Lead / Architect)
 **Status:** Decided
 
 **Summary:** `.squad/routing.md` has been replaced with a complete, authoritative routing table covering all team members and all known work domains for this Home Assistant Docker deployment project.
@@ -322,7 +322,7 @@ variable_name: >-
 **What changed:**
 - Replaced all `{domain N}` placeholder rows with real domain → agent mappings.
 - Expanded to cover: automations, scripts, lovelace, input helpers, Jinja2 templates, template sensors, device integrations (Z-Wave/Zigbee/MQTT), Docker/Makefile, debugging/diagnostics, architecture decisions, session logging, and GitHub issue/PR lifecycle.
-- Added ambiguous-domain clarifications (packages route to Rusty or Basher depending on content; input helpers route to Rusty for structure, Basher for template-driven logic).
+- Added ambiguous-domain clarifications (packages route to Iron Man or Doctor Strange depending on content; input helpers route to Iron Man for structure, Doctor Strange for template-driven logic).
 - Added issue routing rows for all `squad:{member}` labels.
 - Added a Quick Reference table (agent → domain) for fast lookup.
 
@@ -335,28 +335,28 @@ variable_name: >-
 ---
 
 ### 2026-04-14: Mode system refactor completed
-**By:** Rusty
+**By:** Iron Man
 **What:** Renamed presence_mode (was house_mode), removed Guest option, added time_of_day select, added guest_mode + work_from_home_mode booleans, added 7 input_number wake helpers, created input_datetime.yaml with 6 schedule helpers. Removed good_night_manual automation. All automation triggers now use input_datetime entity references.
 **Why:** Eliminate redundant mode helpers (night_mode, day_modes, location_mode), make timings UI-configurable
 
 ---
 
 ### 2026-04-14: Script architecture refactor
-**By:** Basher
+**By:** Doctor Strange
 **What:** good_morning rewritten to pre-dawn only. secure_home extracted from good_night. Two new scripts: start_active_day (full wake with input_number-backed vars), start_work_day (WFH setup). good_night updated: covers expanded, security phase delegates to secure_home, night_mode→time_of_day.
 **Why:** Separate concerns — pre-dawn navigation vs full wake. Make secure_home reusable. Remove inline security logic from good_night.
 
 ---
 
 ### 2026-04-14: Mode system UI layer update
-**By:** Linus
+**By:** Black Widow
 **What:** Updated lovelace mode_dashboard and Alexa mode_controls to reflect mode refactor. presence_mode replaces house_mode everywhere. Guest mode is now a boolean toggle (not a house_mode option). time_of_day select added to lovelace. Work from home mode added to both dashboards and Alexa.
 **Why:** Mode system refactor — house_mode renamed to presence_mode, night_mode replaced by time_of_day select, Guest extracted to separate boolean.
 
 ---
 
 ### 2026-04-14: Repo scope audit — initial findings
-**By:** Saul
+**By:** Captain America
 **What:** First-pass audit of `.gitignore`, `.gitattributes`, and `home-assistant.code-workspace`.
 
 **Findings:**
@@ -374,7 +374,7 @@ variable_name: >-
 ---
 
 ### 2026-04-14: Tracking scope — Repo Hygiene Audit
-**By:** Saul
+**By:** Captain America
 **Status:** Implemented
 **What:** Defined policy for what gets tracked in git. All authored content tracked; HACS components, runtime artifacts, Z-Wave state, Docker secrets, and credentials excluded.
 
@@ -389,10 +389,10 @@ variable_name: >-
 
 ---
 
-### 2026-04-14: Added Yen — AI & Emerging Tech Specialist
+### 2026-04-14: Added Vision — AI & Emerging Tech Specialist
 **By:** jshessen
 **Status:** Decided
-**What:** Added Yen to the squad as the AI & Emerging Tech Specialist. Role covers AI/ML integrations (Ollama, LocalAI, Whisper, conversation agents, HA AI Task), prompt engineering, Jinja2 optimization via LLM techniques, emerging tech evaluation, team upskilling, and skill codification.
+**What:** Added Vision to the squad as the AI & Emerging Tech Specialist. Role covers AI/ML integrations (Ollama, LocalAI, Whisper, conversation agents, HA AI Task), prompt engineering, Jinja2 optimization via LLM techniques, emerging tech evaluation, team upskilling, and skill codification.
 **Why:** User identified gap — team lacked a "cutting edge, high tech player" constantly reviewing the AI industry and translating new techniques into team-usable patterns.
 **Routing:** squad:yen label; AI/ML research and integration domains; tech briefings to all team members
 
@@ -408,7 +408,7 @@ variable_name: >-
 
 ### 2026-04-15: Battery Monitoring Automation — Implemented
 **Date:** 2026-04-15  
-**Author:** Rusty (Automation Engineer)  
+**Author:** Iron Man (Automation Engineer)  
 **Status:** ✅ Implemented  
 **Related:** Purpose-Specific Triggers Investigation (2026-04-15)
 
@@ -442,7 +442,7 @@ variable_name: >-
 
 ### 2026-04-21: reverse_proxy.yaml Dead Code Investigation
 **Date:** 2026-04-21
-**Author:** Danny (Lead/Architect)
+**Author:** Nick Fury (Lead/Architect)
 **Status:** Closed — No Action Required
 
 **Investigation:** Task requested removal of `home-assistant/config/reverse_proxy.yaml` as orphaned dead code.
@@ -459,7 +459,7 @@ variable_name: >-
 
 ### 2026-04-21: Utility Meter Include, input_button Definition, and Away Guard
 **Date:** 2026-04-21
-**Author:** Rusty (Automation Engineer)
+**Author:** Iron Man (Automation Engineer)
 **Status:** ✅ Implemented (one correction; two already-done)
 
 **Summary:** Audited three reported configuration gaps.
@@ -477,7 +477,7 @@ variable_name: >-
 
 ### 2026-04-20: AI & Emerging Tech Assessment
 **Date:** 2026-04-20
-**Author:** Yen (AI & Emerging Tech Specialist)
+**Author:** Vision (AI & Emerging Tech Specialist)
 
 **Critical Finding:** Ollama container was running but had zero models installed. `ai_task` routes were non-functional.
 
@@ -506,8 +506,8 @@ variable_name: >-
 
 ### 2026-04-15: Evening AI Summary Automation — Structured Output Design
 **Date:** 2026-04-15  
-**Author:** Yen (AI & Emerging Tech Specialist)  
-**For Implementation:** Rusty (pending Sprint 3)  
+**Author:** Vision (AI & Emerging Tech Specialist)  
+**For Implementation:** Iron Man (pending Sprint 3)  
 **Status:** Ready for implementation  
 **Related:** Ollama Local LLM Deployment (2026-04-15)
 
@@ -548,7 +548,7 @@ variable_name: >-
 
 ### 2026-04-15: Template Audit for HA 2026.4 Functions
 **Date:** 2026-04-15  
-**Auditor:** Basher (Template Dev)  
+**Auditor:** Doctor Strange (Template Dev)  
 **HA Version:** 2026.4.2  
 **Status:** Complete — No changes required
 
@@ -594,13 +594,13 @@ variable_name: >-
 ### 2026-04-16: Battery Dashboard Redesign with fold-entity-row Collapsable Alerts
 
 **Date:** 2026-04-16  
-**Authors:** Linus (Integration Specialist - Research), Basher (Template Dev - Implementation)  
+**Authors:** Black Widow (Integration Specialist - Research), Doctor Strange (Template Dev - Implementation)  
 **Status:** Implemented  
 **Trigger:** Dashboard layout inefficiencies and lack of alert organization  
 
 **Decision:** Redesign battery dashboard with vertical-stack two-column layout and collapsable alert sections using fold-entity-row.
 
-#### Research Phase (Linus)
+#### Research Phase (Black Widow)
 - Investigated Battery Notes documentation: `codechimp.org/HA-Battery-Notes/`
 - Analyzed fold-entity-row YAML patterns for collapsable components
 - Documented Battery+ sensor attributes and auto-discovery patterns
@@ -619,7 +619,7 @@ variable_name: >-
 - Works with `auto-entities` for dynamic device discovery
 - Supports nested folds and group expansion
 
-#### Implementation (Basher)
+#### Implementation (Doctor Strange)
 **Changes to `home-assistant/config/lovelace/battery_dashboard.yaml`:**
 
 1. **Removed blank markdown summary card** — Was rendering as small pill, wasting masonry column
@@ -653,14 +653,14 @@ No new dependencies required. All custom cards pre-installed.
 #### Decision Rationale
 1. Two-column vertical-stack ensures masonry layout consistency and logical content grouping
 2. fold-entity-row collapsable sections reduce cognitive load (show critical first, hide healthy by default)
-3. Research-backed pattern (Linus validation) reduces implementation risk
+3. Research-backed pattern (Black Widow validation) reduces implementation risk
 4. Backward compatible: preserves all existing filtering and sort logic
 
-# Lovelace YAML Patterns — Basher
+# Lovelace YAML Patterns — Doctor Strange
 
 **Date:** 2026-04-15
-**Author:** Basher (Template Dev)
-**Trigger:** Danny rejection of Battery Details view (bug fixes applied)
+**Author:** Doctor Strange (Template Dev)
+**Trigger:** Nick Fury rejection of Battery Details view (bug fixes applied)
 
 ---
 
@@ -703,9 +703,9 @@ This means: "exclude if `battery_last_replaced` exists and is non-empty."
 # Architecture Decision: iBlinds v2 Stop-Point Fix
 
 **Date:** 2026-07-20  
-**Author:** Danny (Lead Architect)  
+**Author:** Nick Fury (Lead Architect)  
 **Status:** Implemented  
-**Affects:** Linus (Z-Wave done), jshessen (manual steps required), Rusty (design approved)
+**Affects:** Black Widow (Z-Wave done), jshessen (manual steps required), Iron Man (design approved)
 
 ---
 
@@ -713,9 +713,9 @@ This means: "exclude if `battery_last_replaced` exists and is non-empty."
 
 Approved and implemented the two-layer solution for iBlinds v2 stop-point behavior.
 
-**Phase 1 (Z-Wave layer):** Linus's `ib2_0.json` changes are correct and sufficient. Confirmed: Lifeline association, `treatSetAsReport`, Binary Switch CC removal. All three are the right calls.
+**Phase 1 (Z-Wave layer):** Black Widow's `ib2_0.json` changes are correct and sufficient. Confirmed: Lifeline association, `treatSetAsReport`, Binary Switch CC removal. All three are the right calls.
 
-**Phase 2 (HA layer):** Approved Rusty's Template Cover design. Rejected the state-change-correction automation alternative due to race condition (blind overshoots to 100% before correction). Template Covers intercept at the command layer — no overshoot, no queue noise, zero script changes, covers all callers including Alexa.
+**Phase 2 (HA layer):** Approved Iron Man's Template Cover design. Rejected the state-change-correction automation alternative due to race condition (blind overshoots to 100% before correction). Template Covers intercept at the command layer — no overshoot, no queue noise, zero script changes, covers all callers including Alexa.
 
 ---
 
@@ -761,7 +761,7 @@ Full instructions: `docs/iblinds/ADR-001-iblinds-v2-stop-point.md`
 # Decision: iBlinds v2 Association Fix
 
 **Date:** 2026-04-15  
-**Decided by:** Linus (Integration Specialist)  
+**Decided by:** Black Widow (Integration Specialist)  
 **Status:** Proposed - awaiting implementation approval
 
 ## Context
@@ -831,10 +831,10 @@ Insert after `"firmwareVersion"` section:
 
 ## Impact
 
-- **Linus:** Device config ownership, Z-Wave troubleshooting
-- **Danny:** May need architecture review if template cover wrappers required
-- **Rusty:** May need automation updates if v2 position now reliable
-- **Basher:** May need template updates for cover position logic
+- **Black Widow:** Device config ownership, Z-Wave troubleshooting
+- **Nick Fury:** May need architecture review if template cover wrappers required
+- **Iron Man:** May need automation updates if v2 position now reliable
+- **Doctor Strange:** May need template updates for cover position logic
 - **jshessen:** Testing required after re-interview
 
 ## Next Steps
@@ -844,9 +844,9 @@ Insert after `"firmwareVersion"` section:
 3. ⏳ Implementation (config edit + restart + re-interview)
 4. ⏳ Validation testing (position reporting behavior)
 5. ⏳ Optional: Submit PR to upstream zwave-js project
-# Yen Broad Briefing — Immediate Action Items
+# Vision Broad Briefing — Immediate Action Items
 **Source:** `.squad/log/yen-broad-briefing-2026-04-15.md`
-**Filed by:** Yen
+**Filed by:** Vision
 **Date:** 2026-04-15
 
 These items warrant action this sprint or early next sprint. Full context in the briefing log.
@@ -855,51 +855,51 @@ These items warrant action this sprint or early next sprint. Full context in the
 
 ## 🔴 This Sprint
 
-### [Danny + Yen] Audit `.github/copilot-instructions.md`
+### [Nick Fury + Vision] Audit `.github/copilot-instructions.md`
 **Why:** This file is the system prompt for every Copilot agent invocation on this project. Current version has good pitfalls (script include, container naming) but missing: common entity resolution mistakes, squad routing hints, MCP server config location (future). Quality of this file = quality of agent output.
 **Action:** Schedule joint review. Add squad routing section. Treat as sprint artifact going forward.
 
 ---
 
-### [Saul] Add GitHub Issue Templates
-**Why:** The Copilot coding agent (what's running as Yen/Squad right now) can pick up and execute well-structured GitHub issues autonomously. Current issues are freeform and require Squad invocation. Templates with: what to build, target files, entity IDs, acceptance criteria, validation command would enable async autonomous delivery.
+### [Captain America] Add GitHub Issue Templates
+**Why:** The Copilot coding agent (what's running as Vision/Squad right now) can pick up and execute well-structured GitHub issues autonomously. Current issues are freeform and require Squad invocation. Templates with: what to build, target files, entity IDs, acceptance criteria, validation command would enable async autonomous delivery.
 **File:** `.github/ISSUE_TEMPLATE/automation-request.yml` (or similar)
 **Priority:** Creates async agent workflow path for planned backlog items.
 
 ---
 
-### [Saul] Create `yen.agent.md` in `.github/agents/`
-**Why:** Currently only `squad.agent.md` exists. Yen is the most commonly invoked specialist for AI/tech questions. A direct `@yen` invocation path from VS Code Copilot Chat would save a Squad routing step for direct AI questions.
+### [Captain America] Create `yen.agent.md` in `.github/agents/`
+**Why:** Currently only `squad.agent.md` exists. Vision is the most commonly invoked specialist for AI/tech questions. A direct `@yen` invocation path from VS Code Copilot Chat would save a Squad routing step for direct AI questions.
 **Template:** Mirror `squad.agent.md` format; pull identity/charter from `.squad/agents/yen/charter.md`.
 
 ---
 
-### [Danny] Update Yen Charter — Add Three Responsibilities
+### [Nick Fury] Update Vision Charter — Add Three Responsibilities
 1. **GitHub Copilot ecosystem monitoring** (Copilot, VS Code agent mode, MCP)
-2. **`.github/copilot-instructions.md` stewardship** (co-owner with Danny; sprint review)
+2. **`.github/copilot-instructions.md` stewardship** (co-owner with Nick Fury; sprint review)
 3. **Squad model optimization** (periodic audit of model assignments per agent)
 **File:** `.squad/agents/yen/charter.md`
 
 ---
 
-### [Danny] Add "Tooling Pulse" to `.squad/ceremonies.md`
-**What:** Monthly ceremony, owned by Yen, ~15 minutes. Covers VS Code/Copilot changelog, Ollama model updates, HA AI-adjacent releases.
-**Output:** Update to Yen history + any high-signal → decisions inbox.
+### [Nick Fury] Add "Tooling Pulse" to `.squad/ceremonies.md`
+**What:** Monthly ceremony, owned by Vision, ~15 minutes. Covers VS Code/Copilot changelog, Ollama model updates, HA AI-adjacent releases.
+**Output:** Update to Vision history + any high-signal → decisions inbox.
 **This briefing is the first instance.** Establish it as a recurring ceremony so it doesn't fall through the cracks.
 
 ---
 
 ## 🟡 Next Sprint
 
-### [Linus] Evaluate `home-assistant-mcp` MCP Server
+### [Black Widow] Evaluate `home-assistant-mcp` MCP Server
 **Why:** An HA MCP server registered in VS Code workspace settings would give squad agents live entity/state access during automation work. Eliminates the copy-paste-entity-ID problem systemically.
 **Steps:**
 1. Check [https://github.com/home-assistant/mcp-server](https://github.com/home-assistant/mcp-server) for current maturity/stability
 2. If stable: deploy + add to `.vscode/settings.json` or workspace MCP config
-3. Test: does Rusty/Livingston agent context improve with live entity access?
+3. Test: does Iron Man/Hawkeye agent context improve with live entity access?
 **Decision needed:** Does jshessen want live HA API access from VS Code agent sessions?
 
-### [Yen] Test `qwen2.5:7b` for Structured Output Quality
+### [Vision] Test `qwen2.5:7b` for Structured Output Quality
 **Why:** Currently deployed `llama3.2:3b` is CPU-safe but limited for complex structured output (evening AI summary). `qwen2.5:7b` has stronger reasoning and tool-calling — likely produces better `summary`, `security_note`, `tomorrow_note` fields.
 **Steps:**
 1. `docker exec ollama ollama pull qwen2.5:7b`
@@ -908,15 +908,15 @@ These items warrant action this sprint or early next sprint. Full context in the
 4. If better: update skill file with model recommendation
 **Constraint:** Monitor RAM usage — target < 6GB active.
 
-### [Danny + Yen] Add `model:` Field to Agent Charters
-**Why:** Only Yen has an explicit model assignment (claude-sonnet-4.6). Other agents default to whatever Copilot selects. Explicit assignments would optimize quality/cost.
+### [Nick Fury + Vision] Add `model:` Field to Agent Charters
+**Why:** Only Vision has an explicit model assignment (claude-sonnet-4.6). Other agents default to whatever Copilot selects. Explicit assignments would optimize quality/cost.
 **Proposed assignments:**
-- Danny, Yen: claude-sonnet-4.6
-- Basher: claude-sonnet-4.5 (code generation quality)
-- Rusty, Linus, Livingston, Saul: claude-haiku-4.5 (fast, cost-effective)
+- Nick Fury, Vision: claude-sonnet-4.6
+- Doctor Strange: claude-sonnet-4.5 (code generation quality)
+- Iron Man, Black Widow, Hawkeye, Captain America: claude-haiku-4.5 (fast, cost-effective)
 - Explore/task sub-agents: claude-haiku-4.5 (already set)
 
-### [Saul + Yen] Version Ollama System Prompts as Artifacts
+### [Captain America + Vision] Version Ollama System Prompts as Artifacts
 **Why:** Ollama system prompts (for Assist and HA control integrations) are currently set only in HA UI — lost on reinstall or integration reconfigure.
 **Action:** Document current prompts as YAML comments in `home-assistant/config/docs/setup/ollama-setup.md`. Treat as code.
 
@@ -924,15 +924,15 @@ These items warrant action this sprint or early next sprint. Full context in the
 
 ## 📋 Notes for Routing
 
-- **#1, #4, #5** → Danny (architecture/charter changes)
-- **#2, #3, #9** → Saul (project hygiene, documentation)
-- **#6** → Linus (infrastructure evaluation)
-- **#7** → Yen (self-assigned research task)
+- **#1, #4, #5** → Nick Fury (architecture/charter changes)
+- **#2, #3, #9** → Captain America (project hygiene, documentation)
+- **#6** → Black Widow (infrastructure evaluation)
+- **#7** → Vision (self-assigned research task)
 # Decision: iBlinds v2 UX Accessibility Architecture
 
 **Date:** 2026-07-20  
-**Author:** Danny (Lead Architect)  
-**Status:** Decided — Implementation Spec Ready for Rusty  
+**Author:** Nick Fury (Lead Architect)  
+**Status:** Decided — Implementation Spec Ready for Iron Man  
 **Triggered by:** jshessen feedback: stop-point configuration is not accessible without YAML expertise
 
 ---
@@ -1089,9 +1089,9 @@ input_number:
     # (all other fields unchanged)
 ```
 
-**Note for Rusty:** Entity IDs (`iblinds_v2_node71_open_position`, etc.) do NOT change. Only the `name:` field changes. No Jinja in template covers is affected. No restarts of downstream scripts needed.
+**Note for Iron Man:** Entity IDs (`iblinds_v2_node71_open_position`, etc.) do NOT change. Only the `name:` field changes. No Jinja in template covers is affected. No restarts of downstream scripts needed.
 
-### 2. New Lovelace card (spec for Rusty)
+### 2. New Lovelace card (spec for Iron Man)
 
 **File: `lovelace/iblinds.yaml`** (new file) — a blinds dashboard view or a card block for inclusion:
 
@@ -1166,9 +1166,9 @@ cards:
     icon: mdi:blinds-open
 ```
 
-**Note for Rusty:** Register this in `lovelace.yaml` or `configuration.yaml` as a new dashboard view. The `tile` card type with an `input_number` entity renders as a slider natively in HA 2023+.
+**Note for Iron Man:** Register this in `lovelace.yaml` or `configuration.yaml` as a new dashboard view. The `tile` card type with an `input_number` entity renders as a slider natively in HA 2023+.
 
-### 3. New blueprint (spec for Rusty)
+### 3. New blueprint (spec for Iron Man)
 
 **File: `blueprints/automation/jshessen/iblinds_v2_stop_point.yaml`** — shareable community mechanism:
 
@@ -1242,11 +1242,11 @@ mode: single
 max_exceeded: silent
 ```
 
-**Note for Rusty:** The condition `from_state not in ['opening', ...]` prevents re-triggering when the correction itself causes a brief intermediate `opening` state. `mode: single` + `max_exceeded: silent` prevents automation stacking.
+**Note for Iron Man:** The condition `from_state not in ['opening', ...]` prevents re-triggering when the correction itself causes a brief intermediate `opening` state. `mode: single` + `max_exceeded: silent` prevents automation stacking.
 
 ### 4. One-time UI actions (for jshessen, not YAML)
 
-After Rusty deploys the renamed helpers and restarts HA:
+After Iron Man deploys the renamed helpers and restarts HA:
 1. **Settings → Entities** — find each `*_open_position` helper → Edit → assign to correct Area  
    - Right Blinds → Living Room  
    - Left Blinds → Living Room  
@@ -1256,7 +1256,7 @@ After Rusty deploys the renamed helpers and restarts HA:
 
 ---
 
-## Files to Change (Rusty's Work Queue)
+## Files to Change (Iron Man's Work Queue)
 
 | File | Change | Priority |
 |------|--------|----------|
@@ -1274,7 +1274,7 @@ After Rusty deploys the renamed helpers and restarts HA:
 
 **Removing template covers in favor of blueprint-only:** Blueprint approach has the `set_cover_position` disambiguation bug (intercepts explicit position commands above stop_point) and the overshoot risk. Template covers are architecturally superior and already deployed. Don't regress.
 
-**Adding `input_boolean` toggles per-device:** The sentinel-zero pattern (Rusty's decision) is already clean. Adding a boolean "use per-device override" doubles the helper count for no UX gain. The slider at 0 means "use default" — that's sufficient.
+**Adding `input_boolean` toggles per-device:** The sentinel-zero pattern (Iron Man's decision) is already clean. Adding a boolean "use per-device override" doubles the helper count for no UX gain. The slider at 0 means "use default" — that's sufficient.
 
 ---
 
@@ -1285,12 +1285,12 @@ After Rusty deploys the renamed helpers and restarts HA:
 | Blueprint has `set_cover_position` disambiguation bug | User calling `set_cover_position: 80` on a blind with stop_point=50 will see unexpected correction | Blueprint is a community fallback, not jshessen's primary mechanism. Documented in blueprint description. |
 | Blueprint overshoot (2–6%) on correction | Brief visible artifact when blind is near stop point | Imperceptible from fully closed. Acceptable for "zero YAML" community use case. |
 | Area assignment is a manual UI step | One-time, not automatable via YAML | HA entity registry is UI-managed; `.storage/` edits not recommended. Step is 30 seconds per helper. |
-| Lovelace dashboard requires YAML authoring | Rusty authors it once; jshessen doesn't touch YAML | The team's job is to author the infrastructure. The user's job is to use sliders. |
+| Lovelace dashboard requires YAML authoring | Iron Man authors it once; jshessen doesn't touch YAML | The team's job is to author the infrastructure. The user's job is to use sliders. |
 | No device card co-location | Stop-point slider not on Z-Wave device page | Area + dashboard card provides equivalent discoverability. Custom integration is disproportionate cost for single household. |
 # iBlinds v2 Diagnostic Report
 
 **Date:** 2026-04-15  
-**Investigator:** Livingston (Troubleshooter)  
+**Investigator:** Hawkeye (Troubleshooter)  
 **Scope:** v2 nodes 67, 71, 72, 103, 106, 107 behavior analysis and blueprint review
 
 ---
@@ -1746,7 +1746,7 @@ The v2 iBlinds environment is **healthy and operational**. The blueprint exists 
 
 # Review: Battery Dashboard (`lovelace/battery_dashboard.yaml`)
 
-**Reviewer:** Danny (Lead / Architect)
+**Reviewer:** Nick Fury (Lead / Architect)
 **Date:** 2026-04-17 (re-review; original review 2026-04-16)
 **Commit under review:** `2024949`
 **Verdict:** ❌ REJECTED — Two bugs remain unfixed from prior review
@@ -1875,7 +1875,7 @@ The exclude filter is completely inert — no entities are excluded. The card sh
 
 ## Fix Assignment
 
-**Assigned to:** Basher (Template Dev) — both issues are YAML scalar and filter pattern concerns within his domain.
+**Assigned to:** Doctor Strange (Template Dev) — both issues are YAML scalar and filter pattern concerns within his domain.
 
 **Scope of fix:**
 1. Lines 24, 141: Change `>-` to `|-`
@@ -1884,7 +1884,7 @@ The exclude filter is completely inert — no entities are excluded. The card sh
 # Decision: iBlinds v2 Z-Wave Config Fix
 
 **Date:** 2026-04-15  
-**Author:** Linus (Integration Specialist)  
+**Author:** Black Widow (Integration Specialist)  
 **Status:** Implemented — re-interview required  
 **Affects:** All iBlinds v2 nodes (67, 71, 72, 103, 106, 107)
 
@@ -1925,10 +1925,10 @@ Low. The local config takes priority over the bundled npm config (per Z-Wave JS 
 
 
 
-# Yen Sourced Research Complete — Decision Inbox
+# Vision Sourced Research Complete — Decision Inbox
 **Date:** 2026-04-15
-**From:** Yen
-**To:** jshessen + squad leads (Danny, Saul, Linus)
+**From:** Vision
+**To:** jshessen + squad leads (Nick Fury, Captain America, Black Widow)
 **Re:** Live-sourced AI landscape research — key findings vs. prior training-based briefing
 
 ---
@@ -1948,7 +1948,7 @@ The prior briefing (`.squad/log/yen-broad-briefing-2026-04-15.md`) was based on 
 **Source:** VS Code 1.116.0 (released today, April 15, 2026)
 **What:** Copilot Chat is now a built-in extension — no separate install. AI-first by default.
 **Impact:** Zero setup friction for new contributors. Remove "install Copilot extension" from onboarding docs.
-**Owner:** Saul
+**Owner:** Captain America
 
 ---
 
@@ -1964,7 +1964,7 @@ The prior briefing (`.squad/log/yen-broad-briefing-2026-04-15.md`) was based on 
 **Source:** GitHub Copilot features docs (live fetch)
 **What:** GitHub officially renamed "Copilot coding agent" to "Copilot cloud agent." The old name is not used in current docs.
 **Impact:** Squad documentation, agent charters, and briefings use the old name. Minor but worth correcting for accuracy.
-**Owner:** Danny — update squad docs.
+**Owner:** Nick Fury — update squad docs.
 
 ---
 
@@ -1972,15 +1972,15 @@ The prior briefing (`.squad/log/yen-broad-briefing-2026-04-15.md`) was based on 
 **Source:** Ollama library (live data, April 15, 2026)
 **What:** qwen3 (tools + thinking, updated 6 months ago) is the current generation of the Qwen family. qwen3.5 (vision + tools + thinking) was updated 1 WEEK AGO. qwen2.5 is 1 year old.
 **Why it upgrades the recommendation:** Combined with HA's Ollama "Think before responding" toggle (now confirmed in live docs), qwen3:8b with thinking enabled is the correct upgrade path from llama3.2:3b.
-**Action:** Yen to evaluate `qwen3:8b` with thinking this sprint. The `qwen2.5:7b` recommendation from the prior briefing is still safe but not optimal.
+**Action:** Vision to evaluate `qwen3:8b` with thinking this sprint. The `qwen2.5:7b` recommendation from the prior briefing is still safe but not optimal.
 
 ---
 
 ### 5. 🆕 MCP Is Universal — OpenAI Also Supports It
 **Source:** modelcontextprotocol.io (live fetch)
 **What:** MCP is supported by Claude, ChatGPT (OpenAI), VS Code, Cursor, and many others. This is NOT an Anthropic-only standard.
-**Impact:** Removes the key uncertainty from the prior briefing. An HA MCP server will work regardless of which AI provider we use in the future. Elevates the Linus MCP evaluation from "next sprint" to "this sprint."
-**Action:** Linus — evaluate home-assistant-mcp this sprint.
+**Impact:** Removes the key uncertainty from the prior briefing. An HA MCP server will work regardless of which AI provider we use in the future. Elevates the Black Widow MCP evaluation from "next sprint" to "this sprint."
+**Action:** Black Widow — evaluate home-assistant-mcp this sprint.
 
 ---
 
@@ -2001,27 +2001,27 @@ The prior briefing (`.squad/log/yen-broad-briefing-2026-04-15.md`) was based on 
 
 ## Requested Decisions
 
-| Decision | Context | Recommended by Yen | Owner |
+| Decision | Context | Recommended by Vision | Owner |
 |----------|---------|-------------------|-------|
-| Elevate MCP evaluation to this sprint | Universal ecosystem support confirmed | ✅ Proceed | Linus |
-| Update "coding agent" → "cloud agent" in squad docs | Official rename confirmed | ✅ Update | Danny |
-| Test qwen3:8b with thinking for local LLM | Supersedes qwen2.5 recommendation | ✅ Test this sprint | Yen |
-| Enable agent debug log persistence | VS Code 1.116 feature, debugging value | ✅ Enable | Saul |
-| Evaluate Copilot Memory when stable | New public preview feature | 🔍 Watch | Yen |
+| Elevate MCP evaluation to this sprint | Universal ecosystem support confirmed | ✅ Proceed | Black Widow |
+| Update "coding agent" → "cloud agent" in squad docs | Official rename confirmed | ✅ Update | Nick Fury |
+| Test qwen3:8b with thinking for local LLM | Supersedes qwen2.5 recommendation | ✅ Test this sprint | Vision |
+| Enable agent debug log persistence | VS Code 1.116 feature, debugging value | ✅ Enable | Captain America |
+| Evaluate Copilot Memory when stable | New public preview feature | 🔍 Watch | Vision |
 
 ---
 
 ## No Action Items Changed
 
 The following prior recommendations remain unchanged and valid:
-- Add GitHub issue templates with agent-ready structure (Saul)
-- Audit `.github/copilot-instructions.md` (Yen + Danny)
-- "Tooling Pulse" ceremony establishment (Danny)
-- Per-agent model assignments (Danny + Yen, next sprint)
+- Add GitHub issue templates with agent-ready structure (Captain America)
+- Audit `.github/copilot-instructions.md` (Vision + Nick Fury)
+- "Tooling Pulse" ceremony establishment (Nick Fury)
+- Per-agent model assignments (Nick Fury + Vision, next sprint)
 # Battery Dashboard v4 — Collapse Fix Pattern
 
 **Date:** 2026-07-20  
-**Author:** Rusty (Automation Engineer)  
+**Author:** Iron Man (Automation Engineer)  
 **Status:** Implemented
 
 ## Problem
@@ -2097,16 +2097,16 @@ This shows any device below 40% regardless of its individual Battery Notes thres
 
 # iBlinds v2 Stop-Point — Automation Design
 
-**Filed by:** Rusty (Automation Engineer)  
+**Filed by:** Iron Man (Automation Engineer)  
 **Date:** 2026-07-20  
-**Status:** DESIGN COMPLETE — Awaiting Danny's review before implementation  
-**Supersedes:** Danny's Plan B1 (blueprint deployment — blueprint is non-functional)
+**Status:** DESIGN COMPLETE — Awaiting Nick Fury's review before implementation  
+**Supersedes:** Nick Fury's Plan B1 (blueprint deployment — blueprint is non-functional)
 
 ---
 
 ## Executive Summary
 
-The blueprint (`iblinds_device_handler.yaml`) is permanently broken — Livingston confirmed this. Danny's Phase 2 plan recommends deploying it anyway. That is wrong. This document replaces Phase 2 with a **Template Cover Package** that actually works.
+The blueprint (`iblinds_device_handler.yaml`) is permanently broken — Hawkeye confirmed this. Nick Fury's Phase 2 plan recommends deploying it anyway. That is wrong. This document replaces Phase 2 with a **Template Cover Package** that actually works.
 
 **Design choice: `packages/iblinds_v2_covers.yaml` with template covers**  
 - Zero changes to existing scripts  
@@ -2418,11 +2418,11 @@ After Z-Wave re-interview identifies those entities, uncomment and fill in the s
 
 The existing `blueprints/automation/jshessen/iblinds_device_handler.yaml` blueprint should be **left as-is** (do not delete). It's harmless since it never fires. Deleting it would require UI cleanup of any automation instances referencing it. No action needed.
 
-Danny's implementation plan Phase 2 **should NOT be executed** as written — deploying the blueprint automation won't work. This package replaces Phase 2 entirely.
+Nick Fury's implementation plan Phase 2 **should NOT be executed** as written — deploying the blueprint automation won't work. This package replaces Phase 2 entirely.
 
 ---
 
-## Questions for Danny
+## Questions for Nick Fury
 
 1. **Per-device stop points needed?** Current design uses one global `iblinds_v2_open_position`. If bedroom should stop at 40% and living room at 60%, I can add per-device `input_number` helpers. Just say the word.
 2. **Nodes 67/106 priority?** Should I stub those in now with estimated entity IDs, or wait until re-interview confirms them?
@@ -2432,8 +2432,8 @@ Danny's implementation plan Phase 2 **should NOT be executed** as written — de
 
 ## Approval
 
-- [ ] Danny — approve template cover approach  
-- [ ] Confirm entity IDs for Nodes 71 and 72 (I inferred from Danny's plan; verify against actual deployment)  
+- [ ] Nick Fury — approve template cover approach  
+- [ ] Confirm entity IDs for Nodes 71 and 72 (I inferred from Nick Fury's plan; verify against actual deployment)  
 - [ ] Implement once approved  
 
 
@@ -2445,9 +2445,9 @@ Danny's implementation plan Phase 2 **should NOT be executed** as written — de
 # ADR: iBlinds v2/v3 Consistency Implementation Plan
 
 **Date:** 2026-07-20  
-**Author:** Danny (Lead / Architect)  
+**Author:** Nick Fury (Lead / Architect)  
 **Status:** Proposed  
-**Stakeholders:** jshessen (owner), Linus (Z-Wave specialist), Livingston (diagnostics)
+**Stakeholders:** jshessen (owner), Black Widow (Z-Wave specialist), Hawkeye (diagnostics)
 
 ---
 
@@ -2481,7 +2481,7 @@ The deployment has a mixed iBlinds v2/v3 environment with 6 v2 nodes (67, 71, 72
 ## Reconciling the Contradiction
 
 **Owner reports:** "Cover position values stay 'unknown' at all times"  
-**Livingston found:** `currentValue` in Z-Wave logs tracks positions (0%, 50%, 99%)
+**Hawkeye found:** `currentValue` in Z-Wave logs tracks positions (0%, 50%, 99%)
 
 **Resolution:** Both observations are likely accurate. Here's what's happening:
 
@@ -2492,7 +2492,7 @@ The deployment has a mixed iBlinds v2/v3 environment with 6 v2 nodes (67, 71, 72
    - The device may have moved via manual tilt-wand or another controller
    - Position can't be verified after HA restart
 
-3. **The `targetValue=99` quirk** — Livingston observed this firmware quirk where `targetValue` always shows 99. This is a separate issue from position reporting and doesn't block functionality.
+3. **The `targetValue=99` quirk** — Hawkeye observed this firmware quirk where `targetValue` always shows 99. This is a separate issue from position reporting and doesn't block functionality.
 
 **Bottom line:** The contradiction exists because Z-Wave JS tracks *commanded* positions optimistically, but HA's cover entity requires *confirmed* reports for reliable state. Adding the Lifeline association fixes this by enabling unsolicited position reports.
 
@@ -2916,7 +2916,7 @@ After deployment, existing scripts (`start_active_day.yaml`, `secure_home.yaml`)
 - [ ] Proceed with Phase 2 (blueprint deployment)
 
 # iBlinds Blueprint Diagnosis
-**Filed by:** Livingston (Troubleshooter)  
+**Filed by:** Hawkeye (Troubleshooter)  
 **Date:** 2026-06-22  
 **Status:** Diagnosis complete — awaiting implementation decision
 
@@ -3084,7 +3084,7 @@ The "smart intercept" approach should be abandoned — it's not achievable in HA
 # Decision: iBlinds v2 Per-Device Stop Points with Global Fallback
 
 **Date:** 2026-07-20
-**Author:** Rusty (Automation Engineer)
+**Author:** Iron Man (Automation Engineer)
 **Status:** Implemented
 
 ## Context
@@ -3129,8 +3129,8 @@ Added 4 per-device `input_number` helpers alongside the existing global one:
 
 **Session:** danny-plan-review, basher-implement  
 **Status:** APPROVED & IMPLEMENTED  
-**Lead:** Danny (source-level API validation)  
-**Developer:** Basher (implementation)
+**Lead:** Nick Fury (source-level API validation)  
+**Developer:** Doctor Strange (implementation)
 
 ### Problem Statement
 
@@ -3142,13 +3142,13 @@ Battery Dashboard v5 used deprecated/invalid battery-state-card v4.2.0 API patte
 
 ### Solution: Complete v6 Rewrite
 
-**Danny's Source-Level Review:**
+**Nick Fury's Source-Level Review:**
 1. Q1 ✅ `by: "device.area_name"` — Confirmed working via accessor.resolve() (same mechanism as filters)
 2. Q2 ✅ `computed.state >= 40` — Confirmed numeric coercion via gt() function (Number(t))
 3. Q3 ✅ `reltime()` on ISO dates — Confirmed Date.parse() support; graceful fallback on parse failure
 4. Q4 ✅ `default_config_base: false` — Confirmed mandatory (prevents shallow-merge collisions)
 
-**Basher's Implementation:**
+**Doctor Strange's Implementation:**
 - Monitor view: 3 cards (fleet summary + full fleet by room + needs attention)
 - Fleet Summary: Jinja2 namespace loop over *_battery_plus sensors; direct state counting (critical <20%, low 20-39%, OK ≥40%)
 - Full Fleet: Dynamic `group: [{by: "device.area_name"}]` with fallback to explicit per-area groups
@@ -3191,12 +3191,12 @@ Battery Dashboard v5 used deprecated/invalid battery-state-card v4.2.0 API patte
 
 ### Evidence & Validation
 
-**Source-Level Review (Danny):**
+**Source-Level Review (Nick Fury):**
 - Reviewed battery-state-card v4.2.0 minified source (1200+ lines)
 - Confirmed API behavior for: accessor.resolve(), gt() numeric coercion, reltime() Date.parse(), default config shallow-merge
 - All findings cross-referenced with v4.2.0 documentation and battery-state-card issues
 
-**Config Validation (Basher):**
+**Config Validation (Doctor Strange):**
 - ✅ Config check passed: `docker exec home-assistant python -m homeassistant --script check_config -c /config`
 - No YAML structure errors
 - Custom card warnings expected and ignorable
@@ -3225,7 +3225,7 @@ Battery Dashboard v5 used deprecated/invalid battery-state-card v4.2.0 API patte
 ### Related Context
 
 - **Battery Notes v3.4.3:** Attributes confirmed (battery_type_and_quantity, battery_last_replaced as ISO 8601)
-- **Previous research:** Linus's battery-state-card v4.2.0 API feature set analysis
+- **Previous research:** Black Widow's battery-state-card v4.2.0 API feature set analysis
 - **Previous context:** Patricia's battery monitoring system requirements; 6 iBlinds v2 firmware devices inform design robustness
 
 ### Decision Notes
@@ -3241,7 +3241,7 @@ Deployment can proceed with post-deploy visual verification as documented in che
 ### 2026-04-16: Battery Dashboard v6 — ADR & Root Cause Fixes
 
 **Date:** 2026-04-16  
-**Authors:** Danny (Lead/Architect), Basher (Template Dev), Rusty (Lovelace)  
+**Authors:** Nick Fury (Lead/Architect), Doctor Strange (Template Dev), Iron Man (Lovelace)  
 **Status:** Implemented & Approved  
 **Tags:** lovelace, battery-state-card, battery-notes, jinja2  
 **Log:** `.squad/log/2026-04-16-battery-dashboard-v6.md`
@@ -3265,13 +3265,13 @@ Deployment can proceed with post-deploy visual verification as documented in che
 5. Two views retained: Monitor (operational) and Manage (replacement workflow)
 6. `secondary_info`: `"{attributes.battery_type_and_quantity} · {attributes.battery_last_replaced|reltime()}"`
 
-**Basher Jinja2 Template Fix:**
+**Doctor Strange Jinja2 Template Fix:**
 - Added `rejectattr('entity_id', 'search', '_low')` guard — defence-in-depth against hypothetical `sensor.*_battery_plus_low` entities
 - `| float(100)` default confirmed (100 → OK bucket on parse failure, prevents false counts)
 
 **Implementation:** `home-assistant/config/lovelace/battery_dashboard.yaml` — Monitor view rewritten; Manage view unchanged.
 
-**Review:** Danny approved (7/7 checklist items pass). Non-blocking: All Batteries card color step `value: 20` should be `value: 19` in next patch.
+**Review:** Nick Fury approved (7/7 checklist items pass). Non-blocking: All Batteries card color step `value: 20` should be `value: 19` in next patch.
 
 **Config validation:** ✅ Passed
 
@@ -3280,7 +3280,7 @@ Deployment can proceed with post-deploy visual verification as documented in che
 ### 2026-04-15: Battery Notes Event-Driven Automations — Implemented
 
 **Date:** 2026-04-15
-**Author:** Rusty (Automation Engineer)
+**Author:** Iron Man (Automation Engineer)
 **Status:** ✅ Implemented
 **Commit:** 049665b
 
@@ -3305,7 +3305,7 @@ Deployment can proceed with post-deploy visual verification as documented in che
 ### 2026-04-15: battery-state-card entity_id Exclude Interaction (is_permanent Bug)
 
 **Date:** 2026-04-15
-**Author:** Linus (Integration Specialist)
+**Author:** Black Widow (Integration Specialist)
 **Status:** Implemented (dashboard v8)
 
 **Finding:** When combining `entities:` (explicit) and `filter:` in battery-state-card, adding explicit entities to `filter.exclude` with `name: entity_id` permanently deletes them from the card. This is because `name: entity_id` filters are flagged `is_permanent: true` in card source and run `processExcludes()` over ALL batteries — explicit and filter-discovered — before deduplication protection applies.
@@ -3330,7 +3330,7 @@ get is_permanent() {
 ### 2026-04-15: Battery Count Discrepancy — Glob Anchoring Root Cause
 
 **Date:** 2026-04-15
-**Investigator:** Livingston (Troubleshooter)
+**Investigator:** Hawkeye (Troubleshooter)
 **Status:** ✅ Fixed
 
 **Root cause:** battery-state-card converts glob patterns to anchored regexes: `*_battery_plus` → `/^.*_battery_plus$/`. This requires entity IDs to END with `_battery_plus`. Numbered variants (`_plus_2`, `_plus_3`) fail the anchor and are excluded. The Jinja2 fleet counter uses `selectattr('entity_id', 'search', '_battery_plus')` (substring) — producing a 3 vs 1 discrepancy.
@@ -3354,10 +3354,10 @@ Applied to both "All Batteries — by Room" and "Needs Attention — Below 40%" 
 **Rule:** The Squad coordinator must not work inline. It routes work to squad members — it does not produce implementation artifacts. Even meta-work about the Squad itself (charter edits, copilot-instructions.md changes, skill files) must be routed.
 
 **Correct routing:**
-- `copilot-instructions.md` edits → Yen + Danny
-- Charter edits (any member) → Danny
-- Skill file creation/edits → Yen
-- `.squad/` structural changes → Saul
+- `copilot-instructions.md` edits → Vision + Nick Fury
+- Charter edits (any member) → Nick Fury
+- Skill file creation/edits → Vision
+- `.squad/` structural changes → Captain America
 
 **Enforcement:** If the coordinator catches itself writing YAML, Markdown config, or any file that belongs to a squad member's domain — stop, delete the draft, spawn the correct member.
 
@@ -3368,25 +3368,25 @@ Applied to both "All Batteries — by Room" and "Needs Attention — Below 40%" 
 ### 2026-04-17: Squad Governance Reassessment — Findings and Action Queue
 
 **Date:** 2026-04-17
-**Author:** Danny (Lead / Architect)
+**Author:** Nick Fury (Lead / Architect)
 **Triggered by:** Coordinator inline-work violation
 
 **Key findings:**
 
 | Finding | Severity | Action |
 |---------|----------|--------|
-| No coordinator charter exists | HIGH | Create `.squad/agents/coordinator/charter.md` → Saul |
-| Danny's charter missing charter ownership clause | MEDIUM | Danny to self-apply |
-| Scribe charter too thin (no merge protocol, no trigger conditions) | MEDIUM | Flesh out → Saul |
-| routing.md missing Rule 0 (coordinator must not implement) | MEDIUM | Add → Saul |
-| Linus charter missing stable-domain exemption | LOW | Add → Linus |
-| Basher charter missing `integrations/template/` source | LOW | Add → Basher |
-| Yen not asked to formally adopt `live-research` SKILL.md | LOW | → Yen |
-| Yen's charter confidence-label format inconsistent with standard | LOW | → Yen (cosmetic) |
+| No coordinator charter exists | HIGH | Create `.squad/agents/coordinator/charter.md` → Captain America |
+| Nick Fury's charter missing charter ownership clause | MEDIUM | Nick Fury to self-apply |
+| Scribe charter too thin (no merge protocol, no trigger conditions) | MEDIUM | Flesh out → Captain America |
+| routing.md missing Rule 0 (coordinator must not implement) | MEDIUM | Add → Captain America |
+| Black Widow charter missing stable-domain exemption | LOW | Add → Black Widow |
+| Doctor Strange charter missing `integrations/template/` source | LOW | Add → Doctor Strange |
+| Vision not asked to formally adopt `live-research` SKILL.md | LOW | → Vision |
+| Vision's charter confidence-label format inconsistent with standard | LOW | → Vision (cosmetic) |
 
 **Charter quality notes:**
-- Rusty's "Known stable facts" pattern is the template for all members
-- Basher needs `https://www.home-assistant.io/integrations/template/` in source table
+- Iron Man's "Known stable facts" pattern is the template for all members
+- Doctor Strange needs `https://www.home-assistant.io/integrations/template/` in source table
 - `live-research` SKILL.md needs Step 5a: stop and surface conflicts found mid-implementation
 
 **Trade-offs named:**
@@ -3398,12 +3398,12 @@ Applied to both "All Batteries — by Room" and "Needs Attention — Below 40%" 
 ### 2026-04-17: Live Research Coverage and Quality Gaps
 
 **Date:** 2026-04-17
-**Author:** Yen (AI & Emerging Tech Specialist)
+**Author:** Vision (AI & Emerging Tech Specialist)
 **Sources:** VS Code 1.116 release notes (🟢), GitHub Copilot blog index (🟢)
 
 **Coverage gaps found:**
-- **Livingston** has no Live Research Requirements section — needed for Z-Wave/Zigbee log diagnosis (error message formats change with releases)
-- **Danny** has no Live Research Requirements section — needed for ADRs evaluating current integrations
+- **Hawkeye** has no Live Research Requirements section — needed for Z-Wave/Zigbee log diagnosis (error message formats change with releases)
+- **Nick Fury** has no Live Research Requirements section — needed for ADRs evaluating current integrations
 
 **`copilot-instructions.md` quality gaps (priority ordered):**
 1. **(HIGH)** Squad Agent Requirements section is at the bottom of ~400 lines — LLMs weight early context more heavily; move to after "Project Architecture" section
@@ -3414,12 +3414,12 @@ Applied to both "All Batteries — by Room" and "Needs Attention — Below 40%" 
 6. **(LOW)** Confidence label destination unclear — clarify labels appear in both artifact and decisions/inbox entry
 
 **`live-research` SKILL.md gaps:**
-- Step 1 breaks for members without charter sections (Livingston, Danny) — add fallback instruction
+- Step 1 breaks for members without charter sections (Hawkeye, Nick Fury) — add fallback instruction
 - No sprint-level reuse guidance — add "don't re-fetch same domain within same sprint session"
 - Step 4 decision template format doesn't match actual inbox format in use
 - `{name}` placeholder in Step 5 fallback filename is undefined
 
-**Model enforcement gap (structural):** `runSubagent` accepts optional `model` parameter; no mechanism currently instructs coordinator to use it. Yen's `claude-sonnet-4.6` preference is advisory only. All members defaulting to `auto` means model quality is uncontrolled.
+**Model enforcement gap (structural):** `runSubagent` accepts optional `model` parameter; no mechanism currently instructs coordinator to use it. Vision's `claude-sonnet-4.6` preference is advisory only. All members defaulting to `auto` means model quality is uncontrolled.
 🟡 Model name format needs live verification before updating charters.
 
 **VS Code 1.116 confirmation:** `runSubagent` subagents are first-class; Copilot now built-in to VS Code; gem-* anti-pattern appears still accurate.
@@ -3429,7 +3429,7 @@ Applied to both "All Batteries — by Room" and "Needs Attention — Below 40%" 
 ### 2026-04-17: Repository Structure and Git Hygiene Assessment
 
 **Date:** 2026-04-17
-**Author:** Saul (Project Steward)
+**Author:** Captain America (Project Steward)
 **Status:** One critical action taken; remainder queued
 
 **Critical action taken:** Added `ollama/` to `.gitignore` — `ollama/models/id_ed25519` is a real OpenSSH private key (container-generated, root-owned) that was untracked and at risk of accidental `git add .` commit.
@@ -3445,7 +3445,7 @@ Applied to both "All Batteries — by Room" and "Needs Attention — Below 40%" 
 - Group D (Z-Wave): `zwave/settings.json`
 
 **Open questions routed:**
-- Linus: is `zwave/nodes_dump.json` a runtime artifact or maintained inventory? (determines gitignore vs. commit)
+- Black Widow: is `zwave/nodes_dump.json` a runtime artifact or maintained inventory? (determines gitignore vs. commit)
 - Scribe: process `coordinator-inline-work-directive.md` → done (this entry)
 - Team: execute commit groups A–D; Group A highest priority
 
@@ -3453,7 +3453,7 @@ Applied to both "All Batteries — by Room" and "Needs Attention — Below 40%" 
 
 ### 2026-04-17: Governance Hardening — Coordinator Charter and Charter Updates
 **Date:** 2026-04-17
-**Author:** Danny (Lead / Architect)
+**Author:** Nick Fury (Lead / Architect)
 **Status:** Implemented
 
 **Decisions made:**
@@ -3464,13 +3464,13 @@ Applied to both "All Batteries — by Room" and "Needs Attention — Below 40%" 
 
 3. **Scribe charter expanded** — `.squad/agents/scribe/charter.md` now includes full operational protocol: decision inbox merge protocol, session log format (`.squad/log/{ISO8601}-{topic}.md`), orchestration log format, git commit convention, and triggering conditions.
 
-4. **Livingston charter — live research section added** — Required live sources for Z-Wave JS UI, Z-Wave JS, Zigbee2MQTT, and HA releases. Stable exemptions: grep syntax, docker log commands, Python log parsing, HA log format basics.
+4. **Hawkeye charter — live research section added** — Required live sources for Z-Wave JS UI, Z-Wave JS, Zigbee2MQTT, and HA releases. Stable exemptions: grep syntax, docker log commands, Python log parsing, HA log format basics.
 
-5. **Danny charter — live research section added** — Required live sources: HA integration docs, HACS/upstream repos, HA developer blog. Stable exemptions: architecture patterns, Docker Compose structure, git workflows.
+5. **Nick Fury charter — live research section added** — Required live sources: HA integration docs, HACS/upstream repos, HA developer blog. Stable exemptions: architecture patterns, Docker Compose structure, git workflows.
 
-6. **Linus charter — stable-domain exemption added** — Appended to existing live research section: Docker Compose v3 base spec, Makefile syntax, git commands, shell scripting, Linux file permissions are known stable (no fetch required).
+6. **Black Widow charter — stable-domain exemption added** — Appended to existing live research section: Docker Compose v3 base spec, Makefile syntax, git commands, shell scripting, Linux file permissions are known stable (no fetch required).
 
-7. **Basher charter — missing source row added** — Added `HA template integration (sensor/binary_sensor)` → `https://www.home-assistant.io/integrations/template/` to the live research source table.
+7. **Doctor Strange charter — missing source row added** — Added `HA template integration (sensor/binary_sensor)` → `https://www.home-assistant.io/integrations/template/` to the live research source table.
 
 **Rationale:** Permissive coordinator causes drift after 2–3 sessions; hard rules prevent regression. Cross-charter alignment on confidence labels (🟢/🟡/🔴) and "training-data-only" fallback language is intentional.
 
@@ -3478,7 +3478,7 @@ Applied to both "All Batteries — by Room" and "Needs Attention — Below 40%" 
 
 ### 2026-04-17: Prompt Surface Fixes — copilot-instructions.md and live-research SKILL.md
 **Date:** 2026-04-17
-**Author:** Yen (AI & Emerging Tech Specialist)
+**Author:** Vision (AI & Emerging Tech Specialist)
 **Status:** Implemented
 
 **Decisions made:**
@@ -3487,9 +3487,9 @@ Applied to both "All Batteries — by Room" and "Needs Attention — Below 40%" 
 
 2. **Inline routing table replaced with reference** — The 7-row inline routing table in `### Member Spawning` was removed. Replaced with: *"Routing is absolute — follow `.squad/routing.md`. The authoritative routing table lives there. Do not maintain a copy here."* Prevents divergence between the two copies.
 
-3. **Model selection instruction added** — Inserted after VS Code spawning rule paragraph: directs coordinator to read each charter's `## Model` section before spawning, pass `model` parameter when charter specifies a non-auto preference, always pass `claude-sonnet-4.6` explicitly when spawning Yen.
+3. **Model selection instruction added** — Inserted after VS Code spawning rule paragraph: directs coordinator to read each charter's `## Model` section before spawning, pass `model` parameter when charter specifies a non-auto preference, always pass `claude-sonnet-4.6` explicitly when spawning Vision.
 
-4. **live-research SKILL.md Step 1 rewritten** — Removed "escalate to Yen" fallback for unlisted domains. Now directs members to the Domain → Source Quick Reference table at the bottom of the skill file. Eliminates blocking dependency on Yen availability.
+4. **live-research SKILL.md Step 1 rewritten** — Removed "escalate to Vision" fallback for unlisted domains. Now directs members to the Domain → Source Quick Reference table at the bottom of the skill file. Eliminates blocking dependency on Vision availability.
 
 5. **live-research SKILL.md Step 5 placeholder fixed** — Path `.squad/decisions/inbox/{name}-web-access-unavailable.md` changed to `.squad/decisions/inbox/{your-name}-web-access-unavailable.md` to clarify it is an instruction to the reader, not an unresolved template variable.
 
@@ -3497,9 +3497,9 @@ Applied to both "All Batteries — by Room" and "Needs Attention — Below 40%" 
 
 ### 2026-04-17: Squad Governance Hardening — Charter & Routing Audit
 **Date:** 2026-04-17  
-**Author:** Danny (Lead / Architect)  
+**Author:** Nick Fury (Lead / Architect)  
 **Status:** Verified Complete  
-**Context:** Governance worklog for Items 1–7 from Danny's work list (2026-04-17 session)
+**Context:** Governance worklog for Items 1–7 from Nick Fury's work list (2026-04-17 session)
 
 **Summary:**
 All seven governance hardening items were audited. All items were found to be already complete in the current files — implemented in prior sessions. No new changes required. This entry documents the audit findings.
@@ -3518,19 +3518,19 @@ Rule 0 exists verbatim: "The coordinator routes — it does not implement." Rule
 Status: ✅ Already complete
 `.squad/agents/scribe/charter.md` contains: Decision Inbox Merge Protocol, Session Log Format, Orchestration Log Format, Git Commit Convention, and Triggering Conditions — all with correct formats. No changes needed.
 
-**Item 4 — Live Research Requirements in Livingston's charter**
+**Item 4 — Live Research Requirements in Hawkeye's charter**
 Status: ✅ Already complete
 `.squad/agents/livingston/charter.md` has `## Live Research Requirements` section with all four required sources (zwave-js-ui, node-zwave-js, Zigbee2MQTT, HA blog), known-stable exemptions, and confidence labels. No changes needed.
 
-**Item 5 — Live Research Requirements in Danny's own charter**
+**Item 5 — Live Research Requirements in Nick Fury's own charter**
 Status: ✅ Already complete
 `.squad/agents/danny/charter.md` has `## Live Research Requirements` section with HA integration docs, HACS upstream repo, HA developer blog sources, known-stable exemptions, and confidence labels. No changes needed.
 
-**Item 6 — Stable-domain exemption in Linus's charter**
+**Item 6 — Stable-domain exemption in Black Widow's charter**
 Status: ✅ Already complete
 `.squad/agents/linus/charter.md` contains: "**Known stable (no fetch required):** Docker Compose v3 base spec, Makefile syntax, git commands, shell scripting, Linux file permissions." No changes needed.
 
-**Item 7 — Missing template integration source in Basher's charter**
+**Item 7 — Missing template integration source in Doctor Strange's charter**
 Status: ✅ Already complete
 `.squad/agents/basher/charter.md` already contains the row `| HA template integration (sensor/binary_sensor) | https://www.home-assistant.io/integrations/template/ |` immediately after the Jinja2 template reference row. No changes needed.
 
@@ -3542,7 +3542,7 @@ Status: ✅ Already complete
 
 ### 2026-04-17: Prompt Surface Hardening — Verification Complete
 **Date:** 2026-04-17  
-**Author:** Yen (AI & Emerging Tech Specialist)  
+**Author:** Vision (AI & Emerging Tech Specialist)  
 **Status:** Complete  
 
 ---
@@ -3579,7 +3579,7 @@ No divergence risk — single source of truth is `.squad/routing.md`.
 **Status:** ✅ Already correct  
 **Verified:** The model selection paragraph is present in the `### Member Spawning` subsection, immediately after the VS Code spawning rule paragraph:
 
-> **Model selection:** Before spawning a member, read the `## Model` section of their charter. Pass the `model` parameter to `runSubagent` when the charter specifies a non-auto preference. If the charter says `auto`, use the session default. Yen's charter specifies `claude-sonnet-4.6` — always pass that explicitly when spawning Yen.
+> **Model selection:** Before spawning a member, read the `## Model` section of their charter. Pass the `model` parameter to `runSubagent` when the charter specifies a non-auto preference. If the charter says `auto`, use the session default. Vision's charter specifies `claude-sonnet-4.6` — always pass that explicitly when spawning Vision.
 
 ---
 
@@ -3592,7 +3592,7 @@ No divergence risk — single source of truth is `.squad/routing.md`.
 > Check your charter for a `## Live Research Requirements` section. If your charter has one, use the source table there.  
 > If your charter does NOT have a `## Live Research Requirements` section (or the domain isn't listed), use the **Domain → Source Quick Reference** table at the bottom of this skill directly. Do not escalate — pick the closest matching domain and fetch it.
 
-The blocking "escalate to Yen" dependency is gone. Members can unblock themselves from the quick reference table.
+The blocking "escalate to Vision" dependency is gone. Members can unblock themselves from the quick reference table.
 
 ---
 
@@ -3616,7 +3616,7 @@ All verification is 🟢 direct file inspection — no inference required. No li
 
 ### 2026-04-17: Fix Automation Include Pattern
 **Date:** 2026-04-17  
-**Author:** Rusty (Automation Engineer)  
+**Author:** Iron Man (Automation Engineer)  
 **Status:** ✅ Implemented  
 
 **Problem:** `automation: !include automations.yaml` pointed to a single flat file; the `automations/` directory with hand-crafted automations was not loading.
@@ -3634,7 +3634,7 @@ All verification is 🟢 direct file inspection — no inference required. No li
 
 ### 2026-04-17: Dual-Include Pattern for Automations
 **Date:** 2026-04-17  
-**Author:** Rusty (Automation Engineer)  
+**Author:** Iron Man (Automation Engineer)  
 **Status:** ✅ Implemented  
 
 **Problem:** Directory-based include (`!include_dir_merge_list`) breaks HA UI automation editor which expects to write to `automations.yaml`.
@@ -3650,7 +3650,7 @@ automation manual: !include_dir_merge_list automations/
 
 ### 2026-04-17: Battery Note Field Naming Convention
 **Date:** 2026-04-17  
-**Author:** Danny (Lead / Architect)  
+**Author:** Nick Fury (Lead / Architect)  
 **Status:** Proposed  
 
 **Problem:** Battery Notes `note` field used inconsistent Amazon product titles causing meaningless fragmentation in brand/model grouping.
@@ -3668,8 +3668,8 @@ automation manual: !include_dir_merge_list automations/
 
 ### 2026-04-17: Section 3 Lifespan Stats — Card Composition Design
 **Date:** 2026-04-17 (revised from initial design)  
-**Author:** Danny (Lead / Architect)  
-**Status:** Ready for Rusty (implementation)  
+**Author:** Nick Fury (Lead / Architect)  
+**Status:** Ready for Iron Man (implementation)  
 
 **Reframing:** This is a card composition problem, not a data aggregation problem. Goal: make Section 3 look like Sections 1 and 2 (one cohesive card unit) via visual composition.
 
@@ -3690,7 +3690,7 @@ automation manual: !include_dir_merge_list automations/
 
 ### 2026-04-17: Loop Feasibility — Dynamic Battery-Type Sections
 **Date:** 2026-04-17  
-**Author:** Danny (Lead / Architect)  
+**Author:** Nick Fury (Lead / Architect)  
 **Status:** Finding — jshessen was right, coordinator was wrong  
 
 **Finding:** Looping without hardcoding IS possible. The installed `battery-state-card` v4 supports native `by` grouping.
@@ -3715,7 +3715,7 @@ One card, all types handled dynamically, auto-adapts as new battery types appear
 
 ### 2026-04-20: config-template-card Feasibility for Dynamic Sections
 **Date:** 2026-04-20  
-**Author:** Danny (Lead / Architect)  
+**Author:** Nick Fury (Lead / Architect)  
 **Status:** APPROVED — feasible with documented constraints  
 
 **Finding:** `config-template-card` (verified installed at `www/community/config-template-card/`) supports `${JS expression}` in any YAML string field, evaluated via browser `eval()` with `states` in scope.
@@ -3741,7 +3741,7 @@ card:
 
 ### 2026-04-20: active_holiday None option renamed to No Holiday
 **Date:** 2026-04-20  
-**Author:** Rusty (Automation Engineer)  
+**Author:** Iron Man (Automation Engineer)  
 
 **Problem:** `input_select.active_holiday` had a bare YAML `None` option which HA parsed as Python `None`, causing `holiday_season_controller` to fail with "string value is None for dictionary value @ data['option']" on every scheduled run.
 
@@ -3753,7 +3753,7 @@ card:
 
 ### 2026-04-20: Template icon dicts updated for No Holiday
 **Date:** 2026-04-20  
-**Author:** Basher (Template Dev)  
+**Author:** Doctor Strange (Template Dev)  
 
 **What:** Renamed `'None'` dict key to `'No Holiday'` in seasonal template files that map `input_select.active_holiday` state to icons.
 
@@ -3762,13 +3762,13 @@ card:
 - `home-assistant/config/templates/seasonal_living_room.yaml`
 - `home-assistant/config/templates/house_christmas_lights.yaml`
 
-**Why:** Follows Rusty's rename of the input_select option — keeps icon lookups consistent with the new option name.
+**Why:** Follows Iron Man's rename of the input_select option — keeps icon lookups consistent with the new option name.
 
 ---
 
 ### 2026-04-20: Config validation after HA Repair fixes
 **Date:** 2026-04-20  
-**Author:** Livingston (Troubleshooter)  
+**Author:** Hawkeye (Troubleshooter)  
 
 **Result:** PASS — exit code 0, clean even with `--fail-on-warnings`.
 
@@ -3786,7 +3786,7 @@ These errors will stop after HA reloads automations with corrected config.
 
 ### 2026-04-20: Zigbee2MQTT MQTT credential mismatch — Fixed
 **Date:** 2026-04-20
-**Author:** Linus (Integration Specialist)
+**Author:** Black Widow (Integration Specialist)
 **Status:** Implemented ✅
 
 **Decision:** Fix Zigbee2MQTT MQTT auth failure causing 4-day service outage.
@@ -3806,7 +3806,7 @@ These errors will stop after HA reloads automations with corrected config.
 
 ### 2026-04-20: iBlinds v2 Alexa "Open" fix — Applied (restart pending)
 **Date:** 2026-04-20
-**Author:** Livingston (Troubleshooter) + Linus (Integration Specialist)
+**Author:** Hawkeye (Troubleshooter) + Black Widow (Integration Specialist)
 **Status:** Applied — HA restart + Alexa rediscovery required ⚠️
 
 **Decision:** Fix iBlinds v2 "Alexa, open blinds" going to 100% instead of 50%.
@@ -3832,7 +3832,7 @@ These errors will stop after HA reloads automations with corrected config.
 
 ### 2026-04-20: Echo announce defaults cleared in good_night/good_morning/start_active_day
 **Date:** 2026-04-20
-**Author:** Rusty (Automation Engineer)
+**Author:** Iron Man (Automation Engineer)
 **Status:** Implemented ✅
 
 **Decision:** Replace `media_player.*_echo` default announce targets with `[]` in scripts.
@@ -3850,46 +3850,46 @@ These errors will stop after HA reloads automations with corrected config.
 
 ### 2026-04-20: Architecture Assessment — Decisions Deferred to Follow-Up Sessions
 **Date:** 2026-04-20
-**Author:** Danny (Lead / Architect)
+**Author:** Nick Fury (Lead / Architect)
 **Status:** Filed — action required
 
 **Findings requiring team action (in priority order):**
 
 #### Critical — Fix This Sprint
-1. **Recorder orphaned (SQLite instead of PostgreSQL):** Add `recorder: !include recorder.yaml` to `configuration.yaml`. Move DB URL to `!secret recorder_db_url`. Owner: Linus + Basher.
-2. **Hardcoded PostgreSQL password in `recorder.yaml`:** Move to `secrets.yaml` as `!secret recorder_db_url`. Owner: Basher.
+1. **Recorder orphaned (SQLite instead of PostgreSQL):** Add `recorder: !include recorder.yaml` to `configuration.yaml`. Move DB URL to `!secret recorder_db_url`. Owner: Black Widow + Doctor Strange.
+2. **Hardcoded PostgreSQL password in `recorder.yaml`:** Move to `secrets.yaml` as `!secret recorder_db_url`. Owner: Doctor Strange.
 3. **`alexa_app_secret` == `ios_app_secret`:** Generate distinct value. Update Lambda wrapper. Owner: jshessen.
 4. **Amazon LWA OAuth credentials in `secrets.yaml`:** Rotate in Amazon Developer Console. Owner: jshessen.
-5. **Dead `secrets/hacs` reference in `docker-compose.yml`:** Remove unused top-level secrets block. Owner: Linus.
+5. **Dead `secrets/hacs` reference in `docker-compose.yml`:** Remove unused top-level secrets block. Owner: Black Widow.
 
 #### Medium — This Sprint
-6. **`reverse_proxy.yaml` orphaned dead code:** Delete file. Owner: Rusty.
-7. **`utility_meter.yaml` not loaded:** Add include to `configuration.yaml` or merge into energy package. Owner: Rusty.
-8. **Retire `battery_monitoring.yaml`:** Battery Notes event system is strictly better (event-driven, richer info, auto-dismiss). Owner: Rusty.
-9. **`home-assistant` compose `ports:` block ignored by host networking:** Remove and add explanatory comment. Owner: Linus.
-10. **Ollama missing health check:** Add `curl -f http://localhost:11434/api/tags` health check. Owner: Linus.
+6. **`reverse_proxy.yaml` orphaned dead code:** Delete file. Owner: Iron Man.
+7. **`utility_meter.yaml` not loaded:** Add include to `configuration.yaml` or merge into energy package. Owner: Iron Man.
+8. **Retire `battery_monitoring.yaml`:** Battery Notes event system is strictly better (event-driven, richer info, auto-dismiss). Owner: Iron Man.
+9. **`home-assistant` compose `ports:` block ignored by host networking:** Remove and add explanatory comment. Owner: Black Widow.
+10. **Ollama missing health check:** Add `curl -f http://localhost:11434/api/tags` health check. Owner: Black Widow.
 
-#### Infrastructure (from Linus assessment)
-11. **MQTT password in `config.d/mqtt.env`:** Move out of tracked env file; use Docker secret. Owner: Linus.
-12. **MQTT ACL file missing:** Add per-client topic scopes. Owner: Linus.
-13. **MQTT bound to 0.0.0.0:** Restrict to `127.0.0.1:1883`. Owner: Linus.
-14. **Ollama API bound to 0.0.0.0:** Restrict to `127.0.0.1:11434`. Owner: Linus.
-15. **Pin image versions:** Replace `:latest` tags with versioned tags in env files. Owner: Linus.
+#### Infrastructure (from Black Widow assessment)
+11. **MQTT password in `config.d/mqtt.env`:** Move out of tracked env file; use Docker secret. Owner: Black Widow.
+12. **MQTT ACL file missing:** Add per-client topic scopes. Owner: Black Widow.
+13. **MQTT bound to 0.0.0.0:** Restrict to `127.0.0.1:1883`. Owner: Black Widow.
+14. **Ollama API bound to 0.0.0.0:** Restrict to `127.0.0.1:11434`. Owner: Black Widow.
+15. **Pin image versions:** Replace `:latest` tags with versioned tags in env files. Owner: Black Widow.
 16. **Z-Wave Node 136 Nonce errors:** Investigate garage door S0 security issues; consider S2 re-inclusion. Owner: jshessen.
 
 #### User Action Required (HA UI)
 17. **Battery Notes UI automation:** Edit in HA → Settings → Automations → `battery_notes_low_battery_notification` → change `notify.mobile_app_jeff` → `notify.mobile_app_sparky`. Owner: jshessen.
 18. **NUT re-authentication:** Settings → Devices & Services → NUT → Re-authenticate. Owner: jshessen.
-19. **Water meter `state_class_removed` (2 repairs):** Find sensor config, confirm correct `state_class`, apply fix + restart. Owner: Rusty.
+19. **Water meter `state_class_removed` (2 repairs):** Find sensor config, confirm correct `state_class`, apply fix + restart. Owner: Iron Man.
 20. **input_boolean holiday entities missing from live registry:** Reload → Developer Tools → YAML Reload → Input Booleans. Owner: jshessen.
 ]633;E;echo "";16a0e96b-f1b0-4d47-8d85-e9ad4e637447]633;C
 ---
 
-### 2026-04-21: Basher — seasonal_displays.yaml Assessment & Fix
-# Basher — seasonal_displays.yaml Assessment & Fix
+### 2026-04-21: Doctor Strange — seasonal_displays.yaml Assessment & Fix
+# Doctor Strange — seasonal_displays.yaml Assessment & Fix
 
 **Date:** 2026-04-21  
-**Author:** Basher (Template Dev)  
+**Author:** Doctor Strange (Template Dev)  
 **File:** `home-assistant/config/templates/seasonal_displays.yaml`  
 **Status:** Complete — was incomplete, now fixed
 
@@ -3932,7 +3932,7 @@ All 6 aliases now use YAML anchors from the SMART switch definition: `*state_tem
 
 ---
 
-## Entity References — Flag for Livingston/Rusty
+## Entity References — Flag for Hawkeye/Iron Man
 
 | Entity | Purpose | Verified? |
 |--------|---------|-----------|
@@ -3950,11 +3950,11 @@ All 6 aliases now use YAML anchors from the SMART switch definition: `*state_tem
 
 ---
 
-### 2026-04-21: Basher — seasonal_living_room.yaml Cleanup
+### 2026-04-21: Doctor Strange — seasonal_living_room.yaml Cleanup
 # Decision: seasonal_living_room.yaml Cleanup
 
 **Date:** 2026-04-21
-**Author:** Basher (Template Dev)
+**Author:** Doctor Strange (Template Dev)
 **File:** `home-assistant/config/templates/seasonal_living_room.yaml`
 
 ---
@@ -4019,9 +4019,9 @@ When a seasonal smart switch has an N-case name template, static alias switches 
 
 ---
 
-### 2026-04-21: Basher — Full Template Audit
+### 2026-04-21: Doctor Strange — Full Template Audit
 # Template Audit Report — 2026-04-21
-**Author:** Basher (Template Dev)
+**Author:** Doctor Strange (Template Dev)
 **Scope:** All 10 files in `home-assistant/config/templates/`, plus package-level template sensors in `packages/`
 **Status:** Audit complete — no changes made
 
@@ -4173,9 +4173,9 @@ Doc-only inconsistency. No functional impact.
 
 ---
 
-### 2026-04-21: Linus — Infrastructure Audit
+### 2026-04-21: Black Widow — Infrastructure Audit
 # Infrastructure Audit — 2026-04-21
-**Author:** Linus (Integration Specialist)  
+**Author:** Black Widow (Integration Specialist)  
 **Scope:** Docker Compose files, Makefile, config.d env files, device paths, Mosquitto config, secrets, zigbee2mqtt, Z-Wave
 
 ---
@@ -4377,11 +4377,11 @@ The `setup` target uses a self-referential `CLEAN=1 make setup` recursion to iso
 
 ---
 
-### 2026-04-21: Livingston — switch.plug_in_front_yard_adapters Entity Verification
-# Livingston Finding: switch.plug_in_front_yard_adapters Entity Verification
+### 2026-04-21: Hawkeye — switch.plug_in_front_yard_adapters Entity Verification
+# Hawkeye Finding: switch.plug_in_front_yard_adapters Entity Verification
 
 **Date:** 2026-04-21
-**Requested by:** Basher (via coordinator)
+**Requested by:** Doctor Strange (via coordinator)
 **Task:** Verify `switch.plug_in_front_yard_adapters` existence and functionality
 
 ---
@@ -4448,13 +4448,13 @@ All 6 template switches (smart + 5 static aliases) correctly reference this enti
 
 ## Conclusion
 
-Basher's assumption is correct: `switch.plug_in_front_yard_adapters` is a valid, registered, enabled HA group switch backed by 3 Z-Wave JS outlets. The `seasonal_displays.yaml` template wiring is sound.
+Doctor Strange's assumption is correct: `switch.plug_in_front_yard_adapters` is a valid, registered, enabled HA group switch backed by 3 Z-Wave JS outlets. The `seasonal_displays.yaml` template wiring is sound.
 
 ---
 
-### 2026-04-21: Livingston — System Health Audit
+### 2026-04-21: Hawkeye — System Health Audit
 # System Health Audit — 2026-04-21
-**Author:** Livingston (Troubleshooter)  
+**Author:** Hawkeye (Troubleshooter)  
 **Timestamp:** 2026-04-21 ~12:15 CT  
 **HA Version:** 2026.4.x (container Up 3 hours at time of audit)
 
@@ -4639,10 +4639,10 @@ These are standard "untested by HA" notices for all HACS/custom components. Not 
 
 ---
 
-### 2026-04-21: Rusty — Automation & Script Audit
+### 2026-04-21: Iron Man — Automation & Script Audit
 # Automation & Script Audit — 2026-04-21
 
-**Author:** Rusty (Automation Engineer)
+**Author:** Iron Man (Automation Engineer)
 **Scope:** All automations/, scripts/, input helpers, automations.yaml, packages/
 **Purpose:** Audit-only — no changes made. Prioritize for jshessen.
 
@@ -4734,7 +4734,7 @@ New syntax (HA 2024.x+): `- trigger: time` / `- trigger: state`
 - `alexa_helpers.yaml` lines 66, 70 — 2 occurrences
 - `spire.yaml` line 16, `amwater.yaml` line 16, `ameren.yaml` line 19 — 3 occurrences
 
-**Total:** 11 `platform:` occurrences across files Rusty owns.
+**Total:** 11 `platform:` occurrences across files Iron Man owns.
 **Risk:** Low — HA still supports old syntax with deprecation warnings. Will eventually break.
 **Fix effort:** Mechanical find-and-replace per file.
 

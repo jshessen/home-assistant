@@ -1,7 +1,7 @@
 # Evening AI Summary Automation — Structured Output Design
 **Date:** 2026-04-15  
-**Author:** Yen (AI & Emerging Tech Specialist)  
-**For Implementation By:** Rusty  
+**Author:** Vision (AI & Emerging Tech Specialist)  
+**For Implementation By:** Iron Man  
 **Status:** Ready for implementation
 
 ## Context
@@ -167,7 +167,7 @@ action:
         # ... (full action from above)
 ```
 
-**Note for Rusty:** I've kept the primary YAML simple for clarity. If you want the fallback version, use the `choose` pattern above.
+**Note for Iron Man:** I've kept the primary YAML simple for clarity. If you want the fallback version, use the `choose` pattern above.
 
 ---
 
@@ -248,4 +248,4 @@ Traditional LLM automations rely on free-text parsing:
 
 ---
 
-**Ready for Rusty to implement.** Questions? Ping Yen via squad:yen label.
+**Ready for Iron Man to implement.** Questions? Ping Vision via squad:yen label.

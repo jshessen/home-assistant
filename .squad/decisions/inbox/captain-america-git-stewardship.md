@@ -1,12 +1,12 @@
-# Saul Decision: Git Stewardship Routing and Hygiene Baseline
+# Captain America Decision: Git Stewardship Routing and Hygiene Baseline
 
 **Date:** 2026-04-21
-**Author:** Saul (Project Steward)
+**Author:** Captain America (Project Steward)
 **Status:** Proposed
 
 ## Decision
 
-Git repository stewardship is explicitly owned by Saul and routed to Saul by default for:
+Git repository stewardship is explicitly owned by Captain America and routed to Captain America by default for:
 - git hygiene and cleanup planning
 - repo hygiene checks (status, branch divergence checks, safe reconciliation)
 - branch management and stale-branch cleanup workflows

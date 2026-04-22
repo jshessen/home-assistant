@@ -36,9 +36,9 @@
 | Test scaffolding | 🟢 | Known patterns, low judgment needed |
 | Doc generation | 🟢 | Reads code, outputs markdown |
 | Automation scaffolding (simple) | 🟡 | Needs clear spec; verify YAML output |
-| Jinja2 template logic | 🔴 | Requires HA-specific context + Basher review |
-| Architecture decisions | 🔴 | Always route to Danny |
-| Z-Wave/Zigbee config | 🔴 | Always route to Linus |
+| Jinja2 template logic | 🔴 | Requires HA-specific context + Doctor Strange review |
+| Architecture decisions | 🔴 | Always route to Nick Fury |
+| Z-Wave/Zigbee config | 🔴 | Always route to Black Widow |
 
 <!-- copilot-auto-assign: false -->
 

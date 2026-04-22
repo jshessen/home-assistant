@@ -1,6 +1,6 @@
 # Template Audit for HA 2026.4 Functions
 **Date:** 2026-04-15  
-**Auditor:** Basher (Template Dev)  
+**Auditor:** Doctor Strange (Template Dev)  
 **HA Version:** 2026.4.2  
 **Status:** Complete — No changes required
 
@@ -124,6 +124,6 @@ If blueprint modernization is desired, open a separate task.
 
 ## References
 
-- Yen Tech Briefing (2026-04-15) — Action Item 1
+- Vision Tech Briefing (2026-04-15) — Action Item 1
 - HA 2026.4 Release Notes (assumed source of function announcements)
 - HA Template Documentation: https://www.home-assistant.io/docs/configuration/templating/

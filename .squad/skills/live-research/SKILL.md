@@ -1,7 +1,7 @@
 # Skill: Live Research Protocol
 
 **Confidence:** medium  
-**Owner:** Yen (maintained), applicable to all members  
+**Owner:** Vision (maintained), applicable to all members  
 **Domain:** Any rapidly-evolving technical specification
 
 ---
