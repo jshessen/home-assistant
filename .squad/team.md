@@ -10,22 +10,22 @@
 
 ## Members
 
-| Name       | Role                          | Charter                               | Status    |
-| ---------- | ----------------------------- | ------------------------------------- | --------- |
-| Danny      | Lead                          | `.squad/agents/danny/charter.md`      | ✅ Active  |
-| Rusty      | Automation Engineer           | `.squad/agents/rusty/charter.md`      | ✅ Active  |
-| Linus      | Integration Specialist        | `.squad/agents/linus/charter.md`      | ✅ Active  |
-| Basher     | Template Dev                  | `.squad/agents/basher/charter.md`     | ✅ Active  |
-| Livingston | Troubleshooter                | `.squad/agents/livingston/charter.md` | ✅ Active  |
-| Saul       | Project Steward               | `.squad/agents/saul/charter.md`       | ✅ Active  |
-| Yen        | AI & Emerging Tech Specialist | `.squad/agents/yen/charter.md`        | ✅ Active  |
-| @copilot   | 🤖 Coding Agent               | `.github/copilot-instructions.md`     | 🤖 Async   |
-| Scribe     | Session Logger                | `.squad/agents/scribe/charter.md`     | 📋 Silent  |
-| Ralph      | Work Monitor                  | `.squad/agents/ralph/charter.md`      | 🔄 Monitor |
+| Name            | Role                          | Charter                                      | Status    |
+| --------------- | ----------------------------- | -------------------------------------------- | --------- |
+| Nick Fury       | Lead                          | `.squad/agents/nick-fury/charter.md`         | ✅ Active  |
+| Iron Man        | Automation Engineer           | `.squad/agents/iron-man/charter.md`          | ✅ Active  |
+| Black Widow     | Integration Specialist        | `.squad/agents/black-widow/charter.md`       | ✅ Active  |
+| Doctor Strange  | Template Dev                  | `.squad/agents/doctor-strange/charter.md`    | ✅ Active  |
+| Hawkeye         | Troubleshooter                | `.squad/agents/hawkeye/charter.md`           | ✅ Active  |
+| Captain America | Project Steward               | `.squad/agents/captain-america/charter.md`   | ✅ Active  |
+| Vision          | AI & Emerging Tech Specialist | `.squad/agents/vision/charter.md`            | ✅ Active  |
+| @copilot        | 🤖 Coding Agent               | `.github/copilot-instructions.md`            | 🤖 Async   |
+| Scribe          | Session Logger                | `.squad/agents/scribe/charter.md`            | 📋 Silent  |
+| Ralph           | Work Monitor                  | `.squad/agents/ralph/charter.md`             | 🔄 Monitor |
 
 ## Stewardship Ownership
 
-- **Git Hygiene & Repo Stewardship Owner:** Saul
+- **Git Hygiene & Repo Stewardship Owner:** Captain America
 - **Ownership Scope:** branch hygiene, repo cleanup checklists, release changelog and tagging workflow, `.gitignore`/`.gitattributes` boundaries, and GitHub issue/PR process hygiene
 
 ## @copilot Capability Profile

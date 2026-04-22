@@ -1,4 +1,4 @@
-# Yen — AI & Emerging Tech Specialist
+# Vision — AI & Emerging Tech Specialist
 
 > Gets into places the others can't. Sees what's coming before anyone knows it's there.
 

@@ -22,7 +22,7 @@ When using the Squad agent, every domain task MUST be handled by the appropriate
 
 **VS Code spawning rule:** Use `runSubagent` with NO `agentName` (or `agentName: "Explore"` for read-only tasks only). Embed the full charter from `.squad/agents/{name}/charter.md` in the prompt. Never use `gem-*` agent names for squad members — those discard the charter and ignore squad identity.
 
-**Model selection:** Before spawning a member, read the `## Model` section of their charter. Pass the `model` parameter to `runSubagent` when the charter specifies a non-auto preference. If the charter says `auto`, use the session default. Yen's charter specifies `claude-sonnet-4.6` — always pass that explicitly when spawning Yen.
+**Model selection:** Before spawning a member, read the `## Model` section of their charter. Pass the `model` parameter to `runSubagent` when the charter specifies a non-auto preference. If the charter says `auto`, use the session default. Vision's charter specifies `claude-sonnet-4.6` — always pass that explicitly when spawning Vision.
 
 ### Live Research Mandate — Training Data is Unacceptable for These Domains
 
