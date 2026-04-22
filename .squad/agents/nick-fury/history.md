@@ -1,4 +1,4 @@
-# Danny — History
+# Nick Fury — History
 
 ## Core Context
 
@@ -60,11 +60,11 @@ Decision filed: `decisions/inbox/danny-arch-assessment-2026-04-20.md`
 
 ### 2026-07-20: iBlinds v2/v3 consistency analysis — RECOMMENDATION COMPLETE
 
-Synthesized Linus's Z-Wave research and Livingston's diagnostic findings into a comprehensive implementation plan for the mixed iBlinds v2/v3 environment. Key architectural decisions:
+Synthesized Black Widow's Z-Wave research and Hawkeye's diagnostic findings into a comprehensive implementation plan for the mixed iBlinds v2/v3 environment. Key architectural decisions:
 
 **Root cause identified:** Missing `associations` section in `ib2_0.json` device config prevents Lifeline group setup, so v2 devices never send unsolicited position reports. This explains the "unknown" state in HA entities.
 
-**Contradiction resolved:** Owner reported "unknown" positions while Livingston found `currentValue` tracking. Both are correct — Z-Wave JS tracks *commanded* positions optimistically, but HA entities require *confirmed* reports from devices. Without Lifeline, devices never report back.
+**Contradiction resolved:** Owner reported "unknown" positions while Hawkeye found `currentValue` tracking. Both are correct — Z-Wave JS tracks *commanded* positions optimistically, but HA entities require *confirmed* reports from devices. Without Lifeline, devices never report back.
 
 **Recommended approach: Option C (Combination)**
 1. **Device config fix:** Add Lifeline association + Binary Switch CC removal compat flag to `ib2_0.json`. HIGH confidence this fixes position reporting.
@@ -89,7 +89,7 @@ Decision filed: `decisions/inbox/danny-iblinds-v2-implementation-plan.md`
 
 ### 2026-07-20: iBlinds v2 — Template Cover architecture for firmware stop-point limitation
 
-**Correction to prior decision:** My 2026-07-20 plan (above) recommended deploying the `iblinds_device_handler.yaml` blueprint. That was wrong — Livingston confirmed the blueprint has been dead since HA 2022.4 when `call_service` events were removed from the event bus. Never fired once. Revised decision after full team synthesis:
+**Correction to prior decision:** My 2026-07-20 plan (above) recommended deploying the `iblinds_device_handler.yaml` blueprint. That was wrong — Hawkeye confirmed the blueprint has been dead since HA 2022.4 when `call_service` events were removed from the event bus. Never fired once. Revised decision after full team synthesis:
 
 **Pattern: Template Covers as firmware-limitation workaround**
 

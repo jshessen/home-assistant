@@ -1,4 +1,4 @@
-# Rusty — History
+# Iron Man — History
 
 ## Core Context
 
@@ -35,7 +35,7 @@
 All files updated and config-check validated. Full context — including all decisions, trade-offs, and entity ID resolutions — in `decisions.md` (entries: "Mode system refactor completed", "Script architecture refactor", "Mode system UI layer update", "TBD entity ID resolution", "UI-configurable helper schema design").
 
 ### 2026-04-15: Purpose-Specific Triggers Investigation
-- **Finding:** "Purpose-Specific Triggers" mentioned in Yen's briefing **does not exist** in HA 2026.4.2
+- **Finding:** "Purpose-Specific Triggers" mentioned in Vision's briefing **does not exist** in HA 2026.4.2
 - **Labs System:** Confirmed HA has Labs feature system (Settings → System → Labs), UI-only configuration
 - **Current Labs:** Only `analytics/snapshots` preview enabled; no semantic trigger features available
 - **Trigger Types:** HA 2026.4.2 has: state, numeric_state, time, time_pattern, event, homeassistant triggers
@@ -62,7 +62,7 @@ All files updated and config-check validated. Full context — including all dec
 - **Commit:** `08d391c` - feat(automations): Add battery monitoring automation
 
 ### 2026-04-15: Evening AI Summary Automation with Structured Output
-- **Implementation:** Created `automations/evening_ai_summary.yaml` from Yen's design specification
+- **Implementation:** Created `automations/evening_ai_summary.yaml` from Vision's design specification
 - **New Pattern:** Uses `ai_task.generate_data` with `structure` parameter (HA 2026.x feature) for typed LLM output
 - **Key Advantage:** Structured output returns typed fields accessible via `response_variable.data.field_name` - eliminates free-text parsing brittleness
 - **Structure Definition:** 3 string fields: `summary` (2-sentence home status), `security_note` (lock status), `tomorrow_note` (mode-based future context)
@@ -71,7 +71,7 @@ All files updated and config-check validated. Full context — including all dec
 - **Trigger:** Time trigger at 21:00:00 with condition requiring `input_select.presence_mode = Home`
 - **Notifications:** Dual delivery to `notify.mobile_app_jeff` and `notify.mobile_app_patricia` with structured emoji-prefixed sections
 - **Benefits Over Traditional:** No markdown/JSON parsing needed, deterministic automation logic, LLM output constrained to requested schema
-- **Schema Design:** Kept flat (3 string fields) for optimal LLM reliability - Yen recommends 3-5 fields max
+- **Schema Design:** Kept flat (3 string fields) for optimal LLM reliability - Vision recommends 3-5 fields max
 - **Config Validation:** Passed HA config check before commit
 - **Commit:** `9c53749` - feat: Add evening AI summary automation with structured output
 
@@ -79,7 +79,7 @@ All files updated and config-check validated. Full context — including all dec
 
 - **Problem:** iBlinds v2 (fw 1.65) lacks Parameter 4 (Default ON Value), which v3 uses natively for stop-point on open. v2 `open_cover` always goes to 100%.
 - **Blueprint is dead:** The existing blueprint (`iblinds_device_handler.yaml`) uses `call_service` events that were removed from HA's event bus in 2022.4. It has never fired, ever. Cannot be fixed — architecture is incompatible with modern HA.
-- **Danny's plan B1 (blueprint) is wrong:** Danny's implementation plan recommends deploying the blueprint for Phase 2. That won't work. Replaced with Template Covers approach.
+- **Nick Fury's plan B1 (blueprint) is wrong:** Nick Fury's implementation plan recommends deploying the blueprint for Phase 2. That won't work. Replaced with Template Covers approach.
 - **Chosen pattern: Template Cover Package** (`packages/iblinds_v2_covers.yaml`)
   - Physical Z-Wave entities renamed to `*_hw` suffix in entity registry (UI step)
   - Template covers take original entity IDs — all existing scripts work unchanged
@@ -111,7 +111,7 @@ All files updated and config-check validated. Full context — including all dec
 - **`platform:` (old trigger syntax) remains in 3 automation files** — `battery_monitoring.yaml` (2), `evening_ai_summary.yaml` (1). Also in 8 package automations (ios_companion, alexa_helpers, spire, amwater, ameren, rtl433). All functional, deprecated only.
 - **Duplicate battery monitoring** — `battery_monitoring.yaml` and `battery_notes.yaml` both send low-battery notifications. Decision needed: deprecate `battery_monitoring.yaml` in favor of Battery Notes events?
 - **`good_morning_early` still lacks presence guard** — flagged in 2026-04-20 audit, not yet fixed. Kitchen light turns on in Away/Vacation mode.
-- **Good Night hardcoded holiday switches** — still hardcoded to 4 switch names. Label-based approach would auto-expand. Defer until Livingston confirms label entity coverage.
+- **Good Night hardcoded holiday switches** — still hardcoded to 4 switch names. Label-based approach would auto-expand. Defer until Hawkeye confirms label entity coverage.
 - **Keymaster scripts** — 5 alias scripts and 1 master all use `service:`. Placeholder comment `# Replace with your actual entity` is stale but entity IDs are correct. Low risk but creates noise.
 - **Holiday system is well-designed** — single source of truth in `holiday_season_controller.yaml`, label-based targeting in decorations, no duplicate date logic.
 - **Core scripts (good_night, good_morning, secure_home, start_active_day, start_work_day)** — all clean, `action:` syntax throughout, variable-driven entity lists, good guard patterns.

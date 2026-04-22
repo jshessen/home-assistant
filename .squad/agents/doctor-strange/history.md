@@ -1,4 +1,4 @@
-# Basher — History
+# Doctor Strange — History
 
 ## Core Context
 
@@ -157,7 +157,7 @@ Removed invalid `default_entity_id:` key from smart switch block in `seasonal_li
 
 **Bug pattern:** `battery_last_replaced: "*.+*"` was an attempt to match any non-empty string using regex syntax (`.+` = one or more chars). But auto-entities `filter:` uses **glob wildcards**, not regex. The string `"*.+*"` matches only attribute values that literally contain `.+` — ISO date strings like `2024-06-15T10:30:00+00:00` do NOT match `.+` literally.
 
-**Fix:** Use `"*"` to match any value (including empty), or `"?*"` to match one-or-more characters. For "has any replacement date set", `"*"` is the correct choice per Danny's spec.
+**Fix:** Use `"*"` to match any value (including empty), or `"?*"` to match one-or-more characters. For "has any replacement date set", `"*"` is the correct choice per Nick Fury's spec.
 
 **Rule:** Never use regex patterns in auto-entities filter attribute values. Glob only: `*` (any), `?` (single char), `[abc]` (char class).
 
@@ -268,7 +268,7 @@ Manage view unchanged (uses auto-entities, no battery-state-card bugs). Dashboar
 
 **Evidence of incompleteness:** SMART switch name template referenced 6 holiday names (incl. Shamrock Display and Patriotic Display) but header and static alias section listed only 4. Pattern from `seasonal_living_room.yaml` confirms aliases should exist for every name the SMART switch can surface.
 
-**Physical entity referenced:** `switch.plug_in_front_yard_adapters` — used for state, availability, turn_on, turn_off. Existence unverified (flag for Livingston/Rusty).
+**Physical entity referenced:** `switch.plug_in_front_yard_adapters` — used for state, availability, turn_on, turn_off. Existence unverified (flag for Hawkeye/Iron Man).
 
 **Config check:** Passed (exit 0).
 

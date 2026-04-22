@@ -1,4 +1,4 @@
-# Yen — History
+# Vision — History
 
 ## Core Context
 
@@ -104,19 +104,19 @@ data:
 
 1. **The Copilot coding agent (what I am) is already in use** — but the project doesn't have GitHub issue templates that would enable truly autonomous async pickup. Adding structured issue templates is a low-effort, high-leverage improvement.
 
-2. **`.github/copilot-instructions.md` is the project's most important prompt engineering artifact** — it's the system prompt for every agent invocation. Should be treated as living code, not boilerplate. Co-owned by Yen + Danny.
+2. **`.github/copilot-instructions.md` is the project's most important prompt engineering artifact** — it's the system prompt for every agent invocation. Should be treated as living code, not boilerplate. Co-owned by Vision + Nick Fury.
 
-3. **MCP (Model Context Protocol) is the biggest unlock we're not using** — an HA MCP server would give squad agents live entity/state context without user copy-paste. Eliminates the `TODO: replace entity_id` problem systemically. Linus to evaluate.
+3. **MCP (Model Context Protocol) is the biggest unlock we're not using** — an HA MCP server would give squad agents live entity/state context without user copy-paste. Eliminates the `TODO: replace entity_id` problem systemically. Black Widow to evaluate.
 
-4. **Yen's charter needs expansion** — add Copilot ecosystem monitoring, copilot-instructions.md stewardship, and squad model optimization. Currently these have no owner.
+4. **Vision's charter needs expansion** — add Copilot ecosystem monitoring, copilot-instructions.md stewardship, and squad model optimization. Currently these have no owner.
 
 5. **`qwen2.5:7b` is likely a better default Ollama model** than `llama3.2:3b` for structured output tasks — better reasoning with acceptable RAM overhead. Test this sprint before recommending the switch.
 
-6. **Model assignment by agent role** — the squad doesn't have explicit model assignments except Yen (claude-sonnet-4.6). Adding `model:` to each charter would optimize cost/quality tradeoff across all agents.
+6. **Model assignment by agent role** — the squad doesn't have explicit model assignments except Vision (claude-sonnet-4.6). Adding `model:` to each charter would optimize cost/quality tradeoff across all agents.
 
 7. **"Tooling Pulse" ceremony needed** — monthly check-in on Copilot/VS Code/Ollama ecosystem. This briefing is its first instance.
 
-8. **Per-agent `.agent.md` files** for direct invocation (beyond Squad coordinator) — Yen and Rusty are good first candidates.
+8. **Per-agent `.agent.md` files** for direct invocation (beyond Squad coordinator) — Vision and Iron Man are good first candidates.
 
 **Confidence calibration:** Items 1–3, 7 are 🟢 High (confirmed from direct observation and training). Items 4–6 are 🟡 Medium (trajectory extrapolation). Item 8 is 🔴 Low (speculative value assessment).
 

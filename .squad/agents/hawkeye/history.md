@@ -1,4 +1,4 @@
-# Livingston — History
+# Hawkeye — History
 
 ## Core Context
 
@@ -67,7 +67,7 @@ The entire blueprint is built around intercepting `call_service` events (`event_
 
 ### 2026-04-21: switch.plug_in_front_yard_adapters — entity confirmed valid
 
-**Task:** Verify `switch.plug_in_front_yard_adapters` exists and is functional (Basher flagged it as backing entity for all 6 seasonal display template switches in `templates/seasonal_displays.yaml`).
+**Task:** Verify `switch.plug_in_front_yard_adapters` exists and is functional (Doctor Strange flagged it as backing entity for all 6 seasonal display template switches in `templates/seasonal_displays.yaml`).
 
 **Entity confirmed 🟢:** Present in `core.entity_registry`, platform=`group`, device_class=`outlet`, area=`front_porch`, not disabled.
 

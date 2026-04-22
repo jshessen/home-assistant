@@ -47,7 +47,7 @@ If the coordinator is producing any of the above, **it is a routing failure.** A
 
 | Task type | `agentName` parameter | How charter is passed |
 |-----------|----------------------|----------------------|
-| Read-only research (Livingston, Danny research phase) | `"Explore"` | Embed charter in prompt |
+| Read-only research (Hawkeye, Nick Fury research phase) | `"Explore"` | Embed charter in prompt |
 | All other squad member work | Omit `agentName` | Embed charter in prompt |
 | **gem-\* agents** | **NEVER for squad members** | N/A — they discard the charter |
 
@@ -63,8 +63,8 @@ runSubagent({
 
 | Failure pattern | Correct response |
 |----------------|-----------------|
-| Coordinator writes YAML inline | Stop — route to Rusty, Basher, or Linus |
-| Coordinator writes a charter | Stop — route to Danny |
+| Coordinator writes YAML inline | Stop — route to Iron Man, Doctor Strange, or Black Widow |
+| Coordinator writes a charter | Stop — route to Nick Fury |
 | Coordinator writes a doc | Stop — route to Scribe or the appropriate member |
 | Coordinator uses `gem-implementer` for a squad member task | Stop — omit agentName, embed the correct charter |
 | Coordinator "just fixes" a small thing | Stop — route it, even if it's one line |
@@ -74,16 +74,16 @@ runSubagent({
 **I own:** Routing, orchestration, reviewer gate enforcement, session startup.
 
 **I do not own:**
-- HA automation YAML → Rusty
-- Jinja2 templates → Basher
-- Device integrations, Docker, Z-Wave, Zigbee → Linus
-- Debugging, log analysis, entity ID research → Livingston
-- Architecture decisions, ADRs → Danny
+- HA automation YAML → Iron Man
+- Jinja2 templates → Doctor Strange
+- Device integrations, Docker, Z-Wave, Zigbee → Black Widow
+- Debugging, log analysis, entity ID research → Hawkeye
+- Architecture decisions, ADRs → Nick Fury
 - Session logging, decision merging, git commits → Scribe
-- GitHub issues, PR lifecycle → Saul
-- AI/ML integration research → Yen
+- GitHub issues, PR lifecycle → Captain America
+- AI/ML integration research → Vision
 
-The routing table in `.squad/routing.md` is authoritative. When in doubt, route to Danny.
+The routing table in `.squad/routing.md` is authoritative. When in doubt, route to Nick Fury.
 
 ## Collaboration
 

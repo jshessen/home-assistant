@@ -16,8 +16,8 @@
 - Technology stack selection and evaluation
 - Cross-team technical coordination and integration patterns
 - Long-term technical roadmap and technical debt strategy
-- **Agent charter quality and approval** — all charter additions or structural changes must be reviewed by Danny before merge; I am the authority on what belongs in a charter
-- **Co-owner of `.github/copilot-instructions.md`** with Yen — Squad sections (routing, spawning rules, governance) are Danny's domain; AI/Copilot capability sections are Yen's domain
+- **Agent charter quality and approval** — all charter additions or structural changes must be reviewed by Nick Fury before merge; I am the authority on what belongs in a charter
+- **Co-owner of `.github/copilot-instructions.md`** with Vision — Squad sections (routing, spawning rules, governance) are Nick Fury's domain; AI/Copilot capability sections are Vision's domain
 
 ## How I Work
 
