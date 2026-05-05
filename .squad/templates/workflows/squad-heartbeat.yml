@@ -25,9 +25,14 @@ permissions:
   contents: read
   pull-requests: read
 
+concurrency:
+  group: squad-heartbeat
+  cancel-in-progress: true
+
 jobs:
   heartbeat:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
