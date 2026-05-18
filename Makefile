@@ -15,17 +15,14 @@ ZIGBEE_SERVICE := zigbee2mqtt
 COMPOSE_POSTGRES := -f docker-compose.postgres.yml
 POSTGRES_SERVICE := homeassistant-postgres 
 
-COMPOSE_OLLAMA := -f docker-compose.ollama.yml
-OLLAMA_SERVICE := ollama
-
 COMPOSE_HACS := -f docker-compose.yml
 HACS_SERVICE := home-assistant
 
 
-COMPOSE_ALL_FILES := ${COMPOSE_HACS} ${COMPOSE_POSTGRES} ${COMPOSE_ZWAVE} ${COMPOSE_MQTT} ${COMPOSE_ZIGBEE} ${COMPOSE_OLLAMA}
-ALL_SERVICES := ${HACS_SERVICE} ${POSTGRES_SERVICE} ${ZWAVE_SERVICE} ${MQTT_SERVICE} ${ZIGBEE_SERVICE} ${OLLAMA_SERVICE}
+COMPOSE_ALL_FILES := ${COMPOSE_HACS} ${COMPOSE_POSTGRES} ${COMPOSE_ZWAVE} ${COMPOSE_MQTT} ${COMPOSE_ZIGBEE}
+ALL_SERVICES := ${HACS_SERVICE} ${POSTGRES_SERVICE} ${ZWAVE_SERVICE} ${MQTT_SERVICE} ${ZIGBEE_SERVICE}
 
-.PHONY: setup plex all up down orphan stop restart rm images update ollama-pull
+.PHONY: setup plex all up down orphan stop restart rm images update
 
 setup:    ## Build .env from config.d/*.env files
 ifdef CLEAN
@@ -38,14 +35,6 @@ endif
 
 hacs:   ## 'Start' Home Assistant - 'docker compose ... up -d'
 	docker compose ${COMPOSE_HACS} up -d --build ${HACS_SERVICE}
-
-OLLAMA_MODEL := qwen3:8b
-
-ollama: ## 'Start' Home Assistant + Ollama - 'docker compose ... up -d'
-	docker compose ${COMPOSE_HACS} ${COMPOSE_OLLAMA} up -d --build ${HACS_SERVICE} ${OLLAMA_SERVICE}
-
-ollama-pull: ## Pull the default Ollama model (qwen3:8b) into the running container
-	docker exec ${OLLAMA_SERVICE} ollama pull ${OLLAMA_MODEL}
 
 all:        ## 'Start' Home Assistant, and all applicable components - 'docker compose ... up -d'
 	docker compose ${COMPOSE_ALL_FILES} up -d --build ${ALL_SERVICES}
