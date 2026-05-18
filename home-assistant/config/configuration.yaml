@@ -6,27 +6,9 @@ default_config:
 frontend:
   themes: !include_dir_merge_named themes
 
-# Automations managed by HA UI
-automation ui: !include automations.yaml
-# Custom hand-crafted automations
-automation manual: !include_dir_merge_list automations/
-
+automation: !include automations.yaml
 script: !include_dir_merge_named scripts/
 scene: !include scenes.yaml
-
-template: !include_dir_merge_list templates/
-
-# Alexa Smart Home Skill integration
-alexa: !include alexa.yaml
-
-recorder: !include recorder.yaml
-
-utility_meter: !include utility_meter.yaml
-input_button: !include input_button.yaml
-
-# Packages for self-contained feature modules (recorder, alexa helpers, iOS companion, etc.)
-homeassistant:
-  packages: !include_dir_named packages
 
 http:
   # For extra security set this to only accept connections on localhost if NGINX is on the same machine
@@ -45,16 +27,3 @@ lovelace:
   resources:
     - url: /hacsfiles/lovelace-multiple-entity-row/multiple-entity-row.js
       type: module
-  dashboards:
-    battery-status:
-      mode: yaml
-      filename: lovelace/battery_dashboard.yaml
-      title: "Battery Status"
-      icon: mdi:battery-alert
-      show_in_sidebar: true
-    iblinds-v2:
-      mode: yaml
-      filename: lovelace/iblinds.yaml
-      title: "Blinds"
-      icon: mdi:blinds
-      show_in_sidebar: true

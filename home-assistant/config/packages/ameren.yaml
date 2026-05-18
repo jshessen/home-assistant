@@ -22,59 +22,8 @@ automation:
       - condition: template
         value_template: "{{ now().day == 1 }}"
     actions:
-      - action: shell_command.update_ameren_rates
-      - action: system_log.write
+      - service: shell_command.update_ameren_rates
+      - service: system_log.write
         data:
           message: "Ameren rate check completed"
           level: info
-
-input_number:
-  ameren_mo_monthly_fixed:
-    name: "Ameren MO Monthly Fixed Charge"
-    unit_of_measurement: "$"
-    min: 0.00
-    max: 50.00
-    step: 0.01
-    icon: mdi:currency-usd
-    mode: box
-    initial: 9.19
-
-  ameren_mo_summer_rate:
-    name: "Ameren MO Summer Rate"
-    unit_of_measurement: "$/kWh"
-    min: 0.05
-    max: 0.25
-    step: 0.0001
-    icon: mdi:weather-sunny
-    mode: box
-    initial: 0.1560
-
-  ameren_mo_winter_tier1_rate:
-    name: "Ameren MO Winter Tier 1 Rate (0-750 kWh)"
-    unit_of_measurement: "$/kWh"
-    min: 0.05
-    max: 0.25
-    step: 0.0001
-    icon: mdi:snowflake
-    mode: box
-    initial: 0.1062
-
-  ameren_mo_winter_tier2_rate:
-    name: "Ameren MO Winter Tier 2 Rate (>750 kWh)"
-    unit_of_measurement: "$/kWh"
-    min: 0.05
-    max: 0.25
-    step: 0.0001
-    icon: mdi:snowflake-variant
-    mode: box
-    initial: 0.0714
-
-  ameren_mo_winter_tier1_limit:
-    name: "Ameren MO Winter Tier 1 Limit"
-    unit_of_measurement: "kWh"
-    min: 0
-    max: 2000
-    step: 50
-    icon: mdi:meter-electric
-    mode: box
-    initial: 750

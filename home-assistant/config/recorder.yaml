@@ -2,7 +2,7 @@
 # High-performance database for Home Assistant history
 
 # PostgreSQL connection (using localhost since HA is on host network)
-db_url: !secret recorder_db_url
+db_url: postgresql://homeassistant:ha_postgres_fda81663923dcbf8fb15e4c58ec818fc@localhost:5432/homeassistant
 
 # Commit interval: How often to write to database (default: 5 seconds)
 # Increase to reduce write frequency and improve performance
@@ -26,7 +26,3 @@ exclude:
     - script
     - scene
     - group
-  entities:
-    # RTL433 SDR sensors — high-frequency noise, caused WebSocket backlog overflow
-    - sensor.citroen_964d6f4f_noise_floor
-    - sensor.interlogix_security_140254_signal_snr

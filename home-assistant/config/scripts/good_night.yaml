@@ -45,9 +45,9 @@ good_night:
       - fan.smart_strip_1_2
     announce_enabled: "{{ announce_enabled | default(false) }}"
     announce_start_message: "{{ announce_start_message | default('Good night. Securing the house.') }}"
-    announce_start_targets: "{{ announce_start_targets | default([]) }}"
+    announce_start_targets: "{{ announce_start_targets | default(['media_player.living_room_echo']) }}"
     announce_end_message: "{{ announce_end_message | default('Good night. Sleep well.') }}"
-    announce_end_targets: "{{ announce_end_targets | default([]) }}"
+    announce_end_targets: "{{ announce_end_targets | default(['media_player.bedroom_echo']) }}"
   sequence:
     # ========================================================================
     # CONTEXT + SAFETY GATES
@@ -71,7 +71,7 @@ good_night:
             - condition: template
               value_template: "{{ announce_enabled | bool and (announce_start_targets | count > 0) }}"
           sequence:
-            - action: notify.alexa_media
+            - service: notify.alexa_media
               data:
                 message: "{{ announce_start_message }}"
                 data:
@@ -81,7 +81,7 @@ good_night:
     # ========================================================================
     # SECURITY + COVER CLOSE (delegate to secure_home)
     # ========================================================================
-    - action: script.secure_home
+    - service: script.secure_home
       data:
         skip_guest_covers: "{{ is_guest_mode }}"
 
@@ -96,15 +96,15 @@ good_night:
                     - condition: template
                       value_template: "{{ night_media_players | count > 0 }}"
                   sequence:
-                    - action: media_player.turn_off
+                    - service: media_player.turn_off
                       target:
                         entity_id: "{{ night_media_players | join(', ') }}"
-            - action: input_boolean.turn_off
+            - service: input_boolean.turn_off
               target:
                 entity_id:
                   - input_boolean.holiday_decorations_inside
                   - input_boolean.holiday_decorations_outside
-            - action: switch.turn_off
+            - service: switch.turn_off
               target:
                 entity_id:
                   - switch.pumpkin_patch
@@ -123,7 +123,7 @@ good_night:
                         + hallway_lights
                         + kids_room_lights) | count > 0 }}
               sequence:
-                - action: light.turn_off
+                - service: light.turn_off
                   target:
                     entity_id: >
                       {{ (living_room_lights
@@ -142,7 +142,7 @@ good_night:
             - condition: template
               value_template: "{{ guest_room_lights | count > 0 and not is_guest_mode }}"
           sequence:
-            - action: light.turn_off
+            - service: light.turn_off
               target:
                 entity_id: "{{ guest_room_lights | join(', ') }}"
 
@@ -151,7 +151,7 @@ good_night:
             - condition: template
               value_template: "{{ guest_room_fans | count > 0 and not is_guest_mode }}"
           sequence:
-            - action: fan.turn_off
+            - service: fan.turn_off
               target:
                 entity_id: "{{ guest_room_fans | join(', ') }}"
 
@@ -161,7 +161,7 @@ good_night:
             - condition: template
               value_template: "{{ bedroom_overhead_lights | count > 0 }}"
           sequence:
-            - action: light.turn_off
+            - service: light.turn_off
               target:
                 entity_id: "{{ bedroom_overhead_lights | join(', ') }}"
 
@@ -170,7 +170,7 @@ good_night:
             - condition: template
               value_template: "{{ bedroom_lamps | count > 0 }}"
           sequence:
-            - action: light.turn_on
+            - service: light.turn_on
               target:
                 entity_id: "{{ bedroom_lamps | join(', ') }}"
               data:
@@ -182,14 +182,14 @@ good_night:
             - condition: template
               value_template: "{{ bedroom_fans | count > 0 }}"
           sequence:
-            - action: fan.turn_on
+            - service: fan.turn_on
               target:
                 entity_id: "{{ bedroom_fans | join(', ') }}"
 
     # ========================================================================
     # FINAL STATE UPDATE + ANNOUNCEMENT
     # ========================================================================
-    - action: input_select.select_option
+    - service: input_select.select_option
       target:
         entity_id: input_select.time_of_day
       data:
@@ -202,7 +202,7 @@ good_night:
             - condition: template
               value_template: "{{ announce_enabled | bool and (announce_end_targets | count > 0) }}"
           sequence:
-            - action: notify.alexa_media
+            - service: notify.alexa_media
               data:
                 message: "{{ announce_end_message }}"
                 data:

@@ -19,49 +19,8 @@ automation:
       - condition: template
         value_template: "{{ now().day == 1 }}"
     actions:
-      - action: shell_command.update_spire_rates
-      - action: system_log.write
+      - service: shell_command.update_spire_rates
+      - service: system_log.write
         data:
           message: "Spire rate check completed"
           level: info
-
-input_number:
-  spire_mo_east_monthly_fixed:
-    name: "Spire MO East Monthly Customer Charge"
-    unit_of_measurement: "USD"
-    min: 0.00
-    max: 100.00
-    step: 0.01
-    icon: mdi:currency-usd
-    mode: box
-    initial: 22.00
-
-  spire_mo_east_winter_rate:
-    name: "Spire MO East Winter Distribution Rate (Nov-Apr)"
-    unit_of_measurement: "USD/ccf"
-    min: 0.00
-    max: 5.00
-    step: 0.00001
-    icon: mdi:snowflake
-    mode: box
-    initial: 0.50550
-
-  spire_mo_east_summer_rate:
-    name: "Spire MO East Summer Distribution Rate (May-Oct)"
-    unit_of_measurement: "USD/ccf"
-    min: 0.00
-    max: 5.00
-    step: 0.00001
-    icon: mdi:weather-sunny
-    mode: box
-    initial: 0.48671
-
-  spire_mo_east_pga_rate:
-    name: "Spire MO East Purchased Gas Adjustment (PGA)"
-    unit_of_measurement: "USD/ccf"
-    min: 0.00
-    max: 5.00
-    step: 0.00001
-    icon: mdi:gas-cylinder
-    mode: box
-    initial: 0.61674

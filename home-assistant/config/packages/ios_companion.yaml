@@ -140,12 +140,12 @@ automation:
           domain: "rest_command"
           service: "test_ios_wrapper"
     actions:
-      - action: input_datetime.set_datetime
+      - service: input_datetime.set_datetime
         target:
           entity_id: input_datetime.last_ios_request
         data:
           datetime: "{{ now() }}"
-      - action: system_log.write
+      - service: system_log.write
         data:
           message: "iOS app request detected at {{ now() }}"
           level: info
@@ -162,7 +162,7 @@ automation:
       - platform: state
         entity_id: input_datetime.last_ios_request
     actions:
-      - action: counter.increment
+      - service: counter.increment
         target:
           entity_id: counter.ios_requests_total
 
@@ -173,23 +173,23 @@ script:
     description: "Tests the iOS Lambda wrapper connectivity across multiple endpoints"
     mode: single
     sequence:
-      - action: persistent_notification.create
+      - service: persistent_notification.create
         data:
           title: "iOS Test Started"
           message: "Starting iOS wrapper connectivity test..."
           notification_id: ios_wrapper_test
 
-      - action: rest_command.test_ios_wrapper
+      - service: rest_command.test_ios_wrapper
       - delay:
           seconds: 1
-      - action: rest_command.test_ios_wrapper_config
+      - service: rest_command.test_ios_wrapper_config
       - delay:
           seconds: 1
-      - action: rest_command.test_ios_wrapper_services
+      - service: rest_command.test_ios_wrapper_services
       - delay:
           seconds: 2
 
-      - action: persistent_notification.create
+      - service: persistent_notification.create
         data:
           title: "iOS Wrapper Test Complete"
           message: >-
@@ -208,7 +208,7 @@ script:
     description: "Comprehensive health check of iOS Lambda wrapper"
     mode: single
     sequence:
-      - action: persistent_notification.create
+      - service: persistent_notification.create
         data:
           title: "iOS Health Check Started"
           message: "Starting comprehensive iOS wrapper health check..."
@@ -217,11 +217,11 @@ script:
       - repeat:
           count: 3
           sequence:
-            - action: rest_command.test_ios_wrapper
+            - service: rest_command.test_ios_wrapper
             - delay:
                 seconds: 2
 
-      - action: persistent_notification.create
+      - service: persistent_notification.create
         data:
           title: "iOS Health Check Complete"
           message: >-

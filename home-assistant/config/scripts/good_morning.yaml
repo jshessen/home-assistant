@@ -17,12 +17,12 @@ good_morning:
       - light.kitchen_light_3
     announce_enabled: "{{ announce_enabled | default(false) }}"
     announce_message: "{{ announce_message | default('Good morning.') }}"
-    announce_targets: "{{ announce_targets | default([]) }}"
+    announce_targets: "{{ announce_targets | default(['media_player.kitchen_echo']) }}"
   sequence:
     # ========================================================================
     # SET TIME OF DAY
     # ========================================================================
-    - action: input_select.select_option
+    - service: input_select.select_option
       target:
         entity_id: input_select.time_of_day
       data:
@@ -36,7 +36,7 @@ good_morning:
             - condition: template
               value_template: "{{ announce_enabled | bool and (announce_targets | count > 0) }}"
           sequence:
-            - action: notify.alexa_media
+            - service: notify.alexa_media
               data:
                 message: "{{ announce_message }}"
                 data:
@@ -51,7 +51,7 @@ good_morning:
             - condition: template
               value_template: "{{ kitchen_lights | count > 0 }}"
           sequence:
-            - action: light.turn_on
+            - service: light.turn_on
               target:
                 entity_id: "{{ kitchen_lights | join(', ') }}"
               data:

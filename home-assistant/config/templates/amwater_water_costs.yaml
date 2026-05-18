@@ -10,7 +10,6 @@
       unit_of_measurement: "USD/gal"
       icon: mdi:cash
       state_class: measurement
-      availability: "{{ states('input_number.amwater_mo_stl_rate_per_100_gal') not in ('unavailable', 'unknown', 'none', '') }}"
       state: >-
         {% set per_100 = states('input_number.amwater_mo_stl_rate_per_100_gal') | float(0) %}
         {{ (per_100 / 100) | round(6) }}
@@ -22,7 +21,6 @@
       unit_of_measurement: "USD"
       icon: mdi:currency-usd
       device_class: monetary
-      availability: "{{ states('sensor.monthly_water') not in ('unavailable', 'unknown', 'none', '') }}"
       state: >-
         {% set usage = states('sensor.monthly_water') | float(0) %}
         {% set rate = states('sensor.current_water_rate') | float(0) %}

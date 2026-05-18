@@ -24,7 +24,7 @@
           entity_id: input_select.presence_mode
           state: "Vacation"
   actions:
-    - action: script.good_night
+    - service: script.good_night
 
 # GOOD NIGHT - WEEKEND
 - id: good_night_time_weekend
@@ -47,7 +47,7 @@
           entity_id: input_select.presence_mode
           state: "Vacation"
   actions:
-    - action: script.good_night
+    - service: script.good_night
 
 # GOOD MORNING - WEEKDAY
 - id: good_morning_weekday
@@ -57,10 +57,6 @@
     - trigger: time
       at: input_datetime.schedule_start_active_day_weekday
   conditions:
-    # Guard: don't fire at midnight (00:00:00 = unconfigured helper)
-    - condition: template
-      value_template: >-
-        {{ states('input_datetime.schedule_start_active_day_weekday') != '00:00:00' }}
     - condition: time
       weekday:
         - mon
@@ -83,7 +79,7 @@
           entity_id: input_boolean.guest_mode
           state: "on"
   actions:
-    - action: script.start_active_day
+    - service: script.start_active_day
 
 # GOOD MORNING - WEEKEND
 - id: good_morning_weekend
@@ -112,7 +108,7 @@
           entity_id: input_boolean.guest_mode
           state: "on"
   actions:
-    - action: script.start_active_day
+    - service: script.start_active_day
 
 # GOOD MORNING - EARLY (Pre-Dawn Navigation)
 - id: good_morning_early
@@ -122,27 +118,14 @@
     - trigger: time
       at: input_datetime.schedule_good_morning_early
   conditions:
-    # Guard: don't fire at midnight (00:00:00 = unconfigured helper)
-    - condition: template
-      value_template: >-
-        {{ states('input_datetime.schedule_good_morning_early') != '00:00:00' }}
     - condition: state
       entity_id: input_select.time_of_day
       state: "Night"
     - condition: state
       entity_id: input_boolean.disable_good_morning
       state: "off"
-    # Guard: don't fire when Away or Vacation (pre-dawn light not needed)
-    - condition: not
-      conditions:
-        - condition: state
-          entity_id: input_select.presence_mode
-          state: "Away"
-        - condition: state
-          entity_id: input_select.presence_mode
-          state: "Vacation"
   actions:
-    - action: script.good_morning
+    - service: script.good_morning
 
 # WORK TIME - WEEKDAY
 - id: work_time_weekday
@@ -152,10 +135,6 @@
     - trigger: time
       at: input_datetime.schedule_work_time_weekday
   conditions:
-    # Guard: don't fire at midnight (00:00:00 = unconfigured helper)
-    - condition: template
-      value_template: >-
-        {{ states('input_datetime.schedule_work_time_weekday') != '00:00:00' }}
     - condition: time
       weekday:
         - mon
@@ -172,7 +151,7 @@
           entity_id: input_select.time_of_day
           state: "Night"
   actions:
-    - action: script.start_work_day
+    - service: script.start_work_day
 
 # ALL PERSONS AWAY (stub)
 - id: all_persons_away
@@ -182,11 +161,9 @@
     - trigger: state
       entity_id: person.jeff
       to: "not_home"
-      for: "00:05:00"
     - trigger: state
       entity_id: person.patricia
       to: "not_home"
-      for: "00:05:00"
   conditions:
     - condition: state
       entity_id: person.jeff
@@ -200,9 +177,9 @@
           entity_id: input_select.presence_mode
           state: "Vacation"
   actions:
-    - action: input_select.select_option
+    - service: input_select.select_option
       target:
         entity_id: input_select.presence_mode
       data:
         option: "Away"
-    - action: script.secure_home
+    - service: script.secure_home

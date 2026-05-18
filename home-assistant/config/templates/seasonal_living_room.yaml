@@ -6,11 +6,9 @@
 #   - switch.living_room_seasonal_display
 #     Shows "Pumpkin" or "Present" based on date
 #
-# STATIC ALIASES (always available for Alexa — 4 total):
-#   - switch.pumpkin (Halloween/Thanksgiving)
-#   - switch.present (Christmas/New Years)
-#   - switch.bunny (Easter)
-#   - switch.flag (Independence Day)
+# STATIC ALIASES (always available for Alexa):
+#   - switch.pumpkin
+#   - switch.present
 #
 # All switches control: switch.in_wall_single_outlet_7 (Living Room Outlet - 1)
 # Say either name to Alexa - they both work year-round!
@@ -36,6 +34,7 @@
         {% endif %}
 
       unique_id: living_room_seasonal_display
+      default_entity_id: switch.living_room_seasonal_display
 
       icon: >
         {% set season = states('input_select.active_holiday') %}
@@ -46,7 +45,7 @@
           'New Years': 'mdi:gift',
           'Easter': 'mdi:rabbit',
           'Independence Day': 'mdi:flag-variant',
-          'No Holiday': 'mdi:power-socket-us'
+          'None': 'mdi:power-socket-us'
         }.get(season, 'mdi:power-socket-us') }}
 
       # Define anchors here on first use
@@ -80,26 +79,6 @@
     - name: "Present"
       unique_id: seasonal_living_room_present
       icon: mdi:gift
-      state: *state_template
-      availability: *availability_template
-      turn_on: *turn_on_action
-      turn_off: *turn_off_action
-
-# Bunny (Easter)
-- switch:
-    - name: "Bunny"
-      unique_id: seasonal_living_room_bunny
-      icon: mdi:rabbit
-      state: *state_template
-      availability: *availability_template
-      turn_on: *turn_on_action
-      turn_off: *turn_off_action
-
-# Flag (Independence Day)
-- switch:
-    - name: "Flag"
-      unique_id: seasonal_living_room_flag
-      icon: mdi:flag-variant
       state: *state_template
       availability: *availability_template
       turn_on: *turn_on_action
