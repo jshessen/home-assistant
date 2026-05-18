@@ -103,7 +103,9 @@
       "pdftotext": true,
       "command": true,
       "lsattr": true,
-      "true": true
+      "true": true,
+      "git fetch": true,
+      "git rev-list": true
     },
     "homeassistant.hostUrl": "http://localhost:8123",
     "chat.instructionsFilesLocations": [".github/instructions"],
