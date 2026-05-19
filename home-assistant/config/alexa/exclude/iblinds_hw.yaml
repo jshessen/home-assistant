@@ -1,0 +1,15 @@
+# iBlinds v2 Hardware Entity Exclusions
+#
+# The iblinds_v2_covers.yaml package renames physical Z-Wave cover entities
+# to a *_hw suffix and creates template covers with the original entity IDs.
+# Template covers intercept open_cover → set_cover_position(stop_point%).
+#
+# PROBLEM: Both the template covers AND the *_hw physical entities are in the
+# cover domain, so Alexa discovers both. Alexa sends ChangeReports for _hw
+# entities (confirmed in HA logs) and may route voice commands to them,
+# bypassing the template intercept entirely.
+#
+# FIX: Exclude all *_hw cover entities from Alexa. Only the template covers
+# (which have the original entity IDs) should be exposed.
+
+- cover.*_hw
