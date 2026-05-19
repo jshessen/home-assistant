@@ -1,0 +1,77 @@
+- alias: "Battery Notes: Battery Replaced on Charge"
+  description: >
+    Automatically marks battery as replaced when Battery Notes detects a significant
+    battery level increase. Covers rechargeable devices (phones, Galaxy Watch, contact sensors).
+  mode: queued
+  triggers:
+    - trigger: event
+      event_type: battery_notes_battery_increased
+  conditions: []
+  actions:
+    - action: battery_notes.set_battery_replaced
+      data:
+        device_id: "{{ trigger.event.data.device_id }}"
+        source_entity_id: "{{ trigger.event.data.source_entity_id }}"
+
+- alias: "Battery Notes: Low Battery Notification"
+  description: >
+    Event-driven low battery notifications using Battery Notes threshold events.
+    Creates persistent notifications with battery type/quantity. Auto-dismisses when battery recovers.
+    Uses notification_id keyed to device+entity so each device gets its own dismissible alert.
+  mode: queued
+  triggers:
+    - trigger: event
+      event_type: battery_notes_battery_threshold
+      event_data:
+        battery_low: true
+      id: low
+    - trigger: event
+      event_type: battery_notes_battery_threshold
+      event_data:
+        battery_low: false
+      id: high
+  conditions: []
+  actions:
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: low
+          sequence:
+            - action: persistent_notification.create
+              data:
+                title: "🔋 {{ trigger.event.data.device_name }} Battery Low"
+                notification_id: "battery_notes_{{ trigger.event.data.device_id }}_{{ trigger.event.data.source_entity_id }}"
+                message: >
+                  Battery level: {{ trigger.event.data.battery_level }}%
+                  {{ '\n' -}}
+                  Needs: {{ trigger.event.data.battery_quantity }}× {{ trigger.event.data.battery_type }}
+            - action: notify.mobile_app_sparky
+              data:
+                title: "🔋 {{ trigger.event.data.device_name }} Battery Low"
+                message: >
+                  {{ trigger.event.data.battery_level }}% — needs {{ trigger.event.data.battery_quantity }}× {{ trigger.event.data.battery_type }}
+                data:
+                  tag: "battery_notes_{{ trigger.event.data.device_id }}"
+        - conditions:
+            - condition: trigger
+              id: high
+          sequence:
+            - action: persistent_notification.dismiss
+              data:
+                notification_id: "battery_notes_{{ trigger.event.data.device_id }}_{{ trigger.event.data.source_entity_id }}"
+
+- alias: "Battery Notes: Daily Check"
+  description: >
+    Daily trigger at 09:00 to re-fire Battery Notes threshold events for devices
+    that are still low (battery_notes.check_battery_low) or haven't reported in 7 days
+    (battery_notes.check_battery_last_reported). Works with automation 2 above.
+  mode: single
+  triggers:
+    - trigger: time
+      at: "09:00:00"
+  conditions: []
+  actions:
+    - action: battery_notes.check_battery_low
+    - action: battery_notes.check_battery_last_reported
+      data:
+        days_last_reported: 7

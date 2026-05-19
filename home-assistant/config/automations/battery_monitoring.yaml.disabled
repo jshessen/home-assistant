@@ -1,0 +1,56 @@
+alias: "Battery Monitoring"
+description: "Monitors all battery-powered devices and notifies when batteries are low. Auto-discovers devices using device_class - no manual entity list maintenance required."
+
+trigger:
+  # Daily check at 9:00 AM
+  - platform: time
+    at: "09:00:00"
+    id: daily_check
+  
+  # Template trigger: fires when any battery sensor crosses below 20%
+  - platform: template
+    value_template: >-
+      {% set low_batteries = states.sensor 
+        | selectattr('attributes.device_class', 'eq', 'battery')
+        | selectattr('state', 'is_number')
+        | rejectattr('state', 'in', ['unknown', 'unavailable'])
+        | map(attribute='state')
+        | map('float')
+        | select('lt', 20)
+        | list %}
+      {{ low_batteries | count > 0 }}
+    id: battery_low
+
+condition:
+  # Only notify if there are actually low-battery devices
+  - condition: template
+    value_template: >-
+      {% set low_batteries = states.sensor 
+        | selectattr('attributes.device_class', 'eq', 'battery')
+        | selectattr('state', 'is_number')
+        | map(attribute='state') 
+        | map('float') 
+        | select('lt', 20) 
+        | list %}
+      {{ low_batteries | count > 0 }}
+
+action:
+  - action: notify.mobile_app_sparky
+    data:
+      title: "🔋 Low Battery Alert"
+      message: >-
+        {% set sensors = states.sensor
+          | selectattr('attributes.device_class', 'eq', 'battery')
+          | selectattr('state', 'is_number')
+          | rejectattr('state', 'in', ['unknown', 'unavailable'])
+          | list %}
+        The following devices have low batteries (below 20%):
+        {% for s in sensors %}
+        {%- if s.state | float < 20 -%}
+        • {{ s.name }}: {{ s.state | int }}%
+        {% endif %}
+        {%- endfor %}
+      
+  # Patricia opted out of Smart Home notifications — notify.mobile_app_patricia removed
+
+mode: single
