@@ -9,53 +9,16 @@ This is a **multi-service Home Assistant deployment** using Docker Compose with 
 3. **Cloudflare Workers** (`home-assistant/cloudflare/`) - Authentik auth proxy for external access
 4. **Root** (`.`) - Docker Compose orchestration and Makefile commands
 
-## Squad Agent Requirements
-
-These rules apply whenever the **Squad** agent mode is active. They are non-negotiable.
-
-### Member Spawning — Coordinator Must Not Work Inline
-
-The Squad coordinator routes work. It does **not** produce implementation artifacts.
-When using the Squad agent, every domain task MUST be handled by the appropriate team member via `runSubagent`. If the coordinator is writing automation YAML, template logic, Docker config, or any other domain artifact directly — that is a failure. Route it.
-
-**Routing is absolute — follow `.squad/routing.md`.** The authoritative routing table lives there. Do not maintain a copy here.
-
-**VS Code spawning rule:** Use `runSubagent` with NO `agentName` (or `agentName: "Explore"` for read-only tasks only). Embed the full charter from `.squad/agents/{name}/charter.md` in the prompt. Never use `gem-*` agent names for squad members — those discard the charter and ignore squad identity.
-
-**Model selection:** Before spawning a member, read the `## Model` section of their charter. Pass the `model` parameter to `runSubagent` when the charter specifies a non-auto preference. If the charter says `auto`, use the session default. Vision's charter specifies `claude-sonnet-4.6` — always pass that explicitly when spawning Vision.
-
-### Live Research Mandate — Training Data is Unacceptable for These Domains
-
-This project uses systems that change on 30–90 day cycles. Training data for the following domains **must not** be used as the primary source. Every team member working in these areas must fetch current documentation before producing implementation work.
-
-| Domain                                    | Why Stale                                                   | Required Live Source                                                                             |
-| ----------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Z-Wave JS / zwave-js-ui                   | API and config schema evolve per release                    | `https://zwave-js.github.io/node-zwave-js/` + `https://github.com/zwave-js/zwave-js-ui/releases` |
-| HA automation/script YAML                 | New actions, triggers, config keys each release             | `https://www.home-assistant.io/docs/automation/` + `https://www.home-assistant.io/docs/scripts/` |
-| HA template / Jinja2                      | New filters and helpers added regularly                     | `https://www.home-assistant.io/docs/configuration/templating/`                                   |
-| Zigbee2MQTT                               | Device support and config schema change regularly           | `https://www.zigbee2mqtt.io/` + `https://github.com/Koenkk/zigbee2mqtt/releases`                 |
-| GitHub Copilot / VS Code agents           | Extremely rapid evolution — new tools, capabilities, syntax | `https://code.visualstudio.com/updates/` + `https://github.blog/tag/github-copilot/`             |
-| Ollama / local LLM APIs                   | Model availability and API surface change                   | `https://github.com/ollama/ollama/releases`                                                      |
-| HA integrations (HACS, custom_components) | Upstream breaking changes happen without warning            | Upstream GitHub repo + HACS changelog                                                            |
-
-**Confidence labeling is required when live research is performed:**
-
-- 🟢 Verified live — claim confirmed against a fetched source
-- 🟡 Reasonable inference — consistent with live source but not directly stated
-- 🔴 Speculative — not verified; must be flagged before implementation
-
-If web access is unavailable, explicitly state "training-data-only" and flag the output for human review before applying to production config.
-
 ## Critical Configuration Pattern: YAML Includes
 
 Home Assistant config uses **extensive YAML includes** - never duplicate content that's being included:
 
 ```yaml
 # configuration.yaml includes from multiple locations:
-automation: !include_dir_merge_list automations/ # Merges all YAML files in automations/
-script: !include_dir_merge_named scripts/ # Each file becomes a named script
-template: !include_dir_merge_list templates/ # Merges template lists
-packages: !include_dir_named packages/ # Each package file is a complete HA config subset
+automation: !include_dir_merge_list automations/     # Merges all YAML files in automations/
+script: !include_dir_merge_named scripts/            # Each file becomes a named script
+template: !include_dir_merge_list templates/         # Merges template lists
+packages: !include_dir_named packages/               # Each package file is a complete HA config subset
 ```
 
 **When modifying configs:**

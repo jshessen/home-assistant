@@ -5,7 +5,12 @@ home-assistant.log
 home-assistant_v2.db
 *.db-journal
 *.pid
-# Squad: ignore runtime state (logs, inbox, sessions)
+# Squad: .squad is a symlink → /home/jshessen/personal-squad (personal-squad state, not repo state)
+# The symlink itself is machine-local. Tracked team files (team.md, decisions.md, routing.md)
+# formerly lived inside this directory but the new structure stores them in personal-squad.
+# Individual subdirectory ignore rules below are kept for backward compatibility if ever
+# the symlink is replaced with a real directory again.
+.squad
 .squad/orchestration-log/
 .squad/log/
 .squad/decisions/inbox/
@@ -84,7 +89,10 @@ coverage.xml
 # Keep .code-workspace (shared config); ignore user-local settings
 .vscode/
 
-# ─── NOTE: .squad/ is intentional team state — do NOT add it here ─────────────
+# ─── NOTE: .squad was tracked team state; now a symlink to personal-squad ─────
+# As of 2026-05-18 (squad 0.9.4 upgrade), .squad/ became a symlink to
+# /home/jshessen/personal-squad. The symlink is personal, not repo state.
+# See .squad/decisions/inbox/nick-fury-squad-symlink-tracking.md for the ADR.
 
 # ─── config.d: files with credentials ────────────────────────────────────────
 # mqtt.env contains MQTTADMINPW plaintext — use secrets/ dir for credentials
@@ -135,3 +143,7 @@ zwave/nodes.json
 zwave/users.json
 zwave/*.pem
 zwave/*.jsonl
+
+# ─── Ollama models cache ────────────────────────────────────────────────────
+# Runtime model cache — owned by root, not tracked
+ollama/
